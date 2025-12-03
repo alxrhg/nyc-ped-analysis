@@ -292,7 +292,7 @@ def add_data_layers(m: folium.Map, bbox: Optional[List[List[float]]] = None) -> 
             # Add layer to map
             try:
                 layer_group = folium.FeatureGroup(name=source["name"], show=False)
-
+                if data_format.endswith("geojson") and data:
                 if source.get("format") == "geojson" and data:
                     # GeoJSON data
                     folium.GeoJson(
