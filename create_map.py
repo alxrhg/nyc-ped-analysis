@@ -64,40 +64,39 @@ DATA_SOURCES = {
     "subway_stations": {
         "endpoint": "arq3-7z49",
         "name": "Subway Stations",
-        "format": "geojson",
+        "formats": ["geojson", "json"],  # Try multiple formats
         "color": "#0039A6",
         "icon": "subway",
+        "download_url": "https://data.cityofnewyork.us/api/views/arq3-7z49/rows.csv?accessType=DOWNLOAD",
     },
     "pedestrian_counts": {
         "endpoint": "2de2-6x2h",  # Bi-Annual Pedestrian Counts
         "name": "Bi-Annual Pedestrian Counts",
-        "format": "json",
+        "formats": ["json", "csv"],  # This dataset likely doesn't have geojson
         "color": "#FF6B6B",
-    },
-    "pedestrian_demand_map": {
-        "endpoint": "c4kr-96ik",
-        "name": "Pedestrian Demand Map",
-        "format": "geojson",
-        "color": "#4ECDC4",
+        "download_url": "https://data.cityofnewyork.us/api/views/2de2-6x2h/rows.csv?accessType=DOWNLOAD",
     },
     "crash_data": {
         "endpoint": "h9gi-nx95",
         "name": "Motor Vehicle Collisions",
-        "format": "json",
+        "formats": ["json"],
         "color": "#FF0000",
         "filter": "number_of_pedestrians_injured>0 OR number_of_pedestrians_killed>0",
+        "download_url": "https://data.cityofnewyork.us/api/views/h9gi-nx95/rows.csv?accessType=DOWNLOAD",
     },
     "nycha": {
         "endpoint": "evjd-dqpz",
         "name": "NYCHA Developments",
-        "format": "geojson",
+        "formats": ["geojson", "json"],
         "color": "#9B59B6",
+        "download_url": "https://data.cityofnewyork.us/api/views/evjd-dqpz/rows.csv?accessType=DOWNLOAD",
     },
     "bike_lanes": {
         "endpoint": "7vsa-caz7",
         "name": "Bike Routes",
-        "format": "geojson",
+        "formats": ["geojson", "json"],
         "color": "#27AE60",
+        "download_url": "https://data.cityofnewyork.us/api/views/7vsa-caz7/rows.csv?accessType=DOWNLOAD",
     },
 }
 
@@ -116,18 +115,18 @@ class APIResult:
 def fetch_nyc_data(
     endpoint: str,
     name: str,
-    data_format: str = "geojson",
+    formats: List[str] = None,
     limit: int = 10000,
     bbox: Optional[List[List[float]]] = None,
     where_filter: Optional[str] = None,
 ) -> Tuple[Optional[dict], APIResult]:
     """
-    Fetch data from NYC Open Data API.
+    Fetch data from NYC Open Data API, trying multiple formats.
 
     Args:
         endpoint: Dataset endpoint ID
         name: Human-readable name
-        data_format: 'geojson' or 'json'
+        formats: List of formats to try ['geojson', 'json', 'csv']
         limit: Max records to fetch
         bbox: Optional bounding box [[south, west], [north, east]]
         where_filter: Optional SoQL WHERE clause
@@ -135,80 +134,78 @@ def fetch_nyc_data(
     Returns:
         Tuple of (data dict or None, APIResult)
     """
-    url = f"{NYC_API_BASE}/{endpoint}.{data_format}"
+    formats = formats or ["geojson", "json"]
+    last_error = ""
+    last_status = 0
 
-    params = {"$limit": limit}
+    for data_format in formats:
+        url = f"{NYC_API_BASE}/{endpoint}.{data_format}"
 
-    # Add bounding box filter if provided
-    if bbox and data_format == "json":
-        south, west = bbox[0]
-        north, east = bbox[1]
-        within_box = f"within_box(location, {north}, {west}, {south}, {east})"
-        if where_filter:
-            params["$where"] = f"({where_filter}) AND {within_box}"
-        else:
-            params["$where"] = within_box
-    elif where_filter:
-        params["$where"] = where_filter
+        params = {"$limit": limit}
 
-    try:
-        response = requests.get(url, params=params, timeout=30)
-
-        result = APIResult(
-            success=False,
-            endpoint=endpoint,
-            name=name,
-            http_status=response.status_code,
-        )
-
-        if response.status_code == 200:
-            data = response.json()
-
-            # Count records
-            if data_format == "geojson" and "features" in data:
-                result.record_count = len(data["features"])
-            elif isinstance(data, list):
-                result.record_count = len(data)
+        # Add bounding box filter if provided
+        if bbox and data_format == "json":
+            south, west = bbox[0]
+            north, east = bbox[1]
+            within_box = f"within_box(location, {north}, {west}, {south}, {east})"
+            if where_filter:
+                params["$where"] = f"({where_filter}) AND {within_box}"
             else:
-                result.record_count = 1
+                params["$where"] = within_box
+        elif where_filter:
+            params["$where"] = where_filter
 
-            if result.record_count > 0:
-                result.success = True
-                return data, result
+        try:
+            response = requests.get(url, params=params, timeout=30)
+            last_status = response.status_code
+
+            if response.status_code == 200:
+                data = response.json()
+
+                # Count records
+                if data_format == "geojson" and "features" in data:
+                    record_count = len(data["features"])
+                elif isinstance(data, list):
+                    record_count = len(data)
+                else:
+                    record_count = 1
+
+                if record_count > 0:
+                    return data, APIResult(
+                        success=True,
+                        endpoint=endpoint,
+                        name=name,
+                        record_count=record_count,
+                        http_status=200,
+                    )
+                else:
+                    last_error = f"Empty response from {data_format} format"
+
+            elif response.status_code == 404:
+                last_error = f"Format '{data_format}' not found (404)"
+            elif response.status_code == 403:
+                last_error = f"Access forbidden (403)"
+                break  # Don't try other formats if forbidden
             else:
-                result.error_message = "Empty response (0 records)"
-                return None, result
+                last_error = f"HTTP {response.status_code}"
 
-        elif response.status_code == 404:
-            result.error_message = f"Dataset not found (404) - endpoint may have changed"
-        elif response.status_code == 403:
-            result.error_message = f"Access forbidden (403) - may require API token"
-        else:
-            result.error_message = f"HTTP {response.status_code}: {response.text[:100]}"
+        except requests.Timeout:
+            last_error = "Request timed out"
+            break
+        except requests.RequestException as e:
+            last_error = f"Network error: {str(e)[:80]}"
+            break
+        except json.JSONDecodeError as e:
+            last_error = f"Invalid JSON: {str(e)[:50]}"
 
-        return None, result
-
-    except requests.Timeout:
-        return None, APIResult(
-            success=False,
-            endpoint=endpoint,
-            name=name,
-            error_message="Request timed out after 30 seconds",
-        )
-    except requests.RequestException as e:
-        return None, APIResult(
-            success=False,
-            endpoint=endpoint,
-            name=name,
-            error_message=f"Network error: {str(e)[:100]}",
-        )
-    except json.JSONDecodeError as e:
-        return None, APIResult(
-            success=False,
-            endpoint=endpoint,
-            name=name,
-            error_message=f"Invalid JSON response: {str(e)[:50]}",
-        )
+    # All formats failed
+    return None, APIResult(
+        success=False,
+        endpoint=endpoint,
+        name=name,
+        error_message=last_error,
+        http_status=last_status,
+    )
 
 
 def create_base_map(
@@ -299,12 +296,13 @@ def add_data_layers(m: folium.Map, bbox: Optional[List[List[float]]] = None) -> 
     results = []
 
     for source_id, source in DATA_SOURCES.items():
-        print(f"\n[...] Fetching: {source['name']} ({source['endpoint']})...")
+        formats_str = ", ".join(source.get("formats", ["geojson"]))
+        print(f"\n[...] Fetching: {source['name']} ({source['endpoint']}) [{formats_str}]...")
 
         data, result = fetch_nyc_data(
             endpoint=source["endpoint"],
             name=source["name"],
-            data_format=source.get("format", "geojson"),
+            formats=source.get("formats", ["geojson", "json"]),
             limit=5000,
             bbox=bbox,
             where_filter=source.get("filter"),
@@ -580,16 +578,20 @@ def main():
 
     if success_count == 0:
         print("""
-No data layers were loaded. To add data:
+No data layers were loaded. To add data manually:
 
-1. MANUAL DOWNLOAD: Visit NYC Open Data and download:
-   - https://data.cityofnewyork.us/Transportation/Bi-Annual-Pedestrian-Counts/2de2-6x2h
-   - https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95
+1. DOWNLOAD CSV FILES from NYC Open Data:""")
+        for source_id, source in DATA_SOURCES.items():
+            if "download_url" in source:
+                print(f"   - {source['name']}:")
+                print(f"     {source['download_url']}")
 
-   Save as GeoJSON to: spatial_analysis/data/raw/
+        print("""
+2. SAVE FILES to: spatial_analysis/data/raw/
+   (rename to .geojson or .csv as appropriate)
 
-2. Or run the data download script (requires network access):
-   python main.py --download
+3. RE-RUN with local files:
+   python create_map.py --local
 """)
     else:
         print(f"\nLoaded {success_count} data layer(s) successfully!")
