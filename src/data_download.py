@@ -81,7 +81,7 @@ class NYCOpenDataDownloader:
     ]
 
     BASE_URL = "https://data.cityofnewyork.us/resource"
-    V3_API_URL = "https://data.cityofnewyork.us/api/v3/views"
+    VIEWS_URL = "https://data.cityofnewyork.us/api/views"
 
     def __init__(self, output_dir: Optional[Path] = None, app_token: Optional[str] = None):
         """
@@ -201,12 +201,12 @@ class NYCOpenDataDownloader:
         for endpoint, name in self.PEDESTRIAN_ENDPOINTS:
             logger.info(f"Trying endpoint: {name} ({endpoint})...")
 
-            # Try v3 API GeoJSON format first (most reliable)
-            v3_geojson_url = f"{self.V3_API_URL}/{endpoint}/query.geojson"
+            # Try rows.geojson format first (direct download, most reliable)
+            rows_geojson_url = f"{self.VIEWS_URL}/{endpoint}/rows.geojson?accessType=DOWNLOAD"
             try:
-                logger.info(f"Trying v3 API: {v3_geojson_url}")
+                logger.info(f"Trying rows.geojson: {rows_geojson_url}")
                 response = requests.get(
-                    v3_geojson_url,
+                    rows_geojson_url,
                     headers=self._get_headers(),
                     timeout=120,
                 )
@@ -214,14 +214,14 @@ class NYCOpenDataDownloader:
                 gdf = gpd.read_file(response.text)
 
                 if len(gdf) > 0:
-                    logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (v3 GeoJSON)")
+                    logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (rows.geojson)")
                     break
                 else:
-                    logger.info(f"Empty response from {name} v3 GeoJSON, trying legacy...")
+                    logger.info(f"Empty response from {name} rows.geojson, trying legacy...")
                     gdf = None
 
             except Exception as e:
-                logger.info(f"v3 GeoJSON failed for {endpoint}: {e}")
+                logger.info(f"rows.geojson failed for {endpoint}: {e}")
 
             # Fallback to legacy GeoJSON format
             geojson_url = f"{self.BASE_URL}/{endpoint}.geojson"

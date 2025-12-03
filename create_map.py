@@ -59,15 +59,14 @@ STUDY_AREAS = {
 
 # NYC Open Data API endpoints
 NYC_API_BASE = "https://data.cityofnewyork.us/resource"
-NYC_API_V3_BASE = "https://data.cityofnewyork.us/api/v3/views"
+NYC_API_VIEWS = "https://data.cityofnewyork.us/api/views"
 
 DATA_SOURCES = {
     "pedestrian_demand": {
         "endpoint": "fwpa-qxaf",
         "name": "Pedestrian Mobility Plan - Pedestrian Demand",
-        "formats": ["v3_geojson"],  # Use v3 API
+        "formats": ["rows_geojson", "geojson"],  # Try rows.geojson first
         "color": "#4ECDC4",
-        "download_url": "https://data.cityofnewyork.us/api/views/fwpa-qxaf/rows.csv?accessType=DOWNLOAD",
     },
 }
 
@@ -110,11 +109,13 @@ def fetch_nyc_data(
     last_status = 0
 
     for data_format in formats:
-        # Handle v3 API format
-        if data_format == "v3_geojson":
-            url = f"{NYC_API_V3_BASE}/{endpoint}/query.geojson"
-            params = {}  # v3 API has different param syntax
+        # Handle different API formats
+        if data_format == "rows_geojson":
+            # Direct download format: /api/views/{id}/rows.geojson
+            url = f"{NYC_API_VIEWS}/{endpoint}/rows.geojson"
+            params = {"accessType": "DOWNLOAD"}
         else:
+            # Socrata resource format: /resource/{id}.{format}
             url = f"{NYC_API_BASE}/{endpoint}.{data_format}"
             params = {"$limit": limit}
 
