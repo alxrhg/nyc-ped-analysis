@@ -59,44 +59,15 @@ STUDY_AREAS = {
 
 # NYC Open Data API endpoints
 NYC_API_BASE = "https://data.cityofnewyork.us/resource"
+NYC_API_V3_BASE = "https://data.cityofnewyork.us/api/v3/views"
 
 DATA_SOURCES = {
-    "subway_stations": {
-        "endpoint": "arq3-7z49",
-        "name": "Subway Stations",
-        "formats": ["geojson", "json"],  # Try multiple formats
-        "color": "#0039A6",
-        "icon": "subway",
-        "download_url": "https://data.cityofnewyork.us/api/views/arq3-7z49/rows.csv?accessType=DOWNLOAD",
-    },
-    "pedestrian_counts": {
-        "endpoint": "2de2-6x2h",  # Bi-Annual Pedestrian Counts
-        "name": "Bi-Annual Pedestrian Counts",
-        "formats": ["json", "csv"],  # This dataset likely doesn't have geojson
-        "color": "#FF6B6B",
-        "download_url": "https://data.cityofnewyork.us/api/views/2de2-6x2h/rows.csv?accessType=DOWNLOAD",
-    },
-    "crash_data": {
-        "endpoint": "h9gi-nx95",
-        "name": "Motor Vehicle Collisions",
-        "formats": ["json"],
-        "color": "#FF0000",
-        "filter": "number_of_pedestrians_injured>0 OR number_of_pedestrians_killed>0",
-        "download_url": "https://data.cityofnewyork.us/api/views/h9gi-nx95/rows.csv?accessType=DOWNLOAD",
-    },
-    "nycha": {
-        "endpoint": "evjd-dqpz",
-        "name": "NYCHA Developments",
-        "formats": ["geojson", "json"],
-        "color": "#9B59B6",
-        "download_url": "https://data.cityofnewyork.us/api/views/evjd-dqpz/rows.csv?accessType=DOWNLOAD",
-    },
-    "bike_lanes": {
-        "endpoint": "7vsa-caz7",
-        "name": "Bike Routes",
-        "formats": ["geojson", "json"],
-        "color": "#27AE60",
-        "download_url": "https://data.cityofnewyork.us/api/views/7vsa-caz7/rows.csv?accessType=DOWNLOAD",
+    "pedestrian_demand": {
+        "endpoint": "fwpa-qxaf",
+        "name": "Pedestrian Mobility Plan - Pedestrian Demand",
+        "formats": ["v3_geojson"],  # Use v3 API
+        "color": "#4ECDC4",
+        "download_url": "https://data.cityofnewyork.us/api/views/fwpa-qxaf/rows.csv?accessType=DOWNLOAD",
     },
 }
 
@@ -139,9 +110,13 @@ def fetch_nyc_data(
     last_status = 0
 
     for data_format in formats:
-        url = f"{NYC_API_BASE}/{endpoint}.{data_format}"
-
-        params = {"$limit": limit}
+        # Handle v3 API format
+        if data_format == "v3_geojson":
+            url = f"{NYC_API_V3_BASE}/{endpoint}/query.geojson"
+            params = {}  # v3 API has different param syntax
+        else:
+            url = f"{NYC_API_BASE}/{endpoint}.{data_format}"
+            params = {"$limit": limit}
 
         # Add bounding box filter if provided
         if bbox and data_format == "json":

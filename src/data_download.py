@@ -73,14 +73,15 @@ class NYCOpenDataDownloader:
         },
     }
 
-    # Alternative endpoints to try for pedestrian data
+    # Alternative endpoints to try for pedestrian data (fwpa-qxaf uses v3 API)
     PEDESTRIAN_ENDPOINTS = [
+        ("fwpa-qxaf", "Pedestrian Mobility Plan - Pedestrian Demand"),
         ("c4kr-96ik", "Pedestrian Mobility Plan Pedestrian Demand Map"),
         ("2de2-6x2h", "Bi-Annual Pedestrian Counts"),
-        ("fwpa-qxaf", "Pedestrian Mobility Plan - Pedestrian Demand"),
     ]
 
     BASE_URL = "https://data.cityofnewyork.us/resource"
+    V3_API_URL = "https://data.cityofnewyork.us/api/v3/views"
 
     def __init__(self, output_dir: Optional[Path] = None, app_token: Optional[str] = None):
         """
@@ -200,7 +201,29 @@ class NYCOpenDataDownloader:
         for endpoint, name in self.PEDESTRIAN_ENDPOINTS:
             logger.info(f"Trying endpoint: {name} ({endpoint})...")
 
-            # Try GeoJSON format first (most useful for spatial data)
+            # Try v3 API GeoJSON format first (most reliable)
+            v3_geojson_url = f"{self.V3_API_URL}/{endpoint}/query.geojson"
+            try:
+                logger.info(f"Trying v3 API: {v3_geojson_url}")
+                response = requests.get(
+                    v3_geojson_url,
+                    headers=self._get_headers(),
+                    timeout=120,
+                )
+                response.raise_for_status()
+                gdf = gpd.read_file(response.text)
+
+                if len(gdf) > 0:
+                    logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (v3 GeoJSON)")
+                    break
+                else:
+                    logger.info(f"Empty response from {name} v3 GeoJSON, trying legacy...")
+                    gdf = None
+
+            except Exception as e:
+                logger.info(f"v3 GeoJSON failed for {endpoint}: {e}")
+
+            # Fallback to legacy GeoJSON format
             geojson_url = f"{self.BASE_URL}/{endpoint}.geojson"
             try:
                 response = requests.get(
