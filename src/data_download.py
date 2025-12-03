@@ -63,7 +63,22 @@ class NYCOpenDataDownloader:
             "endpoint": "fwpa-qxaf",
             "name": "Pedestrian Mobility Plan - Pedestrian Demand",
         },
+        "pedestrian_demand_map": {
+            "endpoint": "c4kr-96ik",
+            "name": "Pedestrian Mobility Plan Pedestrian Demand Map",
+        },
+        "bi_annual_ped_counts": {
+            "endpoint": "2de2-6x2h",
+            "name": "Bi-Annual Pedestrian Counts",
+        },
     }
+
+    # Alternative endpoints to try for pedestrian data
+    PEDESTRIAN_ENDPOINTS = [
+        ("c4kr-96ik", "Pedestrian Mobility Plan Pedestrian Demand Map"),
+        ("2de2-6x2h", "Bi-Annual Pedestrian Counts"),
+        ("fwpa-qxaf", "Pedestrian Mobility Plan - Pedestrian Demand"),
+    ]
 
     BASE_URL = "https://data.cityofnewyork.us/resource"
 
@@ -163,13 +178,12 @@ class NYCOpenDataDownloader:
         limit: int = 100000,
     ) -> gpd.GeoDataFrame:
         """
-        Download Pedestrian Mobility Plan - Pedestrian Demand data.
+        Download pedestrian demand/count data from NYC Open Data.
 
-        This dataset contains pedestrian volume estimates for street segments
-        across NYC, essential for LTN suitability analysis.
-
-        Dataset: https://data.cityofnewyork.us/Transportation/Pedestrian-Mobility-Plan-Pedestrian-Demand/fwpa-qxaf
-        API: https://data.cityofnewyork.us/api/v3/views/fwpa-qxaf/query.json
+        Tries multiple endpoints in order of preference:
+        1. Pedestrian Mobility Plan Pedestrian Demand Map (c4kr-96ik)
+        2. Bi-Annual Pedestrian Counts (2de2-6x2h)
+        3. Pedestrian Mobility Plan - Pedestrian Demand (fwpa-qxaf) [legacy]
 
         Args:
             limit: Maximum number of records to retrieve.
@@ -177,43 +191,16 @@ class NYCOpenDataDownloader:
         Returns:
             GeoDataFrame with pedestrian demand data.
         """
-        logger.info("Downloading Pedestrian Mobility Plan - Pedestrian Demand data...")
+        logger.info("Downloading pedestrian demand data...")
 
-        endpoint = self.DATASETS["pedestrian_counts"]["endpoint"]
+        gdf = None
+        df = None
 
-        # Use the v3 API endpoint as specified
-        v3_url = f"https://data.cityofnewyork.us/api/v3/views/{endpoint}/query.json"
+        # Try each endpoint in order
+        for endpoint, name in self.PEDESTRIAN_ENDPOINTS:
+            logger.info(f"Trying endpoint: {name} ({endpoint})...")
 
-        try:
-            # Try v3 API first
-            response = requests.get(
-                v3_url,
-                headers=self._get_headers(),
-                params={"$limit": limit},
-                timeout=120,
-            )
-            response.raise_for_status()
-
-            result = response.json()
-
-            # v3 API returns data in a different structure
-            if isinstance(result, dict):
-                if "data" in result:
-                    data = result["data"]
-                    columns = result.get("columns", [])
-                    column_names = [col.get("name", f"col_{i}") for i, col in enumerate(columns)]
-                    df = pd.DataFrame(data, columns=column_names)
-                else:
-                    df = pd.DataFrame([result] if result else [])
-            else:
-                df = pd.DataFrame(result)
-
-            logger.info(f"Retrieved {len(df)} pedestrian demand records from v3 API")
-
-        except Exception as e:
-            logger.info(f"v3 API failed ({e}), trying standard Socrata endpoint...")
-
-            # Fall back to standard Socrata GeoJSON endpoint
+            # Try GeoJSON format first (most useful for spatial data)
             geojson_url = f"{self.BASE_URL}/{endpoint}.geojson"
             try:
                 response = requests.get(
@@ -224,30 +211,50 @@ class NYCOpenDataDownloader:
                 )
                 response.raise_for_status()
                 gdf = gpd.read_file(response.text)
-                logger.info(f"Retrieved {len(gdf)} records as GeoJSON")
 
-                # Save and return
-                output_path = self.output_dir / "pedestrian_demand.geojson"
-                gdf.to_file(output_path, driver="GeoJSON")
-                logger.info(f"Saved pedestrian demand data to {output_path}")
-                return gdf
+                if len(gdf) > 0:
+                    logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (GeoJSON)")
+                    break
+                else:
+                    logger.info(f"Empty response from {name} GeoJSON, trying next...")
+                    gdf = None
 
-            except Exception as e2:
-                logger.info(f"GeoJSON also failed ({e2}), trying JSON...")
+            except Exception as e:
+                logger.info(f"GeoJSON failed for {endpoint}: {e}")
 
-                # Final fallback to JSON
+                # Try JSON format
                 json_url = f"{self.BASE_URL}/{endpoint}.json"
-                response = requests.get(
-                    json_url,
-                    headers=self._get_headers(),
-                    params={"$limit": limit},
-                    timeout=120,
-                )
-                response.raise_for_status()
-                df = pd.DataFrame(response.json())
-                logger.info(f"Retrieved {len(df)} records as JSON")
+                try:
+                    response = requests.get(
+                        json_url,
+                        headers=self._get_headers(),
+                        params={"$limit": limit},
+                        timeout=120,
+                    )
+                    response.raise_for_status()
+                    data = response.json()
 
-        if df.empty:
+                    if data:
+                        df = pd.DataFrame(data)
+                        logger.info(f"SUCCESS: Retrieved {len(df)} records from {name} (JSON)")
+                        break
+                    else:
+                        logger.info(f"Empty response from {name} JSON, trying next...")
+
+                except Exception as e2:
+                    logger.info(f"JSON also failed for {endpoint}: {e2}")
+                    continue
+
+        # If we got a GeoDataFrame directly, save and return
+        if gdf is not None and len(gdf) > 0:
+            output_path = self.output_dir / "pedestrian_demand.geojson"
+            gdf.to_file(output_path, driver="GeoJSON")
+            logger.info(f"Saved pedestrian demand data to {output_path}")
+            logger.info(f"Columns: {list(gdf.columns)}")
+            return gdf
+
+        # If we got a DataFrame, need to create geometry
+        if df is None or df.empty:
             logger.warning("No pedestrian demand data retrieved")
             return gpd.GeoDataFrame()
 
