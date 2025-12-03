@@ -7,6 +7,7 @@ Author: Alexander Huang
 """
 
 import logging
+from io import StringIO
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
@@ -211,7 +212,7 @@ class NYCOpenDataDownloader:
                     timeout=120,
                 )
                 response.raise_for_status()
-                gdf = gpd.read_file(response.text)
+                gdf = gpd.read_file(StringIO(response.text))
 
                 if len(gdf) > 0:
                     logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (rows.geojson)")
@@ -233,7 +234,7 @@ class NYCOpenDataDownloader:
                     timeout=120,
                 )
                 response.raise_for_status()
-                gdf = gpd.read_file(response.text)
+                gdf = gpd.read_file(StringIO(response.text))
 
                 if len(gdf) > 0:
                     logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (GeoJSON)")
@@ -387,10 +388,10 @@ class NYCOpenDataDownloader:
         endpoint = dataset["endpoint"]
         url = f"{self.BASE_URL}/{endpoint}.geojson"
 
-        response = requests.get(url, headers=self._get_headers())
+        response = requests.get(url, headers=self._get_headers(), timeout=120)
         response.raise_for_status()
 
-        gdf = gpd.read_file(response.text)
+        gdf = gpd.read_file(StringIO(response.text))
         logger.info(f"Retrieved {len(gdf)} records for {dataset['name']}")
 
         # Save to file
@@ -592,10 +593,10 @@ class CensusDataDownloader:
                 "outSR": "4326",
             }
 
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=120)
             response.raise_for_status()
 
-            gdf = gpd.read_file(response.text)
+            gdf = gpd.read_file(StringIO(response.text))
             all_tracts.append(gdf)
 
         combined_gdf = pd.concat(all_tracts, ignore_index=True)
@@ -612,32 +613,141 @@ class CensusDataDownloader:
 def load_config() -> dict:
     """Load the spatial analysis configuration file."""
     config_path = PROJECT_ROOT / "spatial-analysis-config.yaml"
+    if not config_path.exists():
+        logger.warning(f"Config file not found at {config_path}, using defaults")
+        return {}
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
+
+
+def extract_endpoint_from_url(url: str) -> Optional[str]:
+    """
+    Extract the dataset endpoint ID from a NYC Open Data URL.
+
+    Example:
+        "https://data.cityofnewyork.us/Transportation/Subway-Stations/arq3-7z49"
+        -> "arq3-7z49"
+    """
+    if not url:
+        return None
+    # The endpoint ID is the last path segment (format: xxxx-xxxx)
+    parts = url.rstrip("/").split("/")
+    if parts:
+        last_part = parts[-1]
+        # Validate it looks like an endpoint ID (4 chars, hyphen, 4 chars)
+        if len(last_part) == 9 and last_part[4] == "-":
+            return last_part
+    return None
+
+
+def get_datasets_from_config(config: dict) -> dict:
+    """
+    Build dataset definitions from config file.
+
+    Extracts endpoint IDs from URLs in the config and builds
+    the DATASETS dictionary format.
+    """
+    datasets = {}
+    nyc_data = config.get("data_sources", {}).get("nyc_open_data", {})
+
+    # Map config keys to our internal keys
+    key_mapping = {
+        "crash_data": "crash_data",
+        "subway_stations": "subway_stations",
+        "bus_stops": "bus_stops",
+        "bike_lanes": "bike_lanes",
+        "nycha": "nycha",
+        "community_districts": "community_districts",
+        "street_network": "street_centerlines",
+        "pedestrian_counts": "pedestrian_counts",
+        "zoning": "zoning",
+    }
+
+    for config_key, internal_key in key_mapping.items():
+        if config_key in nyc_data:
+            source = nyc_data[config_key]
+            endpoint = extract_endpoint_from_url(source.get("url", ""))
+            if endpoint:
+                datasets[internal_key] = {
+                    "endpoint": endpoint,
+                    "name": source.get("name", config_key),
+                    "format": source.get("format", "geojson"),
+                }
+
+    return datasets
+
+
+def get_census_config(config: dict) -> dict:
+    """Extract census configuration from config file."""
+    census_config = config.get("data_sources", {}).get("census", {})
+
+    # Build variables dict from nested structure
+    variables = {}
+    for category, vars_dict in census_config.get("variables", {}).items():
+        if isinstance(vars_dict, dict):
+            variables.update(vars_dict)
+
+    return {
+        "year": census_config.get("year", 2023),
+        "counties": census_config.get("counties", ["061", "047", "081", "005", "085"]),
+        "variables": variables,
+    }
 
 
 def download_all_data(
     nyc_app_token: Optional[str] = None,
     census_api_key: Optional[str] = None,
+    config: Optional[dict] = None,
 ) -> dict:
     """
-    Download all data sources.
+    Download all data sources using configuration from spatial-analysis-config.yaml.
 
     Args:
         nyc_app_token: NYC Open Data app token.
         census_api_key: Census API key.
+        config: Optional pre-loaded config dict. If None, loads from file.
 
     Returns:
         Dictionary with download results.
     """
+    # Load config if not provided
+    if config is None:
+        config = load_config()
+
+    # Get census year from config (default to 2023 as per config)
+    census_config = get_census_config(config)
+    census_year = census_config.get("year", 2023)
+
+    # Get dataset definitions from config
+    datasets_from_config = get_datasets_from_config(config)
+
+    logger.info("=" * 50)
+    logger.info("DATA DOWNLOAD - Using config from spatial-analysis-config.yaml")
+    logger.info("=" * 50)
+    logger.info(f"Census year: {census_year}")
+    logger.info(f"Datasets from config: {list(datasets_from_config.keys())}")
+
     results = {}
 
     # Download NYC Open Data
     nyc_downloader = NYCOpenDataDownloader(app_token=nyc_app_token)
+
+    # Update downloader's DATASETS with config values
+    if datasets_from_config:
+        nyc_downloader.DATASETS.update(datasets_from_config)
+
     results["nyc_open_data"] = nyc_downloader.download_all_datasets()
 
-    # Download Census data
-    census_downloader = CensusDataDownloader(api_key=census_api_key)
+    # Download Census data with year from config
+    census_downloader = CensusDataDownloader(
+        api_key=census_api_key,
+        year=census_year,
+    )
+
+    # Update census variables from config if available
+    if census_config.get("variables"):
+        census_downloader.VARIABLES.update(census_config["variables"])
+
     results["census_data"] = census_downloader.download_acs_data()
     results["census_tracts"] = census_downloader.download_tract_geometries()
 
@@ -646,6 +756,7 @@ def download_all_data(
     logger.info("Download Summary")
     logger.info("=" * 50)
     logger.info(f"NYC datasets downloaded: {len(results['nyc_open_data'])}")
+    logger.info(f"Census year: {census_year}")
     logger.info(f"Census tracts: {len(results['census_tracts'])}")
 
     return results
