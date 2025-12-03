@@ -1,0 +1,476 @@
+# =============================================================================
+# NYC Pedestrian-First Street Design: Spatial Analysis Configuration
+# For use with Claude Code
+# Author: Alexander Huang
+# Project: Pedestrian Way in New York City (Thesis)
+# =============================================================================
+
+project:
+  name: "NYC LTN Suitability Analysis"
+  description: "Spatial analysis identifying potential Low Traffic Neighborhood locations in NYC"
+  author: "Alexander Huang"
+  institution: "The New School - Urban Studies"
+
+research_questions:
+  central: "Why has NYC failed to implement pedestrian-first infrastructure despite favorable conditions?"
+  spatial_focus:
+    - "Where in NYC are potential locations to deploy Low Traffic Neighborhoods?"
+    - "How has congestion pricing changed the traffic landscape?"
+    - "What problems do pedestrians in NYC face (spatially)?"
+
+# =============================================================================
+# ENVIRONMENT SETUP
+# =============================================================================
+
+environment:
+  python_version: "3.11"
+  primary_packages:
+    - geopandas>=0.14.0
+    - pandas>=2.0.0
+    - numpy>=1.24.0
+    - shapely>=2.0.0
+    - matplotlib>=3.7.0
+    - seaborn>=0.12.0
+    - folium>=0.14.0
+    - contextily>=1.3.0
+    - pyproj>=3.5.0
+    - scipy>=1.10.0
+    - scikit-learn>=1.2.0
+
+  optional_packages:
+    - osmnx>=1.3.0
+    - networkx>=3.0
+    - rasterstats>=0.18.0
+    - keplergl>=0.3.0
+    - h3>=3.7.0
+
+  coordinate_system:
+    default_crs: "EPSG:2263"  # NY State Plane (feet)
+    geographic_crs: "EPSG:4326"  # WGS84 for web mapping
+
+# =============================================================================
+# DATA SOURCES
+# =============================================================================
+
+data_sources:
+
+  nyc_open_data:
+    base_url: "https://data.cityofnewyork.us/api/geospatial/"
+
+    street_network:
+      name: "LION Street Centerlines"
+      url: "https://data.cityofnewyork.us/City-Government/NYC-Street-Centerline-CSCL-/exjm-f27b"
+      format: "geojson"
+      fields:
+        - street_name
+        - st_width
+        - snow_priority
+        - bike_lane
+        - speed_limit
+
+    pedestrian_counts:
+      name: "DOT Pedestrian Counts"
+      url: "https://data.cityofnewyork.us/Transportation/Pedestrian-Mobility-Plan-Pedestrian-Demand/fwpa-qxaf"
+      format: "csv"
+      notes: "May need geocoding"
+
+    crash_data:
+      name: "Motor Vehicle Collisions - Crashes"
+      url: "https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95"
+      format: "csv"
+      filter: "pedestrians_injured > 0 OR pedestrians_killed > 0"
+      date_range: "2019-01-01 to 2024-12-31"
+      fields:
+        - crash_date
+        - crash_time
+        - latitude
+        - longitude
+        - number_of_pedestrians_injured
+        - number_of_pedestrians_killed
+        - contributing_factor_vehicle_1
+
+    land_use:
+      name: "MapPLUTO"
+      url: "https://www.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page"
+      format: "shapefile"
+      fields:
+        - landuse
+        - bldgclass
+        - unitsres
+        - unitstotal
+        - retailarea
+        - comarea
+        - resarea
+
+    subway_stations:
+      name: "Subway Stations"
+      url: "https://data.cityofnewyork.us/Transportation/Subway-Stations/arq3-7z49"
+      format: "geojson"
+
+    bus_stops:
+      name: "Bus Stop Shelters"
+      url: "https://data.cityofnewyork.us/Transportation/Bus-Stop-Shelters/qafz-7myz"
+      format: "geojson"
+
+    bike_lanes:
+      name: "NYC Bike Routes"
+      url: "https://data.cityofnewyork.us/Transportation/Bicycle-Routes/7vsa-caz7"
+      format: "geojson"
+
+    nycha:
+      name: "NYCHA Developments"
+      url: "https://data.cityofnewyork.us/Housing-Development/Map-of-NYCHA-Developments/evjd-dqpz"
+      format: "geojson"
+
+    community_districts:
+      name: "Community Districts"
+      url: "https://data.cityofnewyork.us/City-Government/Community-Districts/yfnk-k7r4"
+      format: "geojson"
+
+    zoning:
+      name: "Zoning Districts"
+      url: "https://data.cityofnewyork.us/City-Government/Zoning-Districts/pri4-ifjk"
+      format: "geojson"
+
+  census:
+    base_url: "https://api.census.gov/data/"
+    dataset: "acs/acs5"
+    year: 2023
+    geography: "tract"
+    state: "36"
+    counties:
+      - "061"  # Manhattan
+      - "047"  # Brooklyn
+      - "081"  # Queens
+      - "005"  # Bronx
+      - "085"  # Staten Island
+    variables:
+      population:
+        B01003_001E: "total_population"
+      income:
+        B19013_001E: "median_household_income"
+      vehicle_ownership:
+        B08201_001E: "total_households"
+        B08201_002E: "no_vehicle"
+        B08201_003E: "one_vehicle"
+      age:
+        B01001_001E: "total_pop_age"
+        B01001_020E: "male_65_66"
+        B01001_021E: "male_67_69"
+        B01001_022E: "male_70_74"
+        B01001_023E: "male_75_79"
+        B01001_024E: "male_80_84"
+        B01001_025E: "male_85_plus"
+        B01001_044E: "female_65_66"
+        B01001_045E: "female_67_69"
+        B01001_046E: "female_70_74"
+        B01001_047E: "female_75_79"
+        B01001_048E: "female_80_84"
+        B01001_049E: "female_85_plus"
+      race_ethnicity:
+        B03002_001E: "total_pop_race"
+        B03002_003E: "white_alone"
+        B03002_004E: "black_alone"
+        B03002_006E: "asian_alone"
+        B03002_012E: "hispanic_latino"
+      disability:
+        B18101_001E: "total_disability_pop"
+        B18101_004E: "male_under5_disability"
+        B18101_007E: "male_5_17_disability"
+      language:
+        B16004_001E: "total_pop_language"
+        B16004_003E: "speak_only_english"
+      commute:
+        B08301_001E: "total_workers"
+        B08301_010E: "public_transit"
+        B08301_019E: "walked"
+
+  mta:
+    turnstile_data:
+      url: "http://web.mta.info/developers/turnstile.html"
+      notes: "Weekly ridership by station"
+    gtfs:
+      url: "http://web.mta.info/developers/developer-data-terms.html"
+      notes: "For transit accessibility analysis"
+
+  external:
+    open_plans_cut_through:
+      description: "Cut-through traffic percentages by neighborhood"
+      source: "Open Plans research"
+      url: "https://www.openplans.org/low-traffic-neighborhoods"
+      notes: "May need to digitize from reports"
+
+    congestion_pricing_zone:
+      description: "Manhattan CBD congestion pricing boundary"
+      notes: "Digitize from MTA maps or find official shapefile"
+
+# =============================================================================
+# STUDY AREAS
+# =============================================================================
+
+study_areas:
+
+  primary_sites:
+    chinatown_soho:
+      name: "Chinatown/SoHo"
+      description: "Equity-critical case with high pedestrian volumes"
+      bounding_box:
+        north: 40.7280
+        south: 40.7130
+        east: -73.9900
+        west: -74.0050
+      community_districts: [1, 2, 3]
+      key_streets:
+        - "Mott Street"
+        - "Mulberry Street"
+        - "Doyers Street"
+        - "Pell Street"
+        - "Canal Street"
+        - "Bayard Street"
+      observation_points:
+        - name: "Mott/Canal"
+          lat: 40.7155
+          lon: -73.9995
+        - name: "Doyers Street"
+          lat: 40.7140
+          lon: -73.9980
+        - name: "Mulberry/Grand"
+          lat: 40.7185
+          lon: -73.9970
+
+    financial_district:
+      name: "Financial District (FiDi)"
+      description: "Extreme case - highest pedestrian volumes, 1997 study area"
+      bounding_box:
+        north: 40.7130
+        south: 40.7000
+        east: -74.0000
+        west: -74.0200
+      community_districts: [1]
+      key_streets:
+        - "Wall Street"
+        - "Broad Street"
+        - "Nassau Street"
+        - "Fulton Street"
+        - "Liberty Street"
+        - "Broadway"
+      observation_points:
+        - name: "Wall/Broad"
+          lat: 40.7065
+          lon: -74.0110
+        - name: "Nassau/Fulton"
+          lat: 40.7100
+          lon: -74.0065
+        - name: "Liberty/Church"
+          lat: 40.7095
+          lon: -74.0105
+
+  context_area:
+    name: "Lower Manhattan"
+    description: "Broader context for boundary effects analysis"
+    bounding_box:
+      north: 40.7400
+      south: 40.6950
+      east: -73.9700
+      west: -74.0250
+    notes: "Extends north to include congestion pricing boundary effects"
+
+# =============================================================================
+# ANALYSIS MODULES
+# =============================================================================
+
+analyses:
+
+  pedestrian_los:
+    description: "Calculate sidewalk Level of Service using Highway Capacity Manual methodology"
+    inputs:
+      - pedestrian_counts
+      - sidewalk_widths
+      - obstruction_data
+    methodology: |
+      LOS = pedestrian_flow_rate / effective_width
+      Grade A: > 60 sq ft/ped
+      Grade B: 40-60 sq ft/ped
+      Grade C: 24-40 sq ft/ped
+      Grade D: 15-24 sq ft/ped
+      Grade E: 8-15 sq ft/ped
+      Grade F: < 8 sq ft/ped
+    outputs:
+      - los_by_segment.geojson
+      - los_summary_stats.csv
+      - los_map.html
+
+  crash_clusters:
+    description: "Identify concentrations of pedestrian injuries/fatalities"
+    inputs:
+      - crash_data (filtered for pedestrian involvement)
+    methodology:
+      kernel_density:
+        bandwidth: 200  # feet
+        cell_size: 50  # feet
+      hotspot_analysis:
+        method: "Getis-Ord Gi*"
+        significance: 0.05
+    temporal_analysis:
+      - by_year: [2019, 2020, 2021, 2022, 2023, 2024]
+      - by_time_of_day: ["morning_peak", "midday", "evening_peak", "night"]
+      - pre_post_congestion_pricing: true
+    outputs:
+      - crash_density_raster.tif
+      - hotspot_clusters.geojson
+      - temporal_trends.csv
+      - crash_cluster_map.html
+
+  ltn_suitability:
+    description: "Weighted overlay identifying high-potential LTN locations"
+    inputs:
+      - pedestrian_counts
+      - crash_data
+      - transit_access
+      - vehicle_ownership
+      - street_geometry
+      - land_use
+    criteria:
+      high_pedestrian_volume:
+        weight: 0.20
+        scale: "quantile"
+        direction: "higher_is_better"
+      high_transit_access:
+        weight: 0.15
+        measure: "distance_to_subway"
+        direction: "closer_is_better"
+      low_vehicle_ownership:
+        weight: 0.15
+        measure: "pct_zero_vehicle_hh"
+        direction: "higher_is_better"
+      high_crash_rate:
+        weight: 0.15
+        measure: "ped_crashes_per_mile"
+        direction: "higher_priority"
+      commercial_frontage:
+        weight: 0.10
+        measure: "pct_retail_land_use"
+        direction: "higher_is_better"
+      residential_density:
+        weight: 0.10
+        measure: "units_per_acre"
+        direction: "higher_is_better"
+      street_geometry:
+        weight: 0.10
+        measure: "street_width"
+        direction: "narrower_is_better"
+      cut_through_potential:
+        weight: 0.05
+        notes: "From Open Plans data if available"
+    outputs:
+      - suitability_raster.tif
+      - suitability_by_street.geojson
+      - top_20_corridors.csv
+      - suitability_map.html
+
+  equity_mapping:
+    description: "Assess distributional implications of potential interventions"
+    inputs:
+      - suitability_results
+      - census_demographics
+      - nycha_locations
+    analyses:
+      demographic_overlay:
+        variables:
+          - median_income
+          - pct_nonwhite
+          - pct_over_65
+          - pct_limited_english
+          - pct_disability
+      intervention_vs_boundary:
+        description: "Compare demographics of LTN interiors vs boundary streets"
+      nycha_proximity:
+        description: "Distance from NYCHA developments to high-suitability areas"
+      gentrification_risk:
+        notes: "Compare to existing gentrification indices if available"
+    outputs:
+      - equity_overlay.geojson
+      - demographic_comparison.csv
+      - equity_report.md
+      - equity_maps.html
+
+  congestion_pricing:
+    description: "Analyze traffic changes pre/post congestion pricing"
+    inputs:
+      - crash_data (temporal)
+      - traffic_volume_data (if available)
+      - congestion_zone_boundary
+    analyses:
+      before_after:
+        pre_period: "2023-01-01 to 2024-01-01"
+        post_period: "2024-01-15 to present"
+      zone_comparison:
+        - inside_zone
+        - boundary_streets
+        - outside_zone
+    outputs:
+      - congestion_pricing_impact.csv
+      - before_after_maps.html
+
+  transit_accessibility:
+    description: "Calculate walking distance to transit"
+    inputs:
+      - subway_stations
+      - bus_stops
+      - street_network
+    walksheds:
+      - 5_minute: 0.25  # miles
+      - 10_minute: 0.5
+      - 15_minute: 0.75
+    outputs:
+      - walksheds.geojson
+      - transit_accessibility_score.geojson
+
+# =============================================================================
+# OUTPUT SPECIFICATIONS
+# =============================================================================
+
+outputs:
+
+  formats:
+    vector: ["geojson", "shapefile", "geopackage"]
+    raster: ["geotiff"]
+    tabular: ["csv", "xlsx"]
+    maps: ["html", "png", "pdf"]
+
+  directory_structure:
+    root: "./spatial_analysis"
+    subdirs:
+      - data/
+      - data/raw/
+      - data/processed/
+      - data/external/
+      - analysis/
+      - analysis/los/
+      - analysis/crashes/
+      - analysis/suitability/
+      - analysis/equity/
+      - outputs/
+      - outputs/maps/
+      - outputs/figures/
+      - outputs/tables/
+      - docs/
+
+  deliverables:
+    thesis_maps:
+      - "Study area context map"
+      - "Pedestrian LOS by street segment"
+      - "Crash hotspot clusters"
+      - "LTN suitability heat map"
+      - "Top 20 candidate corridors"
+      - "Equity overlay analysis"
+      - "Congestion pricing impact"
+      - "Comparison to 1997 study areas"
+
+    interactive:
+      - "Web map with layer toggles"
+      - "Suitability explorer"
+
+    data_exports:
+      - "All processed data as geopackage"
+      - "Summary statistics as CSV"

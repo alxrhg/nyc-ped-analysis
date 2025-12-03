@@ -1,0 +1,39 @@
+# =============================================================================
+# NYC Pedestrian-First Street Design: Spatial Analysis
+# Python Dependencies
+# =============================================================================
+
+# Core spatial analysis
+geopandas>=0.14.0
+pandas>=2.0.0
+numpy>=1.24.0
+shapely>=2.0.0
+pyproj>=3.5.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+folium>=0.14.0
+contextily>=1.3.0
+
+# Statistical analysis
+scipy>=1.10.0
+scikit-learn>=1.2.0
+
+# Data handling
+requests>=2.28.0
+pyyaml>=6.0.0
+
+# Optional: OpenStreetMap data
+osmnx>=1.3.0
+networkx>=3.0
+
+# Optional: Advanced visualization
+# keplergl>=0.3.0  # Uncomment if needed
+
+# Optional: Hexagonal grid analysis
+# h3>=3.7.0  # Uncomment if needed
+
+# Development
+jupyter>=1.0.0
+ipykernel>=6.0.0

@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+
+# Data files (too large for git)
+spatial_analysis/data/raw/*.geojson
+spatial_analysis/data/raw/*.csv
+spatial_analysis/data/raw/*.shp
+spatial_analysis/data/raw/*.dbf
+spatial_analysis/data/raw/*.shx
+spatial_analysis/data/raw/*.prj
+
+# Keep directory structure
+!spatial_analysis/data/raw/.gitkeep
+!spatial_analysis/data/processed/.gitkeep
+!spatial_analysis/data/external/.gitkeep
+
+# Analysis outputs (regeneratable)
+spatial_analysis/analysis/**/*.geojson
+spatial_analysis/analysis/**/*.csv
+spatial_analysis/analysis/**/*.npy
+spatial_analysis/outputs/**/*.png
+spatial_analysis/outputs/**/*.pdf
+spatial_analysis/outputs/**/*.html
+
+# Logs
+*.log
+analysis.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Credentials
+.env
+*.env
+credentials.json
+*_key.txt
