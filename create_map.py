@@ -31,6 +31,7 @@ PROJECT_ROOT = Path(__file__).parent
 RAW_DATA_DIR = PROJECT_ROOT / "spatial_analysis" / "data" / "raw"
 PROCESSED_DATA_DIR = PROJECT_ROOT / "spatial_analysis" / "data" / "processed"
 OUTPUT_DIR = PROJECT_ROOT / "spatial_analysis" / "outputs" / "maps"
+PUBLIC_DIR = PROJECT_ROOT / "public"  # For Vercel deployment
 
 # Study areas configuration
 STUDY_AREAS = {
@@ -292,8 +293,8 @@ def add_data_layers(m: folium.Map, bbox: Optional[List[List[float]]] = None) -> 
             # Add layer to map
             try:
                 layer_group = folium.FeatureGroup(name=source["name"], show=False)
-                if data_format.endswith("geojson") and data:
-                if source.get("format") == "geojson" and data:
+
+                if "features" in data:
                     # GeoJSON data
                     folium.GeoJson(
                         data,
@@ -512,8 +513,9 @@ def main():
     print("NYC PEDESTRIAN ANALYSIS - MAP GENERATOR")
     print("=" * 60)
 
-    # Output path
+    # Output paths
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     output_path = args.output or OUTPUT_DIR / "nyc_pedestrian_map.html"
 
     # 1. Create base map first (always works)
@@ -541,6 +543,11 @@ def main():
     # 4. Save map
     m.save(str(output_path))
     print(f"\n[SAVED] Map saved to: {output_path}")
+
+    # Also save to public/index.html for Vercel
+    vercel_output = PUBLIC_DIR / "index.html"
+    m.save(str(vercel_output))
+    print(f"[SAVED] Vercel output: {vercel_output}")
 
     # 5. Print summary
     print_summary(all_results)
