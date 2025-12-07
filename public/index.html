@@ -332,6 +332,83 @@
 }
             ).addTo(map_2a0b713fb2e5989439fa180b01acfc77);
 
+            // Fetch and display Pedestrian Demand data from NYC Open Data
+            (function() {
+                const pedDemandUrl = 'https://data.cityofnewyork.us/resource/fwpa-qxaf.geojson?$limit=50000';
+
+                // Create a layer group for pedestrian demand
+                const pedDemandLayer = L.layerGroup();
+
+                // Add to layer control immediately (will populate when data loads)
+                layer_control_abb36583e30463beba0760ac9b72152e.addOverlay(pedDemandLayer, "Pedestrian Demand");
+
+                // Add loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loading-indicator';
+                loadingDiv.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:5px;z-index:9999;';
+                loadingDiv.textContent = 'Loading pedestrian demand data...';
+                document.body.appendChild(loadingDiv);
+
+                fetch(pedDemandUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Pedestrian demand data loaded:', data.features ? data.features.length : 'unknown', 'features');
+
+                        // Add GeoJSON to map
+                        const geojsonLayer = L.geoJSON(data, {
+                            style: function(feature) {
+                                // Color based on demand value if available
+                                const demand = feature.properties.ped_demand || feature.properties.demand || 0;
+                                let color = '#4ECDC4';
+                                if (demand > 75) color = '#FF6B6B';
+                                else if (demand > 50) color = '#FFA500';
+                                else if (demand > 25) color = '#FFD93D';
+                                return {
+                                    color: color,
+                                    weight: 2,
+                                    fillColor: color,
+                                    fillOpacity: 0.5
+                                };
+                            },
+                            pointToLayer: function(feature, latlng) {
+                                return L.circleMarker(latlng, {
+                                    radius: 6,
+                                    fillColor: '#4ECDC4',
+                                    color: '#000',
+                                    weight: 1,
+                                    opacity: 1,
+                                    fillOpacity: 0.8
+                                });
+                            },
+                            onEachFeature: function(feature, layer) {
+                                let popupContent = '<b>Pedestrian Demand</b><br>';
+                                for (let key in feature.properties) {
+                                    if (feature.properties[key] && key !== 'shape') {
+                                        popupContent += key + ': ' + feature.properties[key] + '<br>';
+                                    }
+                                }
+                                layer.bindPopup(popupContent);
+                            }
+                        });
+
+                        geojsonLayer.addTo(pedDemandLayer);
+                        pedDemandLayer.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+
+                        // Remove loading indicator
+                        loadingDiv.textContent = 'Pedestrian demand loaded!';
+                        setTimeout(() => loadingDiv.remove(), 2000);
+                    })
+                    .catch(error => {
+                        console.error('Error loading pedestrian demand:', error);
+                        loadingDiv.textContent = 'Error loading data: ' + error.message;
+                        loadingDiv.style.background = '#c00';
+                        setTimeout(() => loadingDiv.remove(), 5000);
+                    });
+            })();
+
         
     
             tile_layer_8996068b89ae823d9dfbeee2eb84ccd6.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
