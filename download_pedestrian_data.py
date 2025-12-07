@@ -11,8 +11,8 @@ The data will be saved to spatial_analysis/data/raw/pedestrian_demand.geojson
 import requests
 from pathlib import Path
 
-# Direct download endpoint for pedestrian demand data
-URL = "https://data.cityofnewyork.us/api/views/fwpa-qxaf/rows.geojson?accessType=DOWNLOAD"
+# SODA 2 API endpoint for pedestrian demand data
+URL = "https://data.cityofnewyork.us/resource/fwpa-qxaf.geojson"
 
 OUTPUT_DIR = Path(__file__).parent / "spatial_analysis" / "data" / "raw"
 OUTPUT_FILE = OUTPUT_DIR / "pedestrian_demand.geojson"

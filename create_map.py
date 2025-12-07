@@ -66,7 +66,7 @@ DATA_SOURCES = {
     "pedestrian_demand": {
         "endpoint": "fwpa-qxaf",
         "name": "Pedestrian Mobility Plan - Pedestrian Demand",
-        "formats": ["rows_geojson", "geojson"],  # Try rows.geojson first
+        "formats": ["geojson"],  # SODA 2 format: /resource/{id}.geojson
         "color": "#4ECDC4",
     },
 }
