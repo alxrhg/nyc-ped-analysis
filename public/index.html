@@ -335,75 +335,140 @@
             // Fetch and display Pedestrian Demand data from NYC Open Data
             (function() {
                 const pedDemandUrl = 'https://data.cityofnewyork.us/resource/fwpa-qxaf.geojson?$limit=50000';
-
-                // Create a layer group for pedestrian demand
                 const pedDemandLayer = L.layerGroup();
-
-                // Add to layer control immediately (will populate when data loads)
                 layer_control_abb36583e30463beba0760ac9b72152e.addOverlay(pedDemandLayer, "Pedestrian Demand");
 
-                // Add loading indicator
+                // Color scale function (green -> yellow -> orange -> red)
+                function getColor(value, min, max) {
+                    if (value === null || value === undefined) return '#888888';
+                    const ratio = Math.min(1, Math.max(0, (value - min) / (max - min)));
+                    if (ratio < 0.25) return '#2ECC71';      // Green - Low
+                    else if (ratio < 0.5) return '#F1C40F';  // Yellow - Medium
+                    else if (ratio < 0.75) return '#E67E22'; // Orange - High
+                    else return '#E74C3C';                   // Red - Very High
+                }
+
+                // Add legend
+                const legend = L.control({position: 'bottomright'});
+                legend.onAdd = function(map) {
+                    const div = L.DomUtil.create('div', 'info legend');
+                    div.style.cssText = 'background:white;padding:10px;border-radius:5px;box-shadow:0 0 15px rgba(0,0,0,0.2);';
+                    div.innerHTML = `
+                        <h4 style="margin:0 0 8px 0;font-size:14px;">Pedestrian Demand</h4>
+                        <div><span style="background:#2ECC71;width:18px;height:18px;display:inline-block;margin-right:5px;"></span> Low</div>
+                        <div><span style="background:#F1C40F;width:18px;height:18px;display:inline-block;margin-right:5px;"></span> Medium</div>
+                        <div><span style="background:#E67E22;width:18px;height:18px;display:inline-block;margin-right:5px;"></span> High</div>
+                        <div><span style="background:#E74C3C;width:18px;height:18px;display:inline-block;margin-right:5px;"></span> Very High</div>
+                    `;
+                    return div;
+                };
+                legend.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+
+                // Loading indicator
                 const loadingDiv = document.createElement('div');
-                loadingDiv.id = 'loading-indicator';
                 loadingDiv.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:5px;z-index:9999;';
                 loadingDiv.textContent = 'Loading pedestrian demand data...';
                 document.body.appendChild(loadingDiv);
 
                 fetch(pedDemandUrl)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
+                    .then(r => r.json())
                     .then(data => {
-                        console.log('Pedestrian demand data loaded:', data.features ? data.features.length : 'unknown', 'features');
+                        console.log('Data loaded:', data.features?.length, 'features');
+                        console.log('Sample properties:', data.features?.[0]?.properties);
 
-                        // Add GeoJSON to map
+                        // Find the demand value field and calculate min/max
+                        const demandFields = ['ped_demand', 'demand', 'pedestrian_demand', 'total_ped', 'ped_vol'];
+                        let demandField = null;
+                        let minVal = Infinity, maxVal = -Infinity;
+
+                        // Auto-detect the demand field
+                        if (data.features && data.features.length > 0) {
+                            const props = data.features[0].properties;
+                            for (let key in props) {
+                                if (typeof props[key] === 'number' || !isNaN(parseFloat(props[key]))) {
+                                    const keyLower = key.toLowerCase();
+                                    if (keyLower.includes('ped') || keyLower.includes('demand') || keyLower.includes('volume')) {
+                                        demandField = key;
+                                        break;
+                                    }
+                                }
+                            }
+                            // Fallback: use first numeric field
+                            if (!demandField) {
+                                for (let key in props) {
+                                    if (typeof props[key] === 'number' || !isNaN(parseFloat(props[key]))) {
+                                        demandField = key;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Calculate min/max
+                            if (demandField) {
+                                data.features.forEach(f => {
+                                    const val = parseFloat(f.properties[demandField]);
+                                    if (!isNaN(val)) {
+                                        minVal = Math.min(minVal, val);
+                                        maxVal = Math.max(maxVal, val);
+                                    }
+                                });
+                            }
+                        }
+                        console.log('Demand field:', demandField, 'Range:', minVal, '-', maxVal);
+
                         const geojsonLayer = L.geoJSON(data, {
                             style: function(feature) {
-                                // Color based on demand value if available
-                                const demand = feature.properties.ped_demand || feature.properties.demand || 0;
-                                let color = '#4ECDC4';
-                                if (demand > 75) color = '#FF6B6B';
-                                else if (demand > 50) color = '#FFA500';
-                                else if (demand > 25) color = '#FFD93D';
+                                const val = demandField ? parseFloat(feature.properties[demandField]) : 0;
+                                const color = getColor(val, minVal, maxVal);
                                 return {
                                     color: color,
-                                    weight: 2,
+                                    weight: 4,
+                                    opacity: 0.9,
                                     fillColor: color,
-                                    fillOpacity: 0.5
+                                    fillOpacity: 0.6
                                 };
                             },
                             pointToLayer: function(feature, latlng) {
+                                const val = demandField ? parseFloat(feature.properties[demandField]) : 0;
+                                const color = getColor(val, minVal, maxVal);
+                                const radius = 5 + (val - minVal) / (maxVal - minVal) * 10;
                                 return L.circleMarker(latlng, {
-                                    radius: 6,
-                                    fillColor: '#4ECDC4',
-                                    color: '#000',
+                                    radius: Math.min(15, Math.max(5, radius)),
+                                    fillColor: color,
+                                    color: '#333',
                                     weight: 1,
                                     opacity: 1,
                                     fillOpacity: 0.8
                                 });
                             },
                             onEachFeature: function(feature, layer) {
-                                let popupContent = '<b>Pedestrian Demand</b><br>';
-                                for (let key in feature.properties) {
-                                    if (feature.properties[key] && key !== 'shape') {
-                                        popupContent += key + ': ' + feature.properties[key] + '<br>';
+                                const p = feature.properties;
+                                let html = '<div style="font-family:sans-serif;"><b style="font-size:14px;">Pedestrian Demand</b><hr style="margin:5px 0;">';
+                                if (demandField && p[demandField]) {
+                                    html += `<b>${demandField}:</b> <span style="color:#E74C3C;font-size:16px;">${p[demandField]}</span><br>`;
+                                }
+                                // Show other relevant fields
+                                const skipFields = ['shape', 'the_geom', ':@computed_region'];
+                                for (let key in p) {
+                                    if (key !== demandField && p[key] && !skipFields.some(s => key.toLowerCase().includes(s))) {
+                                        html += `<b>${key}:</b> ${p[key]}<br>`;
                                     }
                                 }
-                                layer.bindPopup(popupContent);
+                                html += '</div>';
+                                layer.bindPopup(html, {maxWidth: 300});
                             }
                         });
 
                         geojsonLayer.addTo(pedDemandLayer);
                         pedDemandLayer.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
 
-                        // Remove loading indicator
-                        loadingDiv.textContent = 'Pedestrian demand loaded!';
+                        loadingDiv.textContent = `Loaded ${data.features?.length || 0} features!`;
+                        loadingDiv.style.background = '#27ae60';
                         setTimeout(() => loadingDiv.remove(), 2000);
                     })
                     .catch(error => {
-                        console.error('Error loading pedestrian demand:', error);
-                        loadingDiv.textContent = 'Error loading data: ' + error.message;
+                        console.error('Error:', error);
+                        loadingDiv.textContent = 'Error: ' + error.message;
                         loadingDiv.style.background = '#c00';
                         setTimeout(() => loadingDiv.remove(), 5000);
                     });
