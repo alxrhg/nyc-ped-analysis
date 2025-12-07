@@ -313,11 +313,7 @@
         
     
             var layer_control_abb36583e30463beba0760ac9b72152e_layers = {
-                base_layers : {
-                    "Light (CartoDB)" : tile_layer_8996068b89ae823d9dfbeee2eb84ccd6,
-                    "Dark (CartoDB)" : tile_layer_6051f9ee895925dcbeb301fec45365f9,
-                    "OpenStreetMap" : tile_layer_c2232038467f2dbf48658a3770106e84,
-                },
+                base_layers : {},
                 overlays :  {
                     "Study Areas" : feature_group_168429254faa7b1de0bfbdc73e32caaf,
                 },
@@ -476,13 +472,8 @@
 
         
     
+            // Only add light tile layer (removed dark and OSM options for simplicity)
             tile_layer_8996068b89ae823d9dfbeee2eb84ccd6.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
-        
-    
-            tile_layer_6051f9ee895925dcbeb301fec45365f9.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
-        
-    
-            tile_layer_c2232038467f2dbf48658a3770106e84.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
         
     
                 marker_3346a44bdca4aff36f9fd1aed3e60c4f.setIcon(div_icon_53cdd31d0ce24f2dd552a4c267d20a2a);
