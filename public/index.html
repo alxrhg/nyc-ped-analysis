@@ -114,17 +114,24 @@
 <script>
     
     
+            // NYC bounds to restrict map view
+            var nycBounds = L.latLngBounds(
+                [40.68, -74.04],   // Southwest (Lower Manhattan/Battery)
+                [40.75, -73.95]    // Northeast (Midtown)
+            );
+
             var map_2a0b713fb2e5989439fa180b01acfc77 = L.map(
                 "map_2a0b713fb2e5989439fa180b01acfc77",
                 {
                     center: [40.7128, -74.006],
                     crs: L.CRS.EPSG3857,
-                    ...{
-  "zoom": 13,
-  "zoomControl": true,
-  "preferCanvas": false,
-}
-
+                    zoom: 14,
+                    zoomControl: true,
+                    preferCanvas: false,
+                    minZoom: 13,           // Prevent zooming out too far
+                    maxZoom: 18,           // Max zoom in
+                    maxBounds: nycBounds,  // Restrict panning to NYC
+                    maxBoundsViscosity: 1.0  // Hard boundary (no dragging outside)
                 }
             );
 
@@ -142,8 +149,8 @@
             var tile_layer_8996068b89ae823d9dfbeee2eb84ccd6 = L.tileLayer(
                 "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
                 {
-  "minZoom": 0,
-  "maxZoom": 20,
+  "minZoom": 13,
+  "maxZoom": 18,
   "maxNativeZoom": 20,
   "noWrap": false,
   "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
