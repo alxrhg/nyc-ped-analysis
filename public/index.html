@@ -328,9 +328,11 @@
 }
             ).addTo(map_2a0b713fb2e5989439fa180b01acfc77);
 
-            // Fetch and display Pedestrian Demand data from NYC Open Data
+            // Fetch and display Pedestrian Demand data from NYC Open Data (Manhattan only)
             (function() {
-                const pedDemandUrl = 'https://data.cityofnewyork.us/resource/fwpa-qxaf.geojson?$limit=50000';
+                // Filter to Manhattan using bounding box (north, west, south, east)
+                const manhattanFilter = encodeURIComponent("within_box(the_geom, 40.88, -74.05, 40.68, -73.90)");
+                const pedDemandUrl = `https://data.cityofnewyork.us/resource/fwpa-qxaf.geojson?$limit=50000&$where=${manhattanFilter}`;
                 const pedDemandLayer = L.layerGroup();
                 layer_control_abb36583e30463beba0760ac9b72152e.addOverlay(pedDemandLayer, "Pedestrian Demand");
 
