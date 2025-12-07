@@ -6,6 +6,40 @@ A spatial analysis toolkit for identifying potential Low Traffic Neighborhood (L
 **Institution:** The New School - Urban Studies
 **Project:** Pedestrian Way in New York City (Thesis)
 
+![React](https://img.shields.io/badge/React-18-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Leaflet](https://img.shields.io/badge/Leaflet-1.9-green) ![Python](https://img.shields.io/badge/Python-3.11-yellow)
+
+---
+
+## Web Explorer
+
+This repository includes an **interactive web application** for exploring NYC pedestrian demand data:
+
+**[NYC Pedestrian Demand Explorer](https://nyc-ped-analysis.vercel.app)** - Live demo on Vercel
+
+### Features
+- Interactive Leaflet map with muted basemap
+- Color + weight encoding for demand categories (Very High → Low)
+- Category filters to toggle visibility
+- Focus area navigation (Citywide, Lower Manhattan, Chinatown/SoHo)
+- Hover tooltips and click interactions
+- Study area overlays marking research zones
+- Responsive design for desktop and mobile
+
+### Run Locally
+```bash
+npm install
+npm run dev
+# Opens at http://localhost:3000
+```
+
+### Build & Deploy
+```bash
+npm run build    # Build to dist/
+vercel           # Deploy to Vercel
+```
+
+---
+
 ## Research Questions
 
 - **Central Question:** Why has NYC failed to implement pedestrian-first infrastructure despite favorable conditions?
@@ -14,21 +48,11 @@ A spatial analysis toolkit for identifying potential Low Traffic Neighborhood (L
   - How has congestion pricing changed the traffic landscape?
   - What problems do pedestrians in NYC face (spatially)?
 
-## Features
+## Python Analysis Toolkit
 
-- **Data Pipeline:** Automated download from NYC Open Data, Census API, and MTA sources
-- **Crash Analysis:** Kernel density estimation and DBSCAN clustering for pedestrian crash hotspots
-- **Suitability Analysis:** Weighted multi-criteria analysis for LTN site selection
-- **Equity Analysis:** Demographic overlay to assess distributional implications
-- **Visualization:** Static (matplotlib) and interactive (Folium) mapping
-
-## Installation
+### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/nyc-ped-analysis.git
-cd nyc-ped-analysis
-
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -37,7 +61,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Quick Start
+### Quick Start
 
 ```bash
 # Run complete analysis pipeline
@@ -54,31 +78,32 @@ python main.py --visualize      # Generate maps
 
 ```
 nyc-ped-analysis/
-├── main.py                          # Main entry point
-├── requirements.txt                 # Python dependencies
+├── src/                             # React + TypeScript web app
+│   ├── main.tsx                     # React entry point
+│   ├── App.tsx                      # Main application shell
+│   ├── components/
+│   │   ├── MapView.tsx              # Leaflet map + data layers
+│   │   ├── ControlsPanel.tsx        # Sidebar UI
+│   │   └── Legend.tsx               # Map legend
+│   ├── hooks/
+│   │   └── usePedestrianDemandData.ts
+│   ├── types/
+│   │   └── pedestrianDemand.ts
+│   └── utils/
+│       └── demandStyles.ts
+├── main.py                          # Python analysis entry point
 ├── spatial-analysis-config.yaml     # Configuration file
-├── src/
-│   ├── __init__.py                 # Package initialization
-│   ├── data_download.py            # NYC Open Data & Census API downloads
-│   ├── data_processing.py          # Data cleaning and transformation
-│   ├── crash_analysis.py           # Pedestrian crash clustering
-│   ├── suitability_analysis.py     # LTN site suitability scoring
-│   ├── equity_analysis.py          # Demographic equity assessment
-│   └── visualization.py            # Map generation
-├── spatial_analysis/
-│   ├── data/
-│   │   ├── raw/                    # Downloaded data
-│   │   ├── processed/              # Cleaned data
-│   │   └── external/               # External datasets
-│   ├── analysis/
-│   │   ├── crashes/                # Crash analysis outputs
-│   │   ├── suitability/            # Suitability results
-│   │   └── equity/                 # Equity analysis outputs
-│   └── outputs/
-│       ├── maps/                   # Generated maps
-│       ├── figures/                # Charts and figures
-│       └── tables/                 # CSV outputs
-└── tests/                          # Unit tests
+├── src/                             # Python analysis modules
+│   ├── data_download.py             # NYC Open Data & Census API
+│   ├── data_processing.py           # Data cleaning
+│   ├── crash_analysis.py            # Pedestrian crash clustering
+│   ├── suitability_analysis.py      # LTN site scoring
+│   ├── equity_analysis.py           # Demographic assessment
+│   └── visualization.py             # Map generation
+└── spatial_analysis/
+    ├── data/                        # Raw and processed data
+    ├── analysis/                    # Analysis outputs
+    └── outputs/                     # Maps and figures
 ```
 
 ## Data Sources
@@ -90,6 +115,8 @@ nyc-ped-analysis/
 - **Bus Stops:** Bus stop shelter locations
 - **NYCHA Developments:** Public housing locations
 - **Community Districts:** Administrative boundaries
+
+**Primary Dataset:** [Pedestrian Mobility Plan - Pedestrian Demand](https://data.cityofnewyork.us/Transportation/Pedestrian-Mobility-Plan-Pedestrian-Demand/fwpa-qxaf)
 
 ### Census / ACS
 - Population demographics
@@ -170,6 +197,7 @@ MIT License - See LICENSE file for details.
 
 ## Acknowledgments
 
+- NYC Department of Transportation
 - NYC Open Data Portal
 - U.S. Census Bureau
 - Open Plans NYC (cut-through traffic research)
