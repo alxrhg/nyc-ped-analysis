@@ -74,14 +74,36 @@ function DemandLayer({
 
     console.log('[DemandLayer] Adding', data.features.length, 'features');
 
+    // Log first feature's ALL properties to see actual field names
+    const sample = data.features[0].properties;
+    console.log('[DemandLayer] === SAMPLE FEATURE PROPERTIES ===');
+    console.log(JSON.stringify(sample, null, 2));
+
+    // List all keys
+    if (sample) {
+      console.log('[DemandLayer] All field names:', Object.keys(sample));
+      // Show values that might be categories
+      for (const [key, val] of Object.entries(sample)) {
+        if (typeof val === 'string' && val.length < 50) {
+          console.log(`  ${key}: "${val}"`);
+        }
+      }
+    }
+
     // Count categories for logging
     const categoryCounts: Record<string, number> = {};
+    const rawCategoryValues: Record<string, number> = {};
     for (const feature of data.features) {
       const props = feature.properties as PedestrianDemandProperties;
       const cat = getDemandCategory(props) || 'Unknown';
       categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+
+      // Also count raw Category field values
+      const rawCat = (props.Category || props.category || 'NO_CATEGORY') as string;
+      rawCategoryValues[rawCat] = (rawCategoryValues[rawCat] || 0) + 1;
     }
-    console.log('[DemandLayer] Category distribution:', categoryCounts);
+    console.log('[DemandLayer] Mapped category distribution:', categoryCounts);
+    console.log('[DemandLayer] Raw Category field values:', rawCategoryValues);
 
     // Remove existing layer
     if (layerRef.current) {
