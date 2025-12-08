@@ -35,27 +35,29 @@ function MapController({ focusArea }: { focusArea: FocusArea | null }) {
 }
 
 /**
- * Get demand category from properties
- * Searches ALL fields for category-like values
+ * Get demand category from NYC DOT Category field
+ * Maps NYC DOT street categories (Regional, Community, Baseline) to display levels
  */
 function getDemandCategory(props: PedestrianDemandProperties): DemandCategory | null {
   if (!props) return null;
 
-  // Search ALL fields for values that look like categories
-  for (const key of Object.keys(props)) {
-    const val = props[key];
-    if (typeof val !== 'string' || val.length === 0) continue;
+  // NYC DOT uses "Category" field with values: Regional, Community, Baseline, etc.
+  const category = (props.Category || props.category || '') as string;
 
-    const str = val.toLowerCase().trim();
+  if (!category) return null;
 
-    // Check if this value looks like a demand category
-    if (str.includes('very') && str.includes('high')) return 'Very High';
-    if (str === 'high' || str === 'h') return 'High';
-    if (str === 'medium' || str === 'med' || str === 'm') return 'Medium';
-    if (str === 'low' || str === 'l') return 'Low';
-  }
+  const str = category.toLowerCase().trim();
 
-  return null;
+  // Map NYC DOT categories to display categories
+  // Regional = highest pedestrian demand corridors
+  // Community = high pedestrian demand
+  // Baseline = moderate demand
+  if (str === 'regional') return 'Very High';
+  if (str === 'community') return 'High';
+  if (str === 'baseline') return 'Medium';
+
+  // Any other category = Low
+  return 'Low';
 }
 
 /**

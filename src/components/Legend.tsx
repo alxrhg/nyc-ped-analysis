@@ -1,23 +1,30 @@
 /**
  * Legend component for the pedestrian demand map
- * Displays color/weight scale for demand categories
+ * Displays NYC DOT street categories with color coding
  */
 
 import { DEMAND_STYLES } from '../utils/demandStyles';
 import type { DemandCategory } from '../types/pedestrianDemand';
 
 /**
- * Order of categories for display (highest to lowest)
+ * NYC DOT category mapping for legend display
  */
-const CATEGORY_ORDER: DemandCategory[] = ['Very High', 'High', 'Medium', 'Low'];
+const LEGEND_ITEMS: Array<{
+  demandLevel: DemandCategory;
+  nycDotCategory: string;
+}> = [
+  { demandLevel: 'Very High', nycDotCategory: 'Regional' },
+  { demandLevel: 'High', nycDotCategory: 'Community' },
+  { demandLevel: 'Medium', nycDotCategory: 'Baseline' },
+  { demandLevel: 'Low', nycDotCategory: 'Other' },
+];
 
 interface LegendProps {
   className?: string;
 }
 
 /**
- * Floating legend component showing demand category colors
- * Positioned in bottom-right of map viewport
+ * Floating legend component showing NYC DOT street categories
  */
 export function Legend({ className = '' }: LegendProps) {
   return (
@@ -25,46 +32,44 @@ export function Legend({ className = '' }: LegendProps) {
       className={`
         bg-white/95 backdrop-blur-sm
         rounded-lg shadow-lg
-        p-3 min-w-[180px]
+        p-3 min-w-[160px]
         font-sans text-sm
         ${className}
       `}
     >
       {/* Legend title */}
-      <h4 className="font-semibold text-gray-800 mb-2 text-xs uppercase tracking-wide">
-        Pedestrian Demand
+      <h4 className="font-semibold text-gray-800 mb-1 text-xs uppercase tracking-wide">
+        Street Category
       </h4>
-      <p className="text-[10px] text-gray-500 mb-3 -mt-1">NYC DOT</p>
+      <p className="text-[10px] text-gray-500 mb-3">NYC DOT Ped Mobility Plan</p>
 
       {/* Category swatches */}
       <div className="space-y-1.5">
-        {CATEGORY_ORDER.map((category) => {
-          const style = DEMAND_STYLES[category];
+        {LEGEND_ITEMS.map(({ demandLevel, nycDotCategory }) => {
+          const style = DEMAND_STYLES[demandLevel];
           return (
-            <div key={category} className="flex items-center gap-2">
-              {/* Line swatch with appropriate width */}
+            <div key={demandLevel} className="flex items-center gap-2">
+              {/* Line swatch */}
               <div
                 className="rounded-sm"
                 style={{
                   backgroundColor: style.color,
-                  width: '24px',
-                  height: `${Math.max(style.weight * 2, 4)}px`,
+                  width: '20px',
+                  height: `${Math.max(style.weight * 2, 3)}px`,
                   opacity: style.opacity,
                 }}
               />
               {/* Category label */}
-              <span className="text-gray-700 text-xs">{style.label}</span>
+              <span className="text-gray-700 text-xs">{nycDotCategory}</span>
             </div>
           );
         })}
       </div>
 
-      {/* Data source attribution */}
+      {/* Source */}
       <div className="mt-3 pt-2 border-t border-gray-200">
-        <p className="text-[9px] text-gray-400 leading-tight">
-          Source: NYC DOT
-          <br />
-          Pedestrian Mobility Plan
+        <p className="text-[9px] text-gray-400">
+          Data: NYC Open Data
         </p>
       </div>
     </div>
