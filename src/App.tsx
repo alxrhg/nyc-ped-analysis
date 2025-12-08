@@ -20,12 +20,25 @@ import type {
 } from './types/pedestrianDemand';
 
 /**
+ * Bounding box for Manhattan below 56th Street
+ * This significantly reduces data load and speeds up rendering
+ */
+const MANHATTAN_BELOW_56TH = {
+  north: 40.765,  // ~56th Street
+  south: 40.700,  // Battery Park
+  west: -74.02,   // Hudson River
+  east: -73.97,   // East River
+};
+
+/**
  * Main App component
  */
 function App() {
   // Fetch pedestrian demand data from NYC Open Data
+  // Filtered to Manhattan below 56th St for faster loading
   const { data, loadingState, error, featureCount } = usePedestrianDemandData({
-    limit: 50000, // Fetch all available data
+    limit: 50000,
+    boundingBox: MANHATTAN_BELOW_56TH,
   });
 
   // Category visibility state

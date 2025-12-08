@@ -122,10 +122,10 @@ export function MapView({
   const defaultCenter: [number, number] = [40.72, -73.998];
   const defaultZoom = 14;
 
-  // NYC bounds to restrict panning
-  const nycBounds: L.LatLngBoundsExpression = [
-    [40.68, -74.04],
-    [40.82, -73.90],
+  // Manhattan bounds to restrict panning (below 56th St)
+  const manhattanBounds: L.LatLngBoundsExpression = [
+    [40.695, -74.025],  // Southwest
+    [40.77, -73.965],   // Northeast
   ];
 
   // Detect demand field from data on load
@@ -310,7 +310,7 @@ export function MapView({
         zoom={defaultZoom}
         minZoom={11}
         maxZoom={18}
-        maxBounds={nycBounds}
+        maxBounds={manhattanBounds}
         maxBoundsViscosity={1.0}
         className="w-full h-full rounded-lg"
         style={{ background: '#f0f0f0' }}

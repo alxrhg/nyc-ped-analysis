@@ -54,22 +54,22 @@ export const DEFAULT_STYLE = {
  */
 export const FOCUS_AREAS: FocusArea[] = [
   {
-    name: 'Citywide',
-    bounds: [[40.49, -74.26], [40.92, -73.68]],
-    zoom: 10,
-    description: 'All five boroughs of New York City',
+    name: 'Below 56th St',
+    bounds: [[40.700, -74.02], [40.765, -73.97]],
+    zoom: 12,
+    description: 'Manhattan below 56th Street - full data extent',
   },
   {
     name: 'Lower Manhattan',
-    bounds: [[40.695, -74.025], [40.76, -73.97]],
+    bounds: [[40.700, -74.02], [40.74, -73.97]],
     zoom: 13,
-    description: 'South of 34th Street - Financial District through Midtown South',
+    description: 'Below 14th Street - FiDi, Tribeca, Chinatown, LES',
   },
   {
     name: 'Chinatown / SoHo',
     bounds: [[40.715, -74.005], [40.728, -73.99]],
     zoom: 15,
-    description: 'Houston Street to Canal Street - primary thesis study area',
+    description: 'Houston St to Canal St - primary thesis study area',
   },
 ];
 
