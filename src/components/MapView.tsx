@@ -1,8 +1,9 @@
 /**
  * MapView component - Leaflet map with pedestrian demand visualization
+ * Simplified version for better performance
  */
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -12,36 +13,25 @@ import {
   useMap,
 } from 'react-leaflet';
 import L from 'leaflet';
-import type { Layer, LeafletMouseEvent, PathOptions } from 'leaflet';
+import type { PathOptions } from 'leaflet';
 import type { Feature, Geometry } from 'geojson';
 
 import type {
   PedestrianDemandData,
-  PedestrianDemandFeature,
   PedestrianDemandProperties,
   CategoryVisibility,
   FocusArea,
   DemandCategory,
 } from '../types/pedestrianDemand';
-import {
-  getStreetName,
-  getBorough,
-  STUDY_AREAS,
-  DEMAND_STYLES,
-} from '../utils/demandStyles';
+import { STUDY_AREAS, DEMAND_STYLES } from '../utils/demandStyles';
 import Legend from './Legend';
 
-// Fix Leaflet default icon paths for Vite
 import 'leaflet/dist/leaflet.css';
 
 /**
- * Component to handle map view changes from focus area selection
+ * Map controller for focus area navigation
  */
-interface MapControllerProps {
-  focusArea: FocusArea | null;
-}
-
-function MapController({ focusArea }: MapControllerProps) {
+function MapController({ focusArea }: { focusArea: FocusArea | null }) {
   const map = useMap();
 
   useEffect(() => {
@@ -55,39 +45,20 @@ function MapController({ focusArea }: MapControllerProps) {
 }
 
 /**
- * Detect the demand category field from feature properties
- * NYC Open Data field names can vary
+ * Get demand category from properties - inline detection
  */
-function detectDemandField(properties: PedestrianDemandProperties): string | null {
-  // List of possible field names for demand category
-  const possibleFields = [
-    'corridor_category',
-    'pedestrian_demand',
-    'ped_demand',
-    'demand_category',
-    'demand',
-    'category',
-    'ped_level',
-    'level',
-  ];
+function getDemandCategory(props: PedestrianDemandProperties): DemandCategory | null {
+  // Try different possible field names
+  const value = props.corridor_category ||
+                props.pedestrian_demand ||
+                props.ped_demand ||
+                props.demand_category ||
+                props.category ||
+                props.demand;
 
-  for (const field of possibleFields) {
-    if (properties[field] !== undefined && properties[field] !== null) {
-      return field;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Parse a demand category value to a standard category
- */
-function parseDemandCategory(value: unknown): DemandCategory | null {
   if (!value) return null;
 
-  const str = String(value).toLowerCase().trim();
-
+  const str = String(value).toLowerCase();
   if (str.includes('very') && str.includes('high')) return 'Very High';
   if (str.includes('high')) return 'High';
   if (str.includes('medium') || str.includes('med')) return 'Medium';
@@ -96,258 +67,142 @@ function parseDemandCategory(value: unknown): DemandCategory | null {
   return null;
 }
 
+/**
+ * Get style for a feature
+ */
+function getFeatureStyle(
+  feature: Feature<Geometry, PedestrianDemandProperties> | undefined,
+  categoryVisibility: CategoryVisibility
+): PathOptions {
+  if (!feature?.properties) {
+    return { color: '#888', weight: 1, opacity: 0.5 };
+  }
+
+  const category = getDemandCategory(feature.properties);
+
+  // Hide if category is toggled off
+  if (category && !categoryVisibility[category]) {
+    return { opacity: 0, fillOpacity: 0, weight: 0 };
+  }
+
+  // No category = default grey
+  if (!category) {
+    return { color: '#888', weight: 1, opacity: 0.5 };
+  }
+
+  const style = DEMAND_STYLES[category];
+  return {
+    color: style.color,
+    weight: style.weight,
+    opacity: style.opacity,
+  };
+}
+
 interface MapViewProps {
   data: PedestrianDemandData | null;
   categoryVisibility: CategoryVisibility;
   focusArea: FocusArea | null;
-  onFeatureClick?: (feature: PedestrianDemandFeature) => void;
   className?: string;
 }
 
-/**
- * Main map component with pedestrian demand visualization
- */
 export function MapView({
   data,
   categoryVisibility,
   focusArea,
-  onFeatureClick,
   className = '',
 }: MapViewProps) {
   const geoJsonRef = useRef<L.GeoJSON | null>(null);
-  const [highlightedLayer, setHighlightedLayer] = useState<Layer | null>(null);
-  const [demandField, setDemandField] = useState<string | null>(null);
 
-  // Default view: Lower Manhattan / Chinatown-SoHo area
   const defaultCenter: [number, number] = [40.72, -73.998];
   const defaultZoom = 14;
 
-  // Manhattan bounds to restrict panning (below 56th St)
   const manhattanBounds: L.LatLngBoundsExpression = [
-    [40.695, -74.025],  // Southwest
-    [40.77, -73.965],   // Northeast
+    [40.695, -74.025],
+    [40.77, -73.965],
   ];
 
-  // Detect demand field from data on load
+  // Log data on load
   useEffect(() => {
-    if (data && data.features && data.features.length > 0) {
-      const firstFeature = data.features[0];
-      const props = firstFeature.properties;
-
-      console.log('[MapView] Data loaded, sample properties:', props);
-      console.log('[MapView] Feature count:', data.features.length);
-      console.log('[MapView] Sample geometry type:', firstFeature.geometry?.type);
-
-      const field = detectDemandField(props);
-      console.log('[MapView] Detected demand field:', field);
-
-      if (field) {
-        console.log('[MapView] Sample demand value:', props[field]);
-        setDemandField(field);
-      } else {
-        console.warn('[MapView] Could not detect demand field. Available fields:', Object.keys(props));
-      }
+    if (data?.features?.length) {
+      console.log('[MapView] Features:', data.features.length);
+      console.log('[MapView] Sample:', data.features[0].properties);
+      console.log('[MapView] Geometry:', data.features[0].geometry?.type);
     }
   }, [data]);
 
-  /**
-   * Get demand category for a feature
-   */
-  const getDemandCategory = useCallback((properties: PedestrianDemandProperties): DemandCategory | null => {
-    if (!demandField) return null;
-    const value = properties[demandField];
-    return parseDemandCategory(value);
-  }, [demandField]);
+  // Style function
+  const styleFunction = useMemo(() => {
+    return (feature: Feature<Geometry, PedestrianDemandProperties> | undefined) => {
+      return getFeatureStyle(feature, categoryVisibility);
+    };
+  }, [categoryVisibility]);
 
-  /**
-   * Style function for GeoJSON features
-   */
-  const styleFunction = useCallback(
-    (feature: Feature<Geometry, PedestrianDemandProperties> | undefined): PathOptions => {
-      if (!feature?.properties) {
-        return { color: '#999', weight: 1, opacity: 0.3 };
-      }
-
-      const category = getDemandCategory(feature.properties);
-
-      // Hide if category is toggled off
-      if (category && !categoryVisibility[category]) {
-        return { opacity: 0, fillOpacity: 0, weight: 0 };
-      }
-
-      // If no category detected, show with default style
-      if (!category) {
-        return { color: '#666', weight: 1, opacity: 0.5 };
-      }
-
-      const style = DEMAND_STYLES[category];
-
-      return {
-        color: style.color,
-        weight: style.weight,
-        opacity: style.opacity,
-        fillOpacity: style.opacity * 0.5,
-      };
-    },
-    [categoryVisibility, getDemandCategory]
-  );
-
-  /**
-   * Format tooltip content
-   */
-  const formatTooltip = useCallback((props: PedestrianDemandProperties): string => {
-    const streetName = getStreetName(props);
-    const category = getDemandCategory(props);
-    const borough = getBorough(props);
-    const style = category ? DEMAND_STYLES[category] : null;
-
-    let content = `<strong>${streetName}</strong>`;
-    if (category && style) {
-      content += `<br><span style="color: ${style.color}; font-weight: 600;">Demand: ${category}</span>`;
-    }
-    content += `<br><span style="color: #888; font-size: 11px;">${borough}</span>`;
-    content += `<br><span style="color: #aaa; font-size: 10px; font-style: italic;">Source: NYC DOT</span>`;
-
-    return content;
-  }, [getDemandCategory]);
-
-  /**
-   * Handle feature interactions
-   */
-  const onEachFeature = useCallback(
-    (feature: Feature<Geometry, PedestrianDemandProperties>, layer: Layer) => {
+  // Tooltip handler
+  const onEachFeature = useMemo(() => {
+    return (feature: Feature<Geometry, PedestrianDemandProperties>, layer: L.Layer) => {
       const props = feature.properties;
       if (!props) return;
 
-      // Bind tooltip
-      layer.bindTooltip(formatTooltip(props), {
-        sticky: true,
-        direction: 'top',
-        offset: [0, -10],
-        className: 'demand-tooltip',
-      });
-
-      // Bind popup
-      const streetName = getStreetName(props);
+      const name = props.street || props.streetname || props.on_st || props.name || 'Street';
       const category = getDemandCategory(props);
-      const borough = getBorough(props);
-      const style = category ? DEMAND_STYLES[category] : null;
+      const categoryColor = category ? DEMAND_STYLES[category].color : '#888';
 
-      const popupContent = `
-        <div style="padding: 8px; min-width: 180px; font-family: sans-serif;">
-          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">${streetName}</h3>
-          ${category && style ? `
-            <p style="margin: 0 0 4px 0;">
-              <span style="color: #666;">Demand:</span>
-              <span style="color: ${style.color}; font-weight: 600;">${category}</span>
-            </p>
-          ` : ''}
-          <p style="margin: 0; color: #888; font-size: 12px;">${borough}</p>
-          <p style="margin: 8px 0 0 0; color: #aaa; font-size: 10px; font-style: italic;">
-            Source: NYC DOT Pedestrian Mobility Plan
-          </p>
-        </div>
+      const tooltip = `
+        <strong>${name}</strong><br/>
+        <span style="color:${categoryColor}">Demand: ${category || 'N/A'}</span>
       `;
 
-      layer.bindPopup(popupContent, { maxWidth: 300 });
+      layer.bindTooltip(tooltip, { sticky: true });
+    };
+  }, []);
 
-      // Event handlers
-      layer.on({
-        mouseover: (e: LeafletMouseEvent) => {
-          const targetLayer = e.target;
-          if (targetLayer.setStyle) {
-            targetLayer.setStyle({
-              weight: (targetLayer.options?.weight || 2) + 2,
-              opacity: 1,
-            });
-            targetLayer.bringToFront();
-          }
-        },
-        mouseout: (e: LeafletMouseEvent) => {
-          const targetLayer = e.target;
-          if (geoJsonRef.current && targetLayer !== highlightedLayer) {
-            geoJsonRef.current.resetStyle(targetLayer);
-          }
-        },
-        click: (e: LeafletMouseEvent) => {
-          if (highlightedLayer && geoJsonRef.current) {
-            geoJsonRef.current.resetStyle(highlightedLayer);
-          }
-
-          const targetLayer = e.target;
-          setHighlightedLayer(targetLayer);
-
-          if (targetLayer.setStyle) {
-            targetLayer.setStyle({
-              weight: (targetLayer.options?.weight || 2) + 3,
-              opacity: 1,
-            });
-            targetLayer.bringToFront();
-          }
-
-          if (onFeatureClick) {
-            onFeatureClick(feature as PedestrianDemandFeature);
-          }
-        },
-      });
-    },
-    [formatTooltip, getDemandCategory, highlightedLayer, onFeatureClick]
-  );
-
-  // Create a unique key for the GeoJSON layer to force re-render
+  // Key to force re-render when visibility changes
   const geoJsonKey = useMemo(() => {
-    if (!data) return 'no-data';
-    const visKey = Object.entries(categoryVisibility)
-      .map(([k, v]) => `${k}:${v}`)
-      .join(',');
-    return `geojson-${data.features.length}-${demandField}-${visKey}`;
-  }, [data, demandField, categoryVisibility]);
+    const vis = Object.values(categoryVisibility).join('-');
+    return `geojson-${vis}`;
+  }, [categoryVisibility]);
 
   return (
     <div className={`relative ${className}`}>
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
-        minZoom={11}
+        minZoom={12}
         maxZoom={18}
         maxBounds={manhattanBounds}
         maxBoundsViscosity={1.0}
         className="w-full h-full rounded-lg"
-        style={{ background: '#f0f0f0' }}
+        style={{ background: '#f5f5f5' }}
       >
-        {/* Map controller for focus area navigation */}
         <MapController focusArea={focusArea} />
 
-        {/* Muted Carto Light basemap */}
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
           subdomains="abcd"
-          maxZoom={20}
-          className="grayscale-basemap"
         />
 
-        {/* Study area overlays */}
+        {/* Study area rectangles */}
         <Rectangle
           bounds={STUDY_AREAS.lowerManhattan.bounds}
-          pathOptions={STUDY_AREAS.lowerManhattan.style}
+          pathOptions={{ color: '#377eb8', weight: 1.5, fillOpacity: 0.02, dashArray: '10, 5' }}
         >
           <Tooltip permanent direction="center" className="study-area-label">
-            Lower Manhattan Context
+            Lower Manhattan
           </Tooltip>
         </Rectangle>
 
         <Rectangle
           bounds={STUDY_AREAS.chinatownSoho.bounds}
-          pathOptions={STUDY_AREAS.chinatownSoho.style}
+          pathOptions={{ color: '#e41a1c', weight: 2, fillOpacity: 0.05, dashArray: '5, 5' }}
         >
           <Tooltip permanent direction="center" className="study-area-label">
-            Chinatown / SoHo Study Area
+            Chinatown / SoHo
           </Tooltip>
         </Rectangle>
 
-        {/* Pedestrian demand data layer */}
-        {data && data.features.length > 0 && (
+        {/* Pedestrian demand layer */}
+        {data && data.features && data.features.length > 0 && (
           <GeoJSON
             key={geoJsonKey}
             ref={geoJsonRef as React.Ref<L.GeoJSON>}
@@ -358,7 +213,6 @@ export function MapView({
         )}
       </MapContainer>
 
-      {/* Floating legend */}
       <div className="absolute bottom-4 right-4 z-[1000]">
         <Legend />
       </div>

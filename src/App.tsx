@@ -16,7 +16,6 @@ import type {
   CategoryVisibility,
   DemandCategory,
   FocusArea,
-  PedestrianDemandFeature,
 } from './types/pedestrianDemand';
 
 /**
@@ -51,11 +50,6 @@ function App() {
     FOCUS_AREAS.find((a) => a.name === 'Chinatown / SoHo') || null
   );
 
-  // Selected feature for info panel (reserved for future use)
-  const [, setSelectedFeature] = useState<PedestrianDemandFeature | null>(
-    null
-  );
-
   // Mobile sidebar toggle
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -76,13 +70,6 @@ function App() {
     setFocusArea(area);
     // Close mobile sidebar after selection
     setIsSidebarOpen(false);
-  }, []);
-
-  /**
-   * Handle feature click on map
-   */
-  const handleFeatureClick = useCallback((feature: PedestrianDemandFeature) => {
-    setSelectedFeature(feature);
   }, []);
 
   return (
@@ -175,7 +162,6 @@ function App() {
             data={data}
             categoryVisibility={categoryVisibility}
             focusArea={focusArea}
-            onFeatureClick={handleFeatureClick}
             className="w-full h-full"
           />
         </div>
