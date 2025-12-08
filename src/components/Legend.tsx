@@ -11,12 +11,13 @@ import type { DemandCategory } from '../types/pedestrianDemand';
  */
 const LEGEND_ITEMS: Array<{
   demandLevel: DemandCategory;
-  nycDotCategory: string;
+  label: string;
 }> = [
-  { demandLevel: 'Very High', nycDotCategory: 'Regional' },
-  { demandLevel: 'High', nycDotCategory: 'Community' },
-  { demandLevel: 'Medium', nycDotCategory: 'Baseline' },
-  { demandLevel: 'Low', nycDotCategory: 'Other' },
+  { demandLevel: 'Global', label: 'Global' },
+  { demandLevel: 'Regional', label: 'Regional' },
+  { demandLevel: 'Neighborhood', label: 'Neighborhood' },
+  { demandLevel: 'Community', label: 'Community' },
+  { demandLevel: 'Baseline', label: 'Baseline' },
 ];
 
 interface LegendProps {
@@ -45,7 +46,7 @@ export function Legend({ className = '' }: LegendProps) {
 
       {/* Category swatches */}
       <div className="space-y-1.5">
-        {LEGEND_ITEMS.map(({ demandLevel, nycDotCategory }) => {
+        {LEGEND_ITEMS.map(({ demandLevel, label }) => {
           const style = DEMAND_STYLES[demandLevel];
           return (
             <div key={demandLevel} className="flex items-center gap-2">
@@ -60,7 +61,7 @@ export function Legend({ className = '' }: LegendProps) {
                 }}
               />
               {/* Category label */}
-              <span className="text-gray-700 text-xs">{nycDotCategory}</span>
+              <span className="text-gray-700 text-xs">{label}</span>
             </div>
           );
         })}

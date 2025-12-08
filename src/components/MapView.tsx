@@ -34,91 +34,30 @@ function MapController({ focusArea }: { focusArea: FocusArea | null }) {
 }
 
 /**
- * Common numeric field names that might contain demand values
+ * Get demand category from NYC DOT Category field
+ * Maps to official NYC DOT Pedestrian Mobility Plan categories
  */
-const NUMERIC_DEMAND_FIELDS = [
-  'demand', 'score', 'index', 'ped_vol', 'volume', 'count',
-  'demand_score', 'demand_index', 'ped_demand', 'pedestrian_demand',
-  'total', 'value', 'rank', 'priority', 'weight'
-];
-
-/**
- * Extract numeric demand value from feature properties
- */
-function getNumericDemand(props: PedestrianDemandProperties): number | null {
-  if (!props) return null;
-
-  // Try each known numeric field name
-  for (const field of NUMERIC_DEMAND_FIELDS) {
-    const val = props[field] ?? props[field.toUpperCase()] ?? props[field.charAt(0).toUpperCase() + field.slice(1)];
-    if (val !== undefined && val !== null) {
-      const num = typeof val === 'number' ? val : parseFloat(String(val));
-      if (!isNaN(num)) return num;
-    }
-  }
-
-  // Fallback: look for any numeric field
-  for (const [key, val] of Object.entries(props)) {
-    if (typeof val === 'number' && !key.toLowerCase().includes('id') && !key.toLowerCase().includes('code')) {
-      return val;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Calculate quartile thresholds from an array of numbers
- */
-function calculateQuartiles(values: number[]): { q25: number; q50: number; q75: number } {
-  const sorted = [...values].sort((a, b) => a - b);
-  const n = sorted.length;
-
-  const q25 = sorted[Math.floor(n * 0.25)];
-  const q50 = sorted[Math.floor(n * 0.50)];
-  const q75 = sorted[Math.floor(n * 0.75)];
-
-  return { q25, q50, q75 };
-}
-
-/**
- * Quantile thresholds for demand categorization
- */
-interface QuantileThresholds {
-  q25: number;
-  q50: number;
-  q75: number;
-}
-
-/**
- * Get demand category based on quantile thresholds
- */
-function getCategoryFromQuantile(value: number, thresholds: QuantileThresholds): DemandCategory {
-  if (value >= thresholds.q75) return 'Very High';
-  if (value >= thresholds.q50) return 'High';
-  if (value >= thresholds.q25) return 'Medium';
-  return 'Low';
-}
-
-/**
- * Fallback: Get demand category from NYC DOT Category field
- */
-function getCategoryFromField(props: PedestrianDemandProperties): DemandCategory | null {
+function getDemandCategory(props: PedestrianDemandProperties): DemandCategory | null {
   if (!props) return null;
 
   const category = (props.Category || props.category || '') as string;
   if (!category) return null;
 
   const str = category.toLowerCase().trim();
-  if (str === 'regional') return 'Very High';
-  if (str === 'community') return 'High';
-  if (str === 'baseline') return 'Medium';
-  return 'Low';
+
+  // Map to NYC DOT official categories
+  if (str === 'global') return 'Global';
+  if (str === 'regional') return 'Regional';
+  if (str === 'neighborhood') return 'Neighborhood';
+  if (str === 'community') return 'Community';
+  if (str === 'baseline') return 'Baseline';
+
+  return null;
 }
 
 /**
  * Component that adds GeoJSON layer using native Leaflet
- * Uses quantile-based coloring for even distribution
+ * Uses NYC DOT official category coloring
  */
 function DemandLayer({
   data,
@@ -133,66 +72,21 @@ function DemandLayer({
   useEffect(() => {
     if (!data?.features?.length) return;
 
-    const sample = data.features[0].properties;
     console.log('[DemandLayer] Adding', data.features.length, 'features');
-    console.log('[DemandLayer] Sample properties:', sample);
 
-    // Extract all numeric demand values for quantile calculation
-    const numericValues: number[] = [];
-    let numericFieldUsed: string | null = null;
-
+    // Count categories for logging
+    const categoryCounts: Record<string, number> = {};
     for (const feature of data.features) {
       const props = feature.properties as PedestrianDemandProperties;
-      if (!props) continue;
-
-      const numVal = getNumericDemand(props);
-      if (numVal !== null) {
-        numericValues.push(numVal);
-        // Track which field we're using
-        if (!numericFieldUsed) {
-          for (const [key, val] of Object.entries(props)) {
-            if (typeof val === 'number' || (typeof val === 'string' && !isNaN(parseFloat(val)))) {
-              const parsed = typeof val === 'number' ? val : parseFloat(val);
-              if (parsed === numVal) {
-                numericFieldUsed = key;
-                break;
-              }
-            }
-          }
-        }
-      }
+      const cat = getDemandCategory(props) || 'Unknown';
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
     }
-
-    // Calculate quantile thresholds if we have numeric data
-    let thresholds: QuantileThresholds | null = null;
-    const useQuantiles = numericValues.length > 10;
-
-    if (useQuantiles) {
-      thresholds = calculateQuartiles(numericValues);
-      console.log('[DemandLayer] Using QUANTILE-based coloring');
-      console.log(`[DemandLayer] Numeric field: "${numericFieldUsed}"`);
-      console.log(`[DemandLayer] Values: ${numericValues.length} features with numeric data`);
-      console.log(`[DemandLayer] Quartiles: Q25=${thresholds.q25.toFixed(2)}, Q50=${thresholds.q50.toFixed(2)}, Q75=${thresholds.q75.toFixed(2)}`);
-      console.log(`[DemandLayer] Range: ${Math.min(...numericValues).toFixed(2)} - ${Math.max(...numericValues).toFixed(2)}`);
-    } else {
-      console.log('[DemandLayer] Using CATEGORY-based coloring (no numeric data found)');
-    }
+    console.log('[DemandLayer] Category distribution:', categoryCounts);
 
     // Remove existing layer
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
     }
-
-    // Helper to get category for a feature
-    const getCategory = (props: PedestrianDemandProperties): DemandCategory | null => {
-      if (thresholds) {
-        const numVal = getNumericDemand(props);
-        if (numVal !== null) {
-          return getCategoryFromQuantile(numVal, thresholds);
-        }
-      }
-      return getCategoryFromField(props);
-    };
 
     // Create new GeoJSON layer with native Leaflet
     const layer = L.geoJSON(data as GeoJSON.GeoJsonObject, {
@@ -202,7 +96,7 @@ function DemandLayer({
         }
 
         const props = feature.properties as PedestrianDemandProperties;
-        const category = getCategory(props);
+        const category = getDemandCategory(props);
 
         // Hide if toggled off
         if (category && !categoryVisibility[category]) {
@@ -225,16 +119,11 @@ function DemandLayer({
         if (!props) return;
 
         const name = props.street || props.streetname || props.on_st || props.name || 'Street';
-        const category = getCategory(props);
-        const numVal = getNumericDemand(props);
+        const category = getDemandCategory(props);
         const color = category ? DEMAND_STYLES[category].color : '#888';
 
-        const demandText = numVal !== null
-          ? `${category} (${numVal.toFixed(1)})`
-          : (category || 'N/A');
-
         featureLayer.bindTooltip(
-          `<strong>${name}</strong><br/><span style="color:${color}">Demand: ${demandText}</span>`,
+          `<strong>${name}</strong><br/><span style="color:${color}">${category || 'Unknown'}</span>`,
           { sticky: true }
         );
       },

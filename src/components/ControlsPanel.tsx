@@ -10,17 +10,18 @@ import type {
 } from '../types/pedestrianDemand';
 
 /**
- * Quantile-based category mapping for display
+ * NYC DOT Pedestrian Mobility Plan category mapping
  */
 const CATEGORY_DISPLAY: Array<{
   demandLevel: DemandCategory;
   label: string;
   description: string;
 }> = [
-  { demandLevel: 'Very High', label: 'Very High', description: 'Top 25% demand' },
-  { demandLevel: 'High', label: 'High', description: '50-75th percentile' },
-  { demandLevel: 'Medium', label: 'Medium', description: '25-50th percentile' },
-  { demandLevel: 'Low', label: 'Low', description: 'Bottom 25%' },
+  { demandLevel: 'Global', label: 'Global', description: 'Highest demand corridors' },
+  { demandLevel: 'Regional', label: 'Regional', description: 'Major regional corridors' },
+  { demandLevel: 'Neighborhood', label: 'Neighborhood', description: 'Neighborhood connectors' },
+  { demandLevel: 'Community', label: 'Community', description: 'Community streets' },
+  { demandLevel: 'Baseline', label: 'Baseline', description: 'Standard streets' },
 ];
 
 interface ControlsPanelProps {
@@ -188,8 +189,8 @@ export function ControlsPanel({
             based on the NYC DOT Pedestrian Mobility Plan dataset.
           </p>
           <p>
-            Colors are distributed using <strong>quartile breaks</strong> for even distribution.
-            <span style={{ color: '#d32f2f' }}> Red</span> shows the top 25% highest demand streets.
+            <strong style={{ color: '#f5a623' }}>Global</strong> corridors (orange) have the highest
+            pedestrian demand and are prime candidates for <strong>Low Traffic Neighborhood</strong> interventions.
           </p>
           <p className="text-gray-500">
             Focus: Houston St to Canal St corridor in Chinatown/SoHo for pedestrianization research.

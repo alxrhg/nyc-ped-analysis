@@ -10,33 +10,39 @@ import type {
 } from '../types/pedestrianDemand';
 
 /**
- * Color and weight mapping for demand categories
- * Colors follow a diverging red scale for intuitive interpretation
+ * Color and weight mapping for NYC DOT Pedestrian Mobility Plan categories
+ * Colors match the official NYC DOT visualization
  */
 export const DEMAND_STYLES: DemandStyleMap = {
-  'Very High': {
-    color: '#b2182b', // Dark red
+  'Global': {
+    color: '#f5a623', // Orange - highest demand corridors
     weight: 4,
     opacity: 0.9,
-    label: 'Very High',
+    label: 'Global',
   },
-  'High': {
-    color: '#ef8a62', // Orange-red
-    weight: 3,
+  'Regional': {
+    color: '#f8e71c', // Yellow - regional corridors
+    weight: 3.5,
     opacity: 0.9,
-    label: 'High',
+    label: 'Regional',
   },
-  'Medium': {
-    color: '#fddbc7', // Light peach
-    weight: 2,
+  'Neighborhood': {
+    color: '#7ed321', // Green - neighborhood corridors
+    weight: 3,
     opacity: 0.85,
-    label: 'Medium',
+    label: 'Neighborhood',
   },
-  'Low': {
-    color: '#d9d9d9', // Light grey
-    weight: 1,
-    opacity: 0.7,
-    label: 'Low',
+  'Community': {
+    color: '#4a90a4', // Teal - community streets
+    weight: 2.5,
+    opacity: 0.85,
+    label: 'Community',
+  },
+  'Baseline': {
+    color: '#4a90d9', // Blue - baseline streets
+    weight: 2,
+    opacity: 0.8,
+    label: 'Baseline',
   },
 };
 
@@ -110,6 +116,8 @@ export function getDemandCategory(
 ): DemandCategory | null {
   // Check various possible field names for the demand category
   const category =
+    properties.Category ||
+    properties.category ||
     properties.corridor_category ||
     properties.pedestrian_demand ||
     properties.ped_demand ||
@@ -118,13 +126,14 @@ export function getDemandCategory(
   if (!category) return null;
 
   // Normalize the category string
-  const normalized = category.toString().trim();
+  const normalized = category.toString().trim().toLowerCase();
 
-  // Map to standard categories
-  if (normalized.toLowerCase().includes('very high')) return 'Very High';
-  if (normalized.toLowerCase().includes('high')) return 'High';
-  if (normalized.toLowerCase().includes('medium')) return 'Medium';
-  if (normalized.toLowerCase().includes('low')) return 'Low';
+  // Map to NYC DOT official categories
+  if (normalized === 'global') return 'Global';
+  if (normalized === 'regional') return 'Regional';
+  if (normalized === 'neighborhood') return 'Neighborhood';
+  if (normalized === 'community') return 'Community';
+  if (normalized === 'baseline') return 'Baseline';
 
   return null;
 }
@@ -202,8 +211,9 @@ export function formatTooltipContent(properties: PedestrianDemandProperties): st
  * Initial category visibility state (all visible)
  */
 export const INITIAL_CATEGORY_VISIBILITY = {
-  'Very High': true,
-  'High': true,
-  'Medium': true,
-  'Low': true,
+  'Global': true,
+  'Regional': true,
+  'Neighborhood': true,
+  'Community': true,
+  'Baseline': true,
 };

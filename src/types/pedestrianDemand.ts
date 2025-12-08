@@ -7,10 +7,10 @@
 import type { FeatureCollection, Feature, Geometry } from 'geojson';
 
 /**
- * Demand category levels from the NYC DOT dataset
- * These represent relative pedestrian volume/demand on street segments
+ * Demand category levels from the NYC DOT Pedestrian Mobility Plan
+ * These are the official NYC DOT corridor classifications
  */
-export type DemandCategory = 'Very High' | 'High' | 'Medium' | 'Low';
+export type DemandCategory = 'Global' | 'Regional' | 'Neighborhood' | 'Community' | 'Baseline';
 
 /**
  * Properties of each street segment feature in the GeoJSON
