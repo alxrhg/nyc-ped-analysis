@@ -36,18 +36,35 @@ function MapController({ focusArea }: { focusArea: FocusArea | null }) {
 
 /**
  * Get demand category from properties
+ * Tries multiple possible field names from NYC Open Data
  */
 function getDemandCategory(props: PedestrianDemandProperties): DemandCategory | null {
-  const value = props.corridor_category || props.pedestrian_demand ||
-                props.ped_demand || props.demand_category || props.category;
+  // Try known field names first
+  let value = props.corridor_category || props.pedestrian_demand ||
+              props.ped_demand || props.demand_category || props.category ||
+              props.demand || props.ped_level;
+
+  // If not found, search for any field containing 'demand' or 'category'
+  if (!value) {
+    for (const key of Object.keys(props)) {
+      const keyLower = key.toLowerCase();
+      if (keyLower.includes('demand') || keyLower.includes('category') || keyLower.includes('level')) {
+        const v = props[key];
+        if (typeof v === 'string' && v.length > 0) {
+          value = v;
+          break;
+        }
+      }
+    }
+  }
 
   if (!value) return null;
 
-  const str = String(value).toLowerCase();
+  const str = String(value).toLowerCase().trim();
   if (str.includes('very') && str.includes('high')) return 'Very High';
-  if (str.includes('high')) return 'High';
-  if (str.includes('medium')) return 'Medium';
-  if (str.includes('low')) return 'Low';
+  if (str === 'high' || str.includes('high')) return 'High';
+  if (str === 'medium' || str.includes('medium') || str.includes('mod')) return 'Medium';
+  if (str === 'low' || str.includes('low')) return 'Low';
 
   return null;
 }
@@ -69,7 +86,12 @@ function DemandLayer({
     if (!data?.features?.length) return;
 
     console.log('[DemandLayer] Adding', data.features.length, 'features');
-    console.log('[DemandLayer] Sample:', data.features[0].properties);
+    console.log('[DemandLayer] Sample properties:', data.features[0].properties);
+    console.log('[DemandLayer] Available fields:', Object.keys(data.features[0].properties || {}));
+
+    // Test category detection on first feature
+    const testCategory = getDemandCategory(data.features[0].properties as PedestrianDemandProperties);
+    console.log('[DemandLayer] Detected category for first feature:', testCategory);
 
     // Remove existing layer
     if (layerRef.current) {
