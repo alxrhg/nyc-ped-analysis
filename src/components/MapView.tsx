@@ -1,20 +1,11 @@
 /**
  * MapView component - Leaflet map with pedestrian demand visualization
- * Simplified version for better performance
+ * Uses native Leaflet for better performance with large datasets
  */
 
-import { useEffect, useRef, useMemo } from 'react';
-import {
-  MapContainer,
-  TileLayer,
-  GeoJSON,
-  Rectangle,
-  Tooltip,
-  useMap,
-} from 'react-leaflet';
+import { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Rectangle, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import type { PathOptions } from 'leaflet';
-import type { Feature, Geometry } from 'geojson';
 
 import type {
   PedestrianDemandData,
@@ -36,8 +27,7 @@ function MapController({ focusArea }: { focusArea: FocusArea | null }) {
 
   useEffect(() => {
     if (focusArea) {
-      const bounds = L.latLngBounds(focusArea.bounds);
-      map.fitBounds(bounds, { padding: [20, 20], maxZoom: focusArea.zoom || 16 });
+      map.fitBounds(focusArea.bounds, { padding: [20, 20], maxZoom: focusArea.zoom || 16 });
     }
   }, [focusArea, map]);
 
@@ -45,57 +35,100 @@ function MapController({ focusArea }: { focusArea: FocusArea | null }) {
 }
 
 /**
- * Get demand category from properties - inline detection
+ * Get demand category from properties
  */
 function getDemandCategory(props: PedestrianDemandProperties): DemandCategory | null {
-  // Try different possible field names
-  const value = props.corridor_category ||
-                props.pedestrian_demand ||
-                props.ped_demand ||
-                props.demand_category ||
-                props.category ||
-                props.demand;
+  const value = props.corridor_category || props.pedestrian_demand ||
+                props.ped_demand || props.demand_category || props.category;
 
   if (!value) return null;
 
   const str = String(value).toLowerCase();
   if (str.includes('very') && str.includes('high')) return 'Very High';
   if (str.includes('high')) return 'High';
-  if (str.includes('medium') || str.includes('med')) return 'Medium';
+  if (str.includes('medium')) return 'Medium';
   if (str.includes('low')) return 'Low';
 
   return null;
 }
 
 /**
- * Get style for a feature
+ * Component that adds GeoJSON layer using native Leaflet
  */
-function getFeatureStyle(
-  feature: Feature<Geometry, PedestrianDemandProperties> | undefined,
-  categoryVisibility: CategoryVisibility
-): PathOptions {
-  if (!feature?.properties) {
-    return { color: '#888', weight: 1, opacity: 0.5 };
-  }
+function DemandLayer({
+  data,
+  categoryVisibility
+}: {
+  data: PedestrianDemandData;
+  categoryVisibility: CategoryVisibility;
+}) {
+  const map = useMap();
+  const layerRef = useRef<L.GeoJSON | null>(null);
 
-  const category = getDemandCategory(feature.properties);
+  useEffect(() => {
+    if (!data?.features?.length) return;
 
-  // Hide if category is toggled off
-  if (category && !categoryVisibility[category]) {
-    return { opacity: 0, fillOpacity: 0, weight: 0 };
-  }
+    console.log('[DemandLayer] Adding', data.features.length, 'features');
+    console.log('[DemandLayer] Sample:', data.features[0].properties);
 
-  // No category = default grey
-  if (!category) {
-    return { color: '#888', weight: 1, opacity: 0.5 };
-  }
+    // Remove existing layer
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+    }
 
-  const style = DEMAND_STYLES[category];
-  return {
-    color: style.color,
-    weight: style.weight,
-    opacity: style.opacity,
-  };
+    // Create new GeoJSON layer with native Leaflet
+    const layer = L.geoJSON(data as GeoJSON.GeoJsonObject, {
+      style: (feature) => {
+        if (!feature?.properties) {
+          return { color: '#888', weight: 1, opacity: 0.5 };
+        }
+
+        const category = getDemandCategory(feature.properties as PedestrianDemandProperties);
+
+        // Hide if toggled off
+        if (category && !categoryVisibility[category]) {
+          return { opacity: 0, weight: 0 };
+        }
+
+        if (!category) {
+          return { color: '#888', weight: 1, opacity: 0.5 };
+        }
+
+        const style = DEMAND_STYLES[category];
+        return {
+          color: style.color,
+          weight: style.weight,
+          opacity: style.opacity,
+        };
+      },
+      onEachFeature: (feature, featureLayer) => {
+        const props = feature.properties as PedestrianDemandProperties;
+        if (!props) return;
+
+        const name = props.street || props.streetname || props.on_st || props.name || 'Street';
+        const category = getDemandCategory(props);
+        const color = category ? DEMAND_STYLES[category].color : '#888';
+
+        featureLayer.bindTooltip(
+          `<strong>${name}</strong><br/><span style="color:${color}">Demand: ${category || 'N/A'}</span>`,
+          { sticky: true }
+        );
+      },
+    });
+
+    layer.addTo(map);
+    layerRef.current = layer;
+
+    console.log('[DemandLayer] Layer added successfully');
+
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+      }
+    };
+  }, [data, categoryVisibility, map]);
+
+  return null;
 }
 
 interface MapViewProps {
@@ -111,8 +144,6 @@ export function MapView({
   focusArea,
   className = '',
 }: MapViewProps) {
-  const geoJsonRef = useRef<L.GeoJSON | null>(null);
-
   const defaultCenter: [number, number] = [40.72, -73.998];
   const defaultZoom = 14;
 
@@ -120,47 +151,6 @@ export function MapView({
     [40.695, -74.025],
     [40.77, -73.965],
   ];
-
-  // Log data on load
-  useEffect(() => {
-    if (data?.features?.length) {
-      console.log('[MapView] Features:', data.features.length);
-      console.log('[MapView] Sample:', data.features[0].properties);
-      console.log('[MapView] Geometry:', data.features[0].geometry?.type);
-    }
-  }, [data]);
-
-  // Style function
-  const styleFunction = useMemo(() => {
-    return (feature: Feature<Geometry, PedestrianDemandProperties> | undefined) => {
-      return getFeatureStyle(feature, categoryVisibility);
-    };
-  }, [categoryVisibility]);
-
-  // Tooltip handler
-  const onEachFeature = useMemo(() => {
-    return (feature: Feature<Geometry, PedestrianDemandProperties>, layer: L.Layer) => {
-      const props = feature.properties;
-      if (!props) return;
-
-      const name = props.street || props.streetname || props.on_st || props.name || 'Street';
-      const category = getDemandCategory(props);
-      const categoryColor = category ? DEMAND_STYLES[category].color : '#888';
-
-      const tooltip = `
-        <strong>${name}</strong><br/>
-        <span style="color:${categoryColor}">Demand: ${category || 'N/A'}</span>
-      `;
-
-      layer.bindTooltip(tooltip, { sticky: true });
-    };
-  }, []);
-
-  // Key to force re-render when visibility changes
-  const geoJsonKey = useMemo(() => {
-    const vis = Object.values(categoryVisibility).join('-');
-    return `geojson-${vis}`;
-  }, [categoryVisibility]);
 
   return (
     <div className={`relative ${className}`}>
@@ -201,15 +191,9 @@ export function MapView({
           </Tooltip>
         </Rectangle>
 
-        {/* Pedestrian demand layer */}
+        {/* Native Leaflet GeoJSON layer */}
         {data && data.features && data.features.length > 0 && (
-          <GeoJSON
-            key={geoJsonKey}
-            ref={geoJsonRef as React.Ref<L.GeoJSON>}
-            data={data}
-            style={styleFunction}
-            onEachFeature={onEachFeature}
-          />
+          <DemandLayer data={data} categoryVisibility={categoryVisibility} />
         )}
       </MapContainer>
 
