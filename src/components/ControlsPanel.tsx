@@ -10,17 +10,17 @@ import type {
 } from '../types/pedestrianDemand';
 
 /**
- * NYC DOT category mapping for consistent display
+ * Quantile-based category mapping for display
  */
 const CATEGORY_DISPLAY: Array<{
   demandLevel: DemandCategory;
-  nycDotName: string;
+  label: string;
   description: string;
 }> = [
-  { demandLevel: 'Very High', nycDotName: 'Regional', description: 'Highest demand corridors' },
-  { demandLevel: 'High', nycDotName: 'Community', description: 'High pedestrian activity' },
-  { demandLevel: 'Medium', nycDotName: 'Baseline', description: 'Moderate demand' },
-  { demandLevel: 'Low', nycDotName: 'Other', description: 'Lower demand streets' },
+  { demandLevel: 'Very High', label: 'Very High', description: 'Top 25% demand' },
+  { demandLevel: 'High', label: 'High', description: '50-75th percentile' },
+  { demandLevel: 'Medium', label: 'Medium', description: '25-50th percentile' },
+  { demandLevel: 'Low', label: 'Low', description: 'Bottom 25%' },
 ];
 
 interface ControlsPanelProps {
@@ -58,10 +58,10 @@ export function ControlsPanel({
       {/* Category Toggles Section */}
       <section>
         <h3 className="font-semibold text-gray-800 text-sm mb-3 uppercase tracking-wide">
-          Street Category
+          Demand Level
         </h3>
         <div className="space-y-2">
-          {CATEGORY_DISPLAY.map(({ demandLevel, nycDotName, description }) => {
+          {CATEGORY_DISPLAY.map(({ demandLevel, label, description }) => {
             const style = DEMAND_STYLES[demandLevel];
             const isChecked = categoryVisibility[demandLevel];
 
@@ -109,7 +109,7 @@ export function ControlsPanel({
                   </div>
                 </div>
 
-                {/* Label with NYC DOT category name */}
+                {/* Label with demand level */}
                 <div className="flex-1 min-w-0">
                   <span
                     className={`
@@ -118,7 +118,7 @@ export function ControlsPanel({
                       group-hover:text-gray-900
                     `}
                   >
-                    {nycDotName}
+                    {label}
                   </span>
                   <span className="text-[10px] text-gray-400 block">
                     {description}
@@ -188,8 +188,8 @@ export function ControlsPanel({
             based on the NYC DOT Pedestrian Mobility Plan dataset.
           </p>
           <p>
-            <strong style={{ color: '#d32f2f' }}>Regional</strong> streets (red) have the highest
-            pedestrian demand and are prime candidates for <strong>Low Traffic Neighborhood</strong> interventions.
+            Colors are distributed using <strong>quartile breaks</strong> for even distribution.
+            <span style={{ color: '#d32f2f' }}> Red</span> shows the top 25% highest demand streets.
           </p>
           <p className="text-gray-500">
             Focus: Houston St to Canal St corridor in Chinatown/SoHo for pedestrianization research.
