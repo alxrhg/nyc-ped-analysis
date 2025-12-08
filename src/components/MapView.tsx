@@ -15,7 +15,6 @@ import type {
   DemandCategory,
 } from '../types/pedestrianDemand';
 import { STUDY_AREAS, DEMAND_STYLES } from '../utils/demandStyles';
-import Legend from './Legend';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -216,10 +215,6 @@ export function MapView({
           <DemandLayer data={data} categoryVisibility={categoryVisibility} />
         )}
       </MapContainer>
-
-      <div className="absolute bottom-4 right-4 z-[1000]">
-        <Legend />
-      </div>
     </div>
   );
 }
