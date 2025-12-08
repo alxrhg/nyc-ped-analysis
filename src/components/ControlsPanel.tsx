@@ -10,9 +10,18 @@ import type {
 } from '../types/pedestrianDemand';
 
 /**
- * Order of categories for display
+ * NYC DOT category mapping for consistent display
  */
-const CATEGORY_ORDER: DemandCategory[] = ['Very High', 'High', 'Medium', 'Low'];
+const CATEGORY_DISPLAY: Array<{
+  demandLevel: DemandCategory;
+  nycDotName: string;
+  description: string;
+}> = [
+  { demandLevel: 'Very High', nycDotName: 'Regional', description: 'Highest demand corridors' },
+  { demandLevel: 'High', nycDotName: 'Community', description: 'High pedestrian activity' },
+  { demandLevel: 'Medium', nycDotName: 'Baseline', description: 'Moderate demand' },
+  { demandLevel: 'Low', nycDotName: 'Other', description: 'Lower demand streets' },
+];
 
 interface ControlsPanelProps {
   categoryVisibility: CategoryVisibility;
@@ -49,24 +58,24 @@ export function ControlsPanel({
       {/* Category Toggles Section */}
       <section>
         <h3 className="font-semibold text-gray-800 text-sm mb-3 uppercase tracking-wide">
-          Filter by Demand
+          Street Category
         </h3>
         <div className="space-y-2">
-          {CATEGORY_ORDER.map((category) => {
-            const style = DEMAND_STYLES[category];
-            const isChecked = categoryVisibility[category];
+          {CATEGORY_DISPLAY.map(({ demandLevel, nycDotName, description }) => {
+            const style = DEMAND_STYLES[demandLevel];
+            const isChecked = categoryVisibility[demandLevel];
 
             return (
               <label
-                key={category}
+                key={demandLevel}
                 className="flex items-center gap-3 cursor-pointer group"
               >
                 {/* Custom styled checkbox */}
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <input
                     type="checkbox"
                     checked={isChecked}
-                    onChange={() => onCategoryToggle(category)}
+                    onChange={() => onCategoryToggle(demandLevel)}
                     className="sr-only peer"
                   />
                   <div
@@ -100,16 +109,21 @@ export function ControlsPanel({
                   </div>
                 </div>
 
-                {/* Label with color indicator */}
-                <span
-                  className={`
-                    text-sm transition-colors
-                    ${isChecked ? 'text-gray-800' : 'text-gray-400'}
-                    group-hover:text-gray-900
-                  `}
-                >
-                  {category}
-                </span>
+                {/* Label with NYC DOT category name */}
+                <div className="flex-1 min-w-0">
+                  <span
+                    className={`
+                      text-sm font-medium transition-colors block
+                      ${isChecked ? 'text-gray-800' : 'text-gray-400'}
+                      group-hover:text-gray-900
+                    `}
+                  >
+                    {nycDotName}
+                  </span>
+                  <span className="text-[10px] text-gray-400 block">
+                    {description}
+                  </span>
+                </div>
               </label>
             );
           })}
@@ -174,9 +188,8 @@ export function ControlsPanel({
             based on the NYC DOT Pedestrian Mobility Plan dataset.
           </p>
           <p>
-            Higher demand areas (shown in <span className="text-demand-very-high font-semibold">red</span>)
-            indicate streets with greater pedestrian activity and are prime candidates
-            for <strong>Low Traffic Neighborhood</strong> interventions.
+            <strong style={{ color: '#d32f2f' }}>Regional</strong> streets (red) have the highest
+            pedestrian demand and are prime candidates for <strong>Low Traffic Neighborhood</strong> interventions.
           </p>
           <p className="text-gray-500">
             Focus: Houston St to Canal St corridor in Chinatown/SoHo for pedestrianization research.
