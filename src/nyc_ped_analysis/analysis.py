@@ -95,6 +95,10 @@ def clean_collision_data(df: pd.DataFrame) -> pd.DataFrame:
     """Normalize and filter collision data for analysis."""
 
     working = df.copy()
+
+    # Standardize coordinate values and drop rows missing usable geometry.
+    for coord in (COL_LAT, COL_LON):
+        working[coord] = pd.to_numeric(working[coord], errors="coerce")
     working = working.dropna(subset=[COL_LAT, COL_LON])
 
     # Ensure numeric injury and fatality counts even if the CSV stores strings.
@@ -102,11 +106,25 @@ def clean_collision_data(df: pd.DataFrame) -> pd.DataFrame:
         working[column] = pd.to_numeric(working[column], errors="coerce").fillna(0)
 
     # Replace unknown boroughs with a consistent placeholder for grouping.
-    working[COL_BOROUGH] = working[COL_BOROUGH].fillna("UNKNOWN").str.upper()
+    working[COL_BOROUGH] = (
+        working[COL_BOROUGH]
+        .fillna("UNKNOWN")
+        .astype(str)
+        .str.strip()
+        .replace("", "UNKNOWN")
+        .str.upper()
+    )
 
     # Normalize street names if present.
     if COL_STREET in working.columns:
-        working[COL_STREET] = working[COL_STREET].fillna("(no street reported)").str.upper()
+        working[COL_STREET] = (
+            working[COL_STREET]
+            .fillna("(no street reported)")
+            .astype(str)
+            .str.strip()
+            .replace("", "(no street reported)")
+            .str.upper()
+        )
 
     return working
 
@@ -136,6 +154,9 @@ def compute_top_locations(df: pd.DataFrame, limit: int = 10) -> list[LocationSum
     Results default to the top 10 on-street locations but can be adjusted using
     the ``limit`` parameter.
     """
+
+    if limit <= 0:
+        raise ValueError("limit must be positive")
 
     if COL_STREET not in df.columns:
         return []
@@ -185,6 +206,9 @@ def compute_monthly_trend(df: pd.DataFrame) -> list[MonthlyTrend]:
 
 def build_summary(df: pd.DataFrame, top_location_limit: int = 10) -> dict:
     """Build a JSON-serializable summary bundle for reporting."""
+
+    if top_location_limit <= 0:
+        raise ValueError("top_location_limit must be positive")
 
     boroughs = compute_borough_summary(df)
     locations = compute_top_locations(df, limit=top_location_limit)

@@ -42,6 +42,11 @@ Each summary entry is ready for GeoJSON or visualization tools. For spatial
 analysis that requires precise geometry operations, pair these summaries with a
 borough boundary dataset in a downstream notebook.
 
+The input cleaning step standardizes numeric columns and normalizes borough and
+street values, so results stay consistent even when exports contain mixed types
+or missing strings. The ``--top-locations`` flag must be positive to generate a
+ranking.
+
 ## Development notes
 
 The code intentionally avoids dependencies heavier than pandas so it can run in
