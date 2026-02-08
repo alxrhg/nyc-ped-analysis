@@ -18,55 +18,107 @@ body {
   padding: 0;
 }
 
-/* Leaflet popup overrides */
-.leaflet-popup-content-wrapper {
-  background: var(--panel-bg) !important;
-  color: var(--foreground) !important;
-  border: 1px solid var(--panel-border) !important;
+/* Subway icon container — removes default Leaflet marker chrome */
+.subway-icon-container {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* ===== Dark map popup + control styles ===== */
+.dark-map .leaflet-popup-content-wrapper {
+  background: #141414 !important;
+  color: #ededed !important;
+  border: 1px solid #2a2a2a !important;
   border-radius: 8px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
+.dark-map .leaflet-popup-tip {
+  background: #141414 !important;
+  border: 1px solid #2a2a2a !important;
+  box-shadow: none !important;
+}
+
+.dark-map .leaflet-popup-close-button {
+  color: #9ca3af !important;
+}
+
+.dark-map .leaflet-popup-close-button:hover {
+  color: #ededed !important;
+}
+
+.dark-map .leaflet-control-zoom a {
+  background: #141414 !important;
+  color: #ededed !important;
+  border-color: #2a2a2a !important;
+}
+
+.dark-map .leaflet-control-zoom a:hover {
+  background: #2a2a2a !important;
+}
+
+.dark-map .leaflet-control-attribution {
+  background: rgba(10, 10, 10, 0.8) !important;
+  color: #9ca3af !important;
+  font-size: 9px !important;
+}
+
+.dark-map .leaflet-control-attribution a {
+  color: #9ca3af !important;
+}
+
+/* ===== Light map popup + control styles ===== */
+.light-map .leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+.light-map .leaflet-popup-tip {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+.light-map .leaflet-popup-close-button {
+  color: #6b7280 !important;
+}
+
+.light-map .leaflet-popup-close-button:hover {
+  color: #1a1a1a !important;
+}
+
+.light-map .leaflet-control-zoom a {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: #e5e7eb !important;
+}
+
+.light-map .leaflet-control-zoom a:hover {
+  background: #f3f4f6 !important;
+}
+
+.light-map .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #6b7280 !important;
+  font-size: 9px !important;
+}
+
+.light-map .leaflet-control-attribution a {
+  color: #6b7280 !important;
+}
+
+/* Shared popup content styles */
 .leaflet-popup-content {
   margin: 10px 14px !important;
   font-size: 13px !important;
   line-height: 1.4 !important;
 }
 
-.leaflet-popup-tip {
-  background: var(--panel-bg) !important;
-  border: 1px solid var(--panel-border) !important;
-  box-shadow: none !important;
-}
-
 .leaflet-popup-close-button {
-  color: var(--text-muted) !important;
   font-size: 18px !important;
-}
-
-.leaflet-popup-close-button:hover {
-  color: var(--foreground) !important;
-}
-
-/* Leaflet control overrides */
-.leaflet-control-zoom a {
-  background: var(--panel-bg) !important;
-  color: var(--foreground) !important;
-  border-color: var(--panel-border) !important;
-}
-
-.leaflet-control-zoom a:hover {
-  background: var(--panel-border) !important;
-}
-
-.leaflet-control-attribution {
-  background: rgba(10, 10, 10, 0.8) !important;
-  color: var(--text-muted) !important;
-  font-size: 9px !important;
-}
-
-.leaflet-control-attribution a {
-  color: var(--text-muted) !important;
 }
 
 /* Subway station tooltip */
@@ -74,11 +126,19 @@ body {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  color: #ffffff !important;
   font-size: 9px !important;
   font-weight: 700 !important;
-  text-shadow: 0 0 3px #0a0a0a, 0 0 6px #0a0a0a !important;
   padding: 0 !important;
+}
+
+.dark-map .subway-tooltip {
+  color: #ffffff !important;
+  text-shadow: 0 0 3px #0a0a0a, 0 0 6px #0a0a0a !important;
+}
+
+.light-map .subway-tooltip {
+  color: #1a1a1a !important;
+  text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff !important;
 }
 
 .subway-tooltip::before {

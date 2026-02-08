@@ -1,72 +1,128 @@
 [
   {
-    "name": "Canal St",
-    "lines": ["1", "2"],
-    "color": "#EE352E",
-    "coordinates": [-74.0063, 40.7207],
-    "cross_street": "Varick St"
+    "name": "Canal Street",
+    "lat": 40.72056,
+    "lng": -74.00521,
+    "lines": [
+      { "name": "1", "color": "#EE352E" },
+      { "name": "2", "color": "#EE352E" }
+    ],
+    "lineName": "IRT Broadway\u2013Seventh Avenue Line",
+    "crossStreet": "Varick Street & Canal Street"
   },
   {
-    "name": "Canal St",
-    "lines": ["6"],
-    "color": "#00933C",
-    "coordinates": [-73.9998, 40.7182],
-    "cross_street": "Lafayette St"
+    "name": "Canal Street",
+    "lat": 40.72028,
+    "lng": -74.00244,
+    "lines": [
+      { "name": "A", "color": "#0039A6" },
+      { "name": "C", "color": "#0039A6" },
+      { "name": "E", "color": "#0039A6" }
+    ],
+    "lineName": "IND Eighth Avenue Line",
+    "crossStreet": "Sixth Avenue & Canal Street"
   },
   {
-    "name": "Canal St",
-    "lines": ["N", "Q", "R", "W"],
-    "color": "#FCCC0A",
-    "coordinates": [-74.0019, 40.7191],
-    "cross_street": "Broadway"
+    "name": "Canal Street",
+    "lat": 40.71946,
+    "lng": -73.99854,
+    "lines": [
+      { "name": "N", "color": "#FCCC0A" },
+      { "name": "Q", "color": "#FCCC0A" },
+      { "name": "R", "color": "#FCCC0A" },
+      { "name": "W", "color": "#FCCC0A" }
+    ],
+    "lineName": "BMT Broadway Line",
+    "crossStreet": "Broadway & Canal Street"
   },
   {
-    "name": "Canal St",
-    "lines": ["J", "Z"],
-    "color": "#996633",
-    "coordinates": [-73.9997, 40.7158],
-    "cross_street": "Centre St"
+    "name": "Canal Street",
+    "lat": 40.71817,
+    "lng": -73.99993,
+    "lines": [
+      { "name": "J", "color": "#996633" },
+      { "name": "Z", "color": "#996633" }
+    ],
+    "lineName": "BMT Nassau Street Line",
+    "crossStreet": "Centre Street & Canal Street"
   },
   {
-    "name": "Spring St",
-    "lines": ["A", "C", "E"],
-    "color": "#2850AD",
-    "coordinates": [-74.0040, 40.7264],
-    "cross_street": "Varick St"
+    "name": "Canal Street",
+    "lat": 40.71863,
+    "lng": -73.99735,
+    "lines": [
+      { "name": "6", "color": "#00933C" }
+    ],
+    "lineName": "IRT Lexington Avenue Line",
+    "crossStreet": "Lafayette Street & Canal Street"
   },
   {
-    "name": "Spring St",
-    "lines": ["6"],
-    "color": "#00933C",
-    "coordinates": [-73.9972, 40.7223],
-    "cross_street": "Lafayette St"
+    "name": "Spring Street",
+    "lat": 40.72622,
+    "lng": -74.00369,
+    "lines": [
+      { "name": "A", "color": "#0039A6" },
+      { "name": "C", "color": "#0039A6" },
+      { "name": "E", "color": "#0039A6" }
+    ],
+    "lineName": "IND Eighth Avenue Line",
+    "crossStreet": "Varick Street & Spring Street"
   },
   {
-    "name": "Prince St",
-    "lines": ["N", "Q", "R", "W"],
-    "color": "#FCCC0A",
-    "coordinates": [-73.9978, 40.7243],
-    "cross_street": "Broadway"
+    "name": "Spring Street",
+    "lat": 40.72233,
+    "lng": -73.99671,
+    "lines": [
+      { "name": "6", "color": "#00933C" }
+    ],
+    "lineName": "IRT Lexington Avenue Line",
+    "crossStreet": "Lafayette Street & Spring Street"
+  },
+  {
+    "name": "Prince Street",
+    "lat": 40.72434,
+    "lng": -73.99771,
+    "lines": [
+      { "name": "N", "color": "#FCCC0A" },
+      { "name": "Q", "color": "#FCCC0A" },
+      { "name": "R", "color": "#FCCC0A" },
+      { "name": "W", "color": "#FCCC0A" }
+    ],
+    "lineName": "BMT Broadway Line",
+    "crossStreet": "Broadway & Prince Street"
   },
   {
     "name": "Bowery",
-    "lines": ["J", "Z"],
-    "color": "#996633",
-    "coordinates": [-73.9938, 40.7204],
-    "cross_street": "Bowery"
+    "lat": 40.72028,
+    "lng": -73.99369,
+    "lines": [
+      { "name": "J", "color": "#996633" },
+      { "name": "Z", "color": "#996633" }
+    ],
+    "lineName": "BMT Nassau Street Line",
+    "crossStreet": "Bowery & Delancey Street"
   },
   {
-    "name": "Houston St",
-    "lines": ["1"],
-    "color": "#EE352E",
-    "coordinates": [-74.0053, 40.7282],
-    "cross_street": "Varick St"
+    "name": "Houston Street",
+    "lat": 40.72832,
+    "lng": -74.00530,
+    "lines": [
+      { "name": "1", "color": "#EE352E" }
+    ],
+    "lineName": "IRT Broadway\u2013Seventh Avenue Line",
+    "crossStreet": "Varick Street & Houston Street"
   },
   {
-    "name": "Broadway-Lafayette",
-    "lines": ["B", "D", "F", "M"],
-    "color": "#FF6319",
-    "coordinates": [-73.9962, 40.7254],
-    "cross_street": "Lafayette St"
+    "name": "Broadway\u2013Lafayette Street",
+    "lat": 40.72534,
+    "lng": -73.99633,
+    "lines": [
+      { "name": "B", "color": "#FF6319" },
+      { "name": "D", "color": "#FF6319" },
+      { "name": "F", "color": "#FF6319" },
+      { "name": "M", "color": "#FF6319" }
+    ],
+    "lineName": "IND Sixth Avenue Line",
+    "crossStreet": "Lafayette Street & Houston Street"
   }
 ]

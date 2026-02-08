@@ -50,6 +50,7 @@ export default function ThesisMapPage() {
     subwayStations: 0,
   });
 
+  const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Fetch data using SWR hooks
@@ -148,6 +149,8 @@ export default function ThesisMapPage() {
             crashFilters={crashFilters}
             onToggleCrashFilter={handleToggleCrashFilter}
             stats={stats}
+            darkMode={darkMode}
+            onToggleDarkMode={() => setDarkMode((prev) => !prev)}
             loading={{
               traffic: trafficLoading,
               pedestrian: pedestrianLoading,
@@ -161,6 +164,7 @@ export default function ThesisMapPage() {
           <ThesisMap
             layers={layers}
             crashFilters={crashFilters}
+            darkMode={darkMode}
             trafficData={trafficData}
             pedestrianData={pedestrianData}
             crashData={crashData}

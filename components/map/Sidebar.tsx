@@ -8,6 +8,8 @@ interface SidebarProps {
   crashFilters: CrashFilters;
   onToggleCrashFilter: (filter: keyof CrashFilters) => void;
   stats: MapStats;
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
   loading: {
     traffic: boolean;
     pedestrian: boolean;
@@ -93,10 +95,41 @@ export default function Sidebar({
   crashFilters,
   onToggleCrashFilter,
   stats,
+  darkMode,
+  onToggleDarkMode,
   loading,
 }: SidebarProps) {
   return (
     <aside className="w-80 bg-[#141414] border-r border-[#2a2a2a] flex flex-col overflow-y-auto shrink-0">
+      {/* Basemap toggle */}
+      <div className="p-4 border-b border-[#2a2a2a]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-2">
+          Basemap
+        </h2>
+        <div className="flex gap-1">
+          <button
+            onClick={darkMode ? onToggleDarkMode : undefined}
+            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+              !darkMode
+                ? "bg-[#3b82f6] text-white"
+                : "bg-[#2a2a2a] text-[#9ca3af] hover:text-white"
+            }`}
+          >
+            Light {!darkMode && "\u2713"}
+          </button>
+          <button
+            onClick={!darkMode ? onToggleDarkMode : undefined}
+            className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+              darkMode
+                ? "bg-[#3b82f6] text-white"
+                : "bg-[#2a2a2a] text-[#9ca3af] hover:text-white"
+            }`}
+          >
+            Dark {darkMode && "\u2713"}
+          </button>
+        </div>
+      </div>
+
       {/* Layers */}
       <div className="p-4 border-b border-[#2a2a2a]">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-3">
@@ -175,11 +208,11 @@ export default function Sidebar({
               type="checkbox"
               checked={crashFilters.motorist}
               onChange={() => onToggleCrashFilter("motorist")}
-              className="accent-[#6b7280]"
+              className="accent-[#aaaaaa]"
             />
             <span
               className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: "#6b7280" }}
+              style={{ backgroundColor: "#aaaaaa" }}
             />
             Vehicle only
           </label>
@@ -256,7 +289,7 @@ export default function Sidebar({
               <div className="flex items-center gap-2">
                 <span
                   className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: "#6b7280" }}
+                  style={{ backgroundColor: "#aaaaaa" }}
                 />
                 <span className="text-[10px] text-[#9ca3af]">
                   Vehicle only
@@ -269,15 +302,41 @@ export default function Sidebar({
         {layers.transit && (
           <div className="mb-3">
             <div className="text-xs text-[#9ca3af] mb-1.5">
-              Subway Stations
+              Transit Coverage
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="flex gap-px">
+                <span
+                  className="inline-flex items-center justify-center rounded-full border-2 border-[#333] text-white font-bold"
+                  style={{
+                    width: 16,
+                    height: 16,
+                    fontSize: 9,
+                    backgroundColor: "#EE352E",
+                  }}
+                >
+                  1
+                </span>
+                <span
+                  className="inline-flex items-center justify-center rounded-full border-2 border-[#333] text-white font-bold"
+                  style={{
+                    width: 16,
+                    height: 16,
+                    fontSize: 9,
+                    backgroundColor: "#0039A6",
+                  }}
+                >
+                  A
+                </span>
+              </div>
+              <span className="text-[10px] text-[#9ca3af]">
+                Subway station (MTA bullets)
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <span
-                className="w-2.5 h-2.5 rounded-full border border-white"
-                style={{ backgroundColor: "#3b82f6" }}
-              />
+              <span className="w-4 h-0.5 rounded" style={{ backgroundColor: "#FF6319" }} />
               <span className="text-[10px] text-[#9ca3af]">
-                Station (colored by line)
+                Subway route line
               </span>
             </div>
           </div>

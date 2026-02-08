@@ -3,6 +3,8 @@
  * Fetches live data from NYC Open Data for the Canal St–Houston St corridor.
  */
 
+import proj4 from "proj4";
+
 const SODA_BASE = "https://data.cityofnewyork.us/resource";
 
 // Study area bounding box (Canal St to Houston St corridor)
@@ -21,6 +23,28 @@ const QUERY_BOUNDS = {
   west: STUDY_AREA.west - QUERY_BUFFER,
   east: STUDY_AREA.east + QUERY_BUFFER,
 };
+
+// ---------------------------------------------------------------------------
+// EPSG:2263 — NY State Plane Long Island (US Survey Feet)
+// The traffic volume dataset stores WKT geometry in this projection.
+// ---------------------------------------------------------------------------
+const EPSG2263 =
+  "+proj=lcc +lat_1=41.03333333333333 +lat_2=40.66666666666666 " +
+  "+lat_0=40.16666666666666 +lon_0=-74 +x_0=300000.0000000001 " +
+  "+y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs";
+
+/** Convert NY State Plane (EPSG:2263) coordinates to WGS84 [lng, lat]. */
+export function statePlaneToWGS84(
+  x: number,
+  y: number
+): [number, number] {
+  const [lng, lat] = proj4(EPSG2263, "EPSG:4326", [x, y]);
+  return [lng, lat];
+}
+
+// ---------------------------------------------------------------------------
+// Fetch helpers
+// ---------------------------------------------------------------------------
 
 interface FetchOptions {
   limit?: number;
@@ -55,9 +79,6 @@ async function fetchSODA<T>(
   return res.json();
 }
 
-/**
- * Fetch all pages of a SODA dataset matching the given options.
- */
 async function fetchAllPages<T>(
   datasetId: string,
   options: FetchOptions = {}
@@ -83,6 +104,7 @@ async function fetchAllPages<T>(
 
 // ---------------------------------------------------------------------------
 // Traffic Volume Counts (7ym2-wayt)
+// NOTE: wktgeom is in EPSG:2263 (State Plane feet), NOT WGS84.
 // ---------------------------------------------------------------------------
 
 export interface TrafficVolumeRecord {
@@ -103,8 +125,6 @@ export interface TrafficVolumeRecord {
 }
 
 export async function fetchTrafficVolumes(): Promise<TrafficVolumeRecord[]> {
-  // Filter to Manhattan and attempt to get records near the study area
-  // This dataset uses WKT geometry; we filter by boro and fetch a broad set
   return fetchAllPages<TrafficVolumeRecord>("7ym2-wayt", {
     where: `boro = 'Manhattan'`,
     limit: 10000,
@@ -113,6 +133,7 @@ export async function fetchTrafficVolumes(): Promise<TrafficVolumeRecord[]> {
 
 // ---------------------------------------------------------------------------
 // Bi-Annual Pedestrian Counts (2de2-6x2h)
+// Count columns follow the pattern: may_07, sep_07, may_08, sep_08, ...
 // ---------------------------------------------------------------------------
 
 export interface PedestrianCountRecord {
@@ -121,8 +142,11 @@ export interface PedestrianCountRecord {
   the_geom?: { type: string; coordinates: [number, number] };
   latitude?: string;
   longitude?: string;
-  [key: string]: unknown; // count columns are dynamic by year/period
+  [key: string]: unknown;
 }
+
+/** Regex matching pedestrian count column names (e.g. may_07, sep_15). */
+export const PED_COUNT_COL_PATTERN = /^(may|sep)_\d{2}$/;
 
 export async function fetchPedestrianCounts(): Promise<
   PedestrianCountRecord[]
@@ -130,23 +154,6 @@ export async function fetchPedestrianCounts(): Promise<
   return fetchSODA<PedestrianCountRecord>("2de2-6x2h", {
     where: `borough = 'Manhattan'`,
     limit: 5000,
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Pedestrian Mobility Plan (c4kr-96ik)
-// ---------------------------------------------------------------------------
-
-export interface PedMobilityRecord {
-  the_geom?: { type: string; coordinates: unknown };
-  corridor_classification?: string;
-  street_name?: string;
-  [key: string]: unknown;
-}
-
-export async function fetchPedMobilityPlan(): Promise<PedMobilityRecord[]> {
-  return fetchSODA<PedMobilityRecord>("c4kr-96ik", {
-    limit: 10000,
   });
 }
 
@@ -195,7 +202,7 @@ export async function fetchCrashData(): Promise<CrashRecord[]> {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Check if a point [lng, lat] is within the study area (with optional buffer). */
+/** Check if a WGS84 point [lng, lat] is within the study area. */
 export function isInStudyArea(
   lng: number,
   lat: number,
@@ -209,26 +216,26 @@ export function isInStudyArea(
   );
 }
 
-/** Parse a WKT POINT string to [lng, lat]. */
+/** Parse a WKT POINT string to raw [x, y] (in source CRS, NOT necessarily WGS84). */
 export function parseWktPoint(wkt: string): [number, number] | null {
   const match = wkt.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
   if (!match) return null;
   return [parseFloat(match[1]), parseFloat(match[2])];
 }
 
-/** Parse a WKT LINESTRING to an array of [lng, lat] pairs. */
+/** Parse a WKT LINESTRING to raw [x, y] pairs. */
 export function parseWktLineString(
   wkt: string
 ): [number, number][] | null {
   const match = wkt.match(/LINESTRING\s*\(([^)]+)\)/i);
   if (!match) return null;
   return match[1].split(",").map((pair) => {
-    const [lng, lat] = pair.trim().split(/\s+/).map(Number);
-    return [lng, lat];
+    const [x, y] = pair.trim().split(/\s+/).map(Number);
+    return [x, y];
   });
 }
 
-/** Parse a WKT MULTILINESTRING to arrays of coordinate pairs. */
+/** Parse a WKT MULTILINESTRING to arrays of raw [x, y] pairs. */
 export function parseWktMultiLineString(
   wkt: string
 ): [number, number][][] | null {
@@ -238,8 +245,8 @@ export function parseWktMultiLineString(
   return lineStrings.map((ls) => {
     const clean = ls.replace(/[()]/g, "");
     return clean.split(",").map((pair) => {
-      const [lng, lat] = pair.trim().split(/\s+/).map(Number);
-      return [lng, lat];
+      const [x, y] = pair.trim().split(/\s+/).map(Number);
+      return [x, y];
     });
   });
 }

@@ -8,13 +8,12 @@ import {
   Polyline,
   CircleMarker,
   Popup,
-  Tooltip,
   Marker,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { STUDY_AREA } from "@/lib/nyc-open-data";
+import { STUDY_AREA, PED_COUNT_COL_PATTERN } from "@/lib/nyc-open-data";
 import type {
   TrafficVolumeRecord,
   PedestrianCountRecord,
@@ -22,14 +21,16 @@ import type {
 } from "@/lib/nyc-open-data";
 import {
   isInStudyArea,
+  statePlaneToWGS84,
   parseWktPoint,
   parseWktLineString,
   parseWktMultiLineString,
 } from "@/lib/nyc-open-data";
 import ltnBoundary from "@/data/ltn-boundary";
 import subwayStations from "@/data/subway-stations.json";
+import subwayLines from "@/data/subway-lines";
 
-// Leaflet uses [lat, lng], our data stores [lng, lat]
+// Leaflet uses [lat, lng], GeoJSON/data stores [lng, lat]
 type LatLng = [number, number];
 
 function toLatLng(lngLat: [number, number]): LatLng {
@@ -58,6 +59,7 @@ export interface CrashFilters {
 interface ThesisMapProps {
   layers: LayerVisibility;
   crashFilters: CrashFilters;
+  darkMode: boolean;
   trafficData: TrafficVolumeRecord[] | undefined;
   pedestrianData: PedestrianCountRecord[] | undefined;
   crashData: CrashRecord[] | undefined;
@@ -72,17 +74,10 @@ export interface MapStats {
   subwayStations: number;
 }
 
-// Diamond SVG icon for modal filters
-const diamondIcon = L.divIcon({
-  className: "",
-  html: `<svg width="16" height="16" viewBox="0 0 16 16" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))">
-    <path d="M8 1 L15 8 L8 15 L1 8 Z" fill="#f59e0b" stroke="#0a0a0a" stroke-width="1"/>
-  </svg>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-// Helper: interpolate traffic volume to color
 function volumeToColor(vol: number): string {
   if (vol > 30000) return "#991b1b";
   if (vol > 15000) return "#ef4444";
@@ -107,13 +102,50 @@ function volumeToLabel(vol: number): string {
 function crashColor(type: string): string {
   if (type === "pedestrian") return "#ef4444";
   if (type === "cyclist") return "#f97316";
-  return "#6b7280";
+  return "#aaaaaa";
 }
 
 function crashLabel(type: string): string {
   if (type === "pedestrian") return "Pedestrian Involved";
   if (type === "cyclist") return "Cyclist Involved";
   return "Vehicle Only";
+}
+
+// ---------------------------------------------------------------------------
+// Subway bullet icon factory
+// ---------------------------------------------------------------------------
+
+function createSubwayBulletIcon(
+  lines: Array<{ name: string; color: string }>,
+  darkMode: boolean
+): L.DivIcon {
+  const borderColor = darkMode ? "#ffffff" : "#333333";
+  const shadowOpacity = darkMode ? 0.5 : 0.2;
+  const bullets = lines
+    .map((line) => {
+      const textColor = line.color === "#FCCC0A" ? "#333333" : "#ffffff";
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:2px solid ${borderColor};background:${line.color};color:${textColor};font-weight:700;font-size:11px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin-right:1px;line-height:1;">${line.name}</span>`;
+    })
+    .join("");
+  return L.divIcon({
+    html: `<div style="display:flex;align-items:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,${shadowOpacity}));">${bullets}</div>`,
+    className: "subway-icon-container",
+    iconSize: [lines.length * 23, 24],
+    iconAnchor: [(lines.length * 23) / 2, 12],
+  });
+}
+
+// Diamond SVG icon for modal filters
+function createDiamondIcon(darkMode: boolean): L.DivIcon {
+  const stroke = darkMode ? "#0a0a0a" : "#8a6d20";
+  return L.divIcon({
+    className: "",
+    html: `<svg width="16" height="16" viewBox="0 0 16 16" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,${darkMode ? 0.5 : 0.25}))">
+      <path d="M8 1 L15 8 L8 15 L1 8 Z" fill="#f59e0b" stroke="${stroke}" stroke-width="1.5"/>
+    </svg>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
 }
 
 // Component to invalidate map size when container changes
@@ -126,7 +158,9 @@ function MapResizer() {
   return null;
 }
 
-// ---------- Processed data types ----------
+// ---------------------------------------------------------------------------
+// Processed data types
+// ---------------------------------------------------------------------------
 
 interface TrafficSegment {
   id: string;
@@ -164,6 +198,7 @@ interface CrashPoint {
 export default function ThesisMap({
   layers,
   crashFilters,
+  darkMode,
   trafficData,
   pedestrianData,
   crashData,
@@ -172,8 +207,11 @@ export default function ThesisMap({
   // ----- Process LTN Boundary -----
   const ltnData = useMemo(() => {
     const boundary: LatLng[] = [];
-    const boundaryRoads: { name: string; role: string; positions: LatLng[] }[] =
-      [];
+    const boundaryRoads: {
+      name: string;
+      role: string;
+      positions: LatLng[];
+    }[] = [];
     const modalFilters: {
       name: string;
       description: string;
@@ -182,10 +220,7 @@ export default function ThesisMap({
 
     for (const feature of ltnBoundary.features) {
       const props = feature.properties;
-      if (
-        props?.type === "boundary" &&
-        feature.geometry.type === "Polygon"
-      ) {
+      if (props?.type === "boundary" && feature.geometry.type === "Polygon") {
         const coords = (feature.geometry as GeoJSON.Polygon).coordinates[0];
         for (const c of coords) {
           boundary.push(toLatLng(c as [number, number]));
@@ -207,8 +242,7 @@ export default function ThesisMap({
         const coords = (feature.geometry as GeoJSON.Point).coordinates;
         modalFilters.push({
           name: props.name || "Modal Filter",
-          description:
-            props.description || "Proposed modal filter location",
+          description: props.description || "Proposed modal filter location",
           position: toLatLng(coords as [number, number]),
         });
       }
@@ -217,7 +251,7 @@ export default function ThesisMap({
     return { boundary, boundaryRoads, modalFilters };
   }, []);
 
-  // ----- Process Traffic Data -----
+  // ----- Process Traffic Data (with proj4 State Plane → WGS84 conversion) -----
   const trafficSegments = useMemo<TrafficSegment[]>(() => {
     if (!trafficData) return [];
 
@@ -240,38 +274,62 @@ export default function ThesisMap({
       const vol = parseInt(rec.vol || "0", 10);
       if (isNaN(vol)) continue;
 
-      const point = parseWktPoint(rec.wktgeom);
-      if (point && !isInStudyArea(point[0], point[1])) continue;
-
       const existing = segmentMap.get(rec.segmentid);
       if (existing) {
         existing.totalVol += vol;
         existing.count += 1;
-      } else {
-        const line = parseWktLineString(rec.wktgeom);
-        const multiLine = !line
+        continue;
+      }
+
+      // Parse WKT geometry — coordinates are in State Plane (EPSG:2263)
+      const rawPoint = parseWktPoint(rec.wktgeom);
+      const rawLine = !rawPoint ? parseWktLineString(rec.wktgeom) : null;
+      const rawMultiLine =
+        !rawPoint && !rawLine
           ? parseWktMultiLineString(rec.wktgeom)
           : null;
-        const coords = line || multiLine;
-        if (!coords) continue;
 
-        const flat = Array.isArray(coords[0]?.[0])
-          ? (coords as [number, number][][]).flat()
-          : (coords as [number, number][]);
-        const inArea = flat.some(([lng, lat]) => isInStudyArea(lng, lat));
+      // Convert State Plane → WGS84
+      let wgs84Coords: [number, number][] | [number, number][][] | null =
+        null;
+      let isMulti = false;
+
+      if (rawPoint) {
+        const converted = statePlaneToWGS84(rawPoint[0], rawPoint[1]);
+        if (!isInStudyArea(converted[0], converted[1])) continue;
+        // Single point — skip, we need line segments for rendering
+        continue;
+      } else if (rawLine) {
+        const converted = rawLine.map(([x, y]) => statePlaneToWGS84(x, y));
+        const inArea = converted.some(([lng, lat]) =>
+          isInStudyArea(lng, lat)
+        );
         if (!inArea) continue;
-
-        segmentMap.set(rec.segmentid, {
-          coords,
-          totalVol: vol,
-          count: 1,
-          street: rec.street || "Unknown",
-          fromst: rec.fromst || "",
-          tost: rec.tost || "",
-          direction: rec.direction || "",
-          isMulti: !!multiLine,
-        });
+        wgs84Coords = converted;
+      } else if (rawMultiLine) {
+        const converted = rawMultiLine.map((line) =>
+          line.map(([x, y]) => statePlaneToWGS84(x, y))
+        );
+        const inArea = converted
+          .flat()
+          .some(([lng, lat]) => isInStudyArea(lng, lat));
+        if (!inArea) continue;
+        wgs84Coords = converted;
+        isMulti = true;
       }
+
+      if (!wgs84Coords) continue;
+
+      segmentMap.set(rec.segmentid, {
+        coords: wgs84Coords,
+        totalVol: vol,
+        count: 1,
+        street: rec.street || "Unknown",
+        fromst: rec.fromst || "",
+        tost: rec.tost || "",
+        direction: rec.direction || "",
+        isMulti,
+      });
     }
 
     const segments: TrafficSegment[] = [];
@@ -307,7 +365,7 @@ export default function ThesisMap({
     return segments;
   }, [trafficData]);
 
-  // ----- Process Pedestrian Data -----
+  // ----- Process Pedestrian Data (fixed: only match may_XX/sep_XX columns) -----
   const pedPoints = useMemo<PedPoint[]>(() => {
     if (!pedestrianData) return [];
 
@@ -328,16 +386,12 @@ export default function ThesisMap({
       if (isNaN(lng) || isNaN(lat)) continue;
       if (!isInStudyArea(lng, lat, 0.005)) continue;
 
+      // Only scan columns matching the pedestrian count pattern
       let maxCount = 0;
       for (const [key, val] of Object.entries(rec)) {
-        if (
-          typeof val === "string" &&
-          /^\d+$/.test(val) &&
-          key !== "latitude" &&
-          key !== "longitude"
-        ) {
+        if (typeof val === "string" && PED_COUNT_COL_PATTERN.test(key)) {
           const n = parseInt(val, 10);
-          if (n > maxCount) maxCount = n;
+          if (!isNaN(n) && n > maxCount) maxCount = n;
         }
       }
 
@@ -400,6 +454,18 @@ export default function ThesisMap({
     });
   }, [crashPoints, crashFilters]);
 
+  // ----- Theme-dependent icons (memoized) -----
+  const diamondIcon = useMemo(() => createDiamondIcon(darkMode), [darkMode]);
+  const stationIcons = useMemo(
+    () =>
+      subwayStations.map((s) => createSubwayBulletIcon(s.lines, darkMode)),
+    [darkMode]
+  );
+
+  // ----- Theme-dependent colors -----
+  const boundaryColor = darkMode ? "#ffffff" : "#1a1a1a";
+  const boundaryFillColor = darkMode ? "#3b82f6" : "#3b82f6";
+
   // ----- Stats Updates -----
   useEffect(() => {
     onStatsUpdate((prev) => ({
@@ -431,7 +497,6 @@ export default function ThesisMap({
     }));
   }, []);
 
-  // Pedestrian circle radius from volume
   const pedRadius = (vol: number) => {
     if (vol >= 50000) return 20;
     if (vol >= 20000) return 14;
@@ -446,81 +511,50 @@ export default function ThesisMap({
       zoom={15}
       minZoom={13}
       maxZoom={19}
-      className="w-full h-full"
+      className={`w-full h-full ${darkMode ? "dark-map" : "light-map"}`}
       zoomControl={false}
     >
-      {/* CartoDB Dark Matter tiles — free, no API key */}
+      {/* === 1. Basemap === */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        key={darkMode ? "dark" : "light"}
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+        url={
+          darkMode
+            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        }
       />
 
       <MapResizer />
 
-      {/* ===== Layer 5: Proposed LTN Boundary ===== */}
-      {layers.ltn && (
-        <>
-          {/* Boundary fill */}
-          {ltnData.boundary.length > 0 && (
-            <Polygon
-              positions={ltnData.boundary}
-              pathOptions={{
-                color: "#3b82f6",
-                weight: 0,
-                fillColor: "#3b82f6",
-                fillOpacity: 0.1,
-              }}
-            />
-          )}
+      {/* === 2. Subway Route Lines (below data layers) === */}
+      {layers.transit &&
+        subwayLines.map((route) => (
+          <Polyline
+            key={`route-${route.id}`}
+            positions={route.path}
+            pathOptions={{
+              color: route.color,
+              weight: route.weight,
+              opacity: route.opacity,
+            }}
+          />
+        ))}
 
-          {/* Boundary roads (dashed) */}
-          {ltnData.boundaryRoads.map((road, i) => (
-            <Polyline
-              key={`br-${i}`}
-              positions={road.positions}
-              pathOptions={{
-                color: "#3b82f6",
-                weight: 3,
-                dashArray: "12, 8",
-                opacity: 0.8,
-              }}
-            >
-              <Popup>
-                <div className="popup-content">
-                  <div className="font-semibold text-blue-300 mb-1">
-                    {road.name}
-                  </div>
-                  <div className="text-xs text-gray-400">{road.role}</div>
-                </div>
-              </Popup>
-            </Polyline>
-          ))}
-
-          {/* Modal filter markers */}
-          {ltnData.modalFilters.map((mf, i) => (
-            <Marker key={`mf-${i}`} position={mf.position} icon={diamondIcon}>
-              <Popup>
-                <div className="popup-content">
-                  <div className="font-semibold text-blue-300 mb-1">
-                    {mf.name}
-                  </div>
-                  <div className="text-xs text-gray-400 mb-2">
-                    {mf.description}
-                  </div>
-                  <div className="text-xs text-amber-400 border-t border-gray-700 pt-1">
-                    PROPOSED — Not existing infrastructure
-                  </div>
-                </div>
-              </Popup>
-              <Tooltip direction="top" offset={[0, -10]}>
-                {mf.name}
-              </Tooltip>
-            </Marker>
-          ))}
-        </>
+      {/* === 3. LTN boundary fill (subtle, below traffic) === */}
+      {layers.ltn && ltnData.boundary.length > 0 && (
+        <Polygon
+          positions={ltnData.boundary}
+          pathOptions={{
+            color: "transparent",
+            weight: 0,
+            fillColor: boundaryFillColor,
+            fillOpacity: darkMode ? 0.1 : 0.06,
+          }}
+        />
       )}
 
-      {/* ===== Layer 1: Traffic Volume ===== */}
+      {/* === 4. Traffic Volume Segments === */}
       {layers.traffic &&
         trafficSegments.map((seg) =>
           seg.isMulti ? (
@@ -537,7 +571,7 @@ export default function ThesisMap({
                 <Popup>
                   <div className="popup-content">
                     <div className="font-semibold mb-1">{seg.street}</div>
-                    <div className="text-xs text-gray-400 mb-1">
+                    <div className="text-xs text-gray-500 mb-1">
                       {seg.fromst} to {seg.tost}
                       {seg.direction ? ` (${seg.direction})` : ""}
                     </div>
@@ -548,7 +582,7 @@ export default function ThesisMap({
                       >
                         {seg.volume.toLocaleString()}
                       </span>{" "}
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-500">
                         avg daily traffic
                       </span>
                     </div>
@@ -575,7 +609,7 @@ export default function ThesisMap({
               <Popup>
                 <div className="popup-content">
                   <div className="font-semibold mb-1">{seg.street}</div>
-                  <div className="text-xs text-gray-400 mb-1">
+                  <div className="text-xs text-gray-500 mb-1">
                     {seg.fromst} to {seg.tost}
                     {seg.direction ? ` (${seg.direction})` : ""}
                   </div>
@@ -586,7 +620,7 @@ export default function ThesisMap({
                     >
                       {seg.volume.toLocaleString()}
                     </span>{" "}
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       avg daily traffic
                     </span>
                   </div>
@@ -602,7 +636,63 @@ export default function ThesisMap({
           )
         )}
 
-      {/* ===== Layer 2: Pedestrian Counts ===== */}
+      {/* === 5. Crash Data === */}
+      {layers.crashes &&
+        filteredCrashes.map((c, i) => (
+          <CircleMarker
+            key={`crash-${i}`}
+            center={c.position}
+            radius={4}
+            pathOptions={{
+              color: darkMode ? "#ffffff" : "#333333",
+              fillColor: crashColor(c.type),
+              fillOpacity: 0.8,
+              weight: 1,
+              opacity: 0.4,
+            }}
+          >
+            <Popup>
+              <div className="popup-content">
+                <div
+                  className="font-semibold mb-1"
+                  style={{ color: crashColor(c.type) }}
+                >
+                  {crashLabel(c.type)}
+                </div>
+                <div className="text-xs text-gray-500 mb-1">
+                  {c.date} {c.time}
+                  <br />
+                  {c.street}
+                  {c.cross ? ` & ${c.cross}` : ""}
+                </div>
+                <div className="text-xs">
+                  {c.injured > 0 && (
+                    <span style={{ color: "#d97706" }}>
+                      Injured: {c.injured}
+                    </span>
+                  )}
+                  {c.killed > 0 && (
+                    <span style={{ color: "#dc2626", marginLeft: 8 }}>
+                      Killed: {c.killed}
+                    </span>
+                  )}
+                  {c.injured === 0 && c.killed === 0 && (
+                    <span className="text-gray-400">
+                      No injuries reported
+                    </span>
+                  )}
+                </div>
+                {c.factor && c.factor !== "Unspecified" && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    Factor: {c.factor}
+                  </div>
+                )}
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
+
+      {/* === 6. Pedestrian Counts === */}
       {layers.pedestrian &&
         pedPoints.map((p, i) => (
           <CircleMarker
@@ -618,14 +708,17 @@ export default function ThesisMap({
           >
             <Popup>
               <div className="popup-content">
-                <div className="font-semibold text-purple-300 mb-1">
+                <div
+                  className="font-semibold mb-1"
+                  style={{ color: "#7c3aed" }}
+                >
                   {p.location}
                 </div>
                 <div>
                   <span className="font-semibold">
                     {p.volume.toLocaleString()}
                   </span>{" "}
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500">
                     max recorded pedestrians
                   </span>
                 </div>
@@ -634,101 +727,96 @@ export default function ThesisMap({
           </CircleMarker>
         ))}
 
-      {/* ===== Layer 3: Crash Data ===== */}
-      {layers.crashes &&
-        filteredCrashes.map((c, i) => (
-          <CircleMarker
-            key={`crash-${i}`}
-            center={c.position}
-            radius={4}
+      {/* === 7. LTN Boundary Roads (dashed) === */}
+      {layers.ltn &&
+        ltnData.boundaryRoads.map((road, i) => (
+          <Polyline
+            key={`br-${i}`}
+            positions={road.positions}
             pathOptions={{
-              color: "#ffffff",
-              fillColor: crashColor(c.type),
-              fillOpacity: 0.8,
-              weight: 1,
-              opacity: 0.4,
+              color: boundaryColor,
+              weight: 3,
+              dashArray: "12, 8",
+              opacity: 0.8,
             }}
           >
             <Popup>
               <div className="popup-content">
-                <div
-                  className="font-semibold mb-1"
-                  style={{ color: crashColor(c.type) }}
-                >
-                  {crashLabel(c.type)}
-                </div>
-                <div className="text-xs text-gray-400 mb-1">
-                  {c.date} {c.time}
-                  <br />
-                  {c.street}
-                  {c.cross ? ` & ${c.cross}` : ""}
-                </div>
-                <div className="text-xs">
-                  {c.injured > 0 && (
-                    <span className="text-yellow-400">
-                      Injured: {c.injured}
-                    </span>
-                  )}
-                  {c.killed > 0 && (
-                    <span className="text-red-400 ml-2">
-                      Killed: {c.killed}
-                    </span>
-                  )}
-                  {c.injured === 0 && c.killed === 0 && (
-                    <span className="text-gray-400">
-                      No injuries reported
-                    </span>
-                  )}
-                </div>
-                {c.factor && c.factor !== "Unspecified" && (
-                  <div className="text-xs text-gray-400 mt-1">
-                    Factor: {c.factor}
-                  </div>
-                )}
+                <div className="font-semibold mb-1">{road.name}</div>
+                <div className="text-xs text-gray-500">{road.role}</div>
               </div>
             </Popup>
-          </CircleMarker>
+          </Polyline>
         ))}
 
-      {/* ===== Layer 4: Subway Stations ===== */}
-      {layers.transit &&
-        subwayStations.map((s, i) => (
-          <CircleMarker
-            key={`sub-${i}`}
-            center={[s.coordinates[1], s.coordinates[0]]}
-            radius={7}
-            pathOptions={{
-              color: "#ffffff",
-              fillColor: s.color,
-              fillOpacity: 1,
-              weight: 2,
-            }}
-          >
-            <Tooltip
-              permanent
-              direction="top"
-              offset={[0, -10]}
-              className="subway-tooltip"
-            >
-              {s.lines.join("/")}
-            </Tooltip>
+      {/* === 8. Modal Filter Diamonds === */}
+      {layers.ltn &&
+        ltnData.modalFilters.map((mf, i) => (
+          <Marker key={`mf-${i}`} position={mf.position} icon={diamondIcon}>
             <Popup>
               <div className="popup-content">
-                <div className="font-semibold mb-1">
-                  <span
-                    className="inline-block w-2.5 h-2.5 rounded-full mr-1.5"
-                    style={{ backgroundColor: s.color }}
-                  />
-                  {s.name} Station
+                <div className="font-semibold mb-1">{mf.name}</div>
+                <div className="text-xs text-gray-500 mb-2">
+                  {mf.description}
                 </div>
-                <div className="text-xs text-gray-400">
-                  Lines: <strong>{s.lines.join("/")}</strong>
-                  <br />
-                  at {s.cross_street}
+                <div
+                  className="text-xs border-t pt-1"
+                  style={{
+                    color: "#b45309",
+                    borderColor: darkMode ? "#374151" : "#e5e7eb",
+                  }}
+                >
+                  PROPOSED — Not existing infrastructure
                 </div>
               </div>
             </Popup>
-          </CircleMarker>
+          </Marker>
+        ))}
+
+      {/* === 9. Subway Station Bullet Icons (always on top) === */}
+      {layers.transit &&
+        subwayStations.map((s, i) => (
+          <Marker
+            key={`sub-${i}`}
+            position={[s.lat, s.lng]}
+            icon={stationIcons[i]}
+            zIndexOffset={1000}
+          >
+            <Popup>
+              <div className="popup-content">
+                <div className="font-semibold text-base mb-1">{s.name}</div>
+                <div className="flex items-center gap-0.5 mb-1">
+                  {s.lines.map((line, li) => (
+                    <span
+                      key={li}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        border: "2px solid #333",
+                        background: line.color,
+                        color:
+                          line.color === "#FCCC0A" ? "#333333" : "#ffffff",
+                        fontWeight: 700,
+                        fontSize: 11,
+                        fontFamily:
+                          "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                        lineHeight: 1,
+                        marginRight: 1,
+                      }}
+                    >
+                      {line.name}
+                    </span>
+                  ))}
+                </div>
+                <div className="text-xs text-gray-500">{s.lineName}</div>
+                <div className="text-xs text-gray-500">{s.crossStreet}</div>
+              </div>
+            </Popup>
+          </Marker>
         ))}
     </MapContainer>
   );
