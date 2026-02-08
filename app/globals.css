@@ -18,6 +18,31 @@ body {
   padding: 0;
 }
 
+/* Boundary road labels */
+.boundary-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.15em !important;
+  padding: 0 !important;
+}
+
+.dark-map .boundary-label {
+  color: #ffffff !important;
+  text-shadow: 0 0 4px #0a0a0a, 0 0 8px #0a0a0a, 0 0 12px #0a0a0a !important;
+}
+
+.light-map .boundary-label {
+  color: #1a1a1a !important;
+  text-shadow: 0 0 4px #ffffff, 0 0 8px #ffffff, 0 0 12px #ffffff !important;
+}
+
+.boundary-label::before {
+  display: none !important;
+}
+
 /* Subway icon container — removes default Leaflet marker chrome */
 .subway-icon-container {
   background: transparent !important;

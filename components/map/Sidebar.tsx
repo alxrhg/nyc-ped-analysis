@@ -266,35 +266,24 @@ export default function Sidebar({
 
         {layers.crashes && (
           <div className="mb-3">
-            <div className="text-xs text-[#9ca3af] mb-1.5">Crash Type</div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: "#ef4444" }}
-                />
-                <span className="text-[10px] text-[#9ca3af]">
-                  Pedestrian involved
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: "#f97316" }}
-                />
-                <span className="text-[10px] text-[#9ca3af]">
-                  Cyclist involved
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: "#aaaaaa" }}
-                />
-                <span className="text-[10px] text-[#9ca3af]">
-                  Vehicle only
-                </span>
-              </div>
+            <div className="text-xs text-[#9ca3af] mb-1.5">
+              Crash Density (heatmap)
+            </div>
+            <div className="flex items-center gap-1">
+              <div
+                className="h-2 flex-1 rounded-sm"
+                style={{
+                  background:
+                    "linear-gradient(to right, #fee5d9, #fcae91, #fb6a4a, #de2d26, #a50f15, #67000d)",
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-[#9ca3af] mt-0.5">
+              <span>Low</span>
+              <span>High</span>
+            </div>
+            <div className="text-[9px] text-[#6b7280] mt-1">
+              Zoom in to see individual incidents
             </div>
           </div>
         )}
@@ -374,11 +363,67 @@ export default function Sidebar({
           Corridor Summary
         </h2>
 
-        <StatItem
-          label="Crash incidents (3 yr)"
-          value={stats.crashCount}
-          loading={loading.crashes}
-        />
+        {/* Crash breakdown */}
+        <div className="mb-2">
+          <StatItem
+            label="Total crash incidents (3 yr)"
+            value={stats.crashCount}
+            loading={loading.crashes}
+          />
+          {!loading.crashes && stats.crashCount > 0 && (
+            <div className="ml-2 border-l-2 border-[#2a2a2a] pl-2 mt-0.5">
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[10px] text-[#9ca3af]">
+                  Pedestrian involved
+                </span>
+                <span className="text-xs font-medium text-[#e85d75]">
+                  {stats.crashPedestrian.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[10px] text-[#9ca3af]">
+                  Cyclist involved
+                </span>
+                <span className="text-xs font-medium text-[#f0a030]">
+                  {stats.crashCyclist.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[10px] text-[#9ca3af]">
+                  Vehicle only
+                </span>
+                <span className="text-xs font-medium text-[#aaaaaa]">
+                  {stats.crashVehicle.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Top hotspots */}
+        {!loading.crashes &&
+          stats.topHotspots &&
+          stats.topHotspots.length > 0 && (
+            <div className="mb-3">
+              <div className="text-[10px] text-[#9ca3af] mb-1">
+                Top hotspot intersections:
+              </div>
+              {stats.topHotspots.map((h, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center py-0.5"
+                >
+                  <span className="text-[10px] text-[#ededed] truncate mr-2">
+                    {i + 1}. {h.name}
+                  </span>
+                  <span className="text-[10px] font-medium text-[#ef4444] shrink-0">
+                    {h.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
         <StatItem
           label="Pedestrian count locations"
           value={stats.pedestrianLocations}

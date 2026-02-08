@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef, useState, useCallback } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -9,10 +9,12 @@ import {
   CircleMarker,
   Popup,
   Marker,
+  Tooltip,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
 import { STUDY_AREA, PED_COUNT_COL_PATTERN } from "@/lib/nyc-open-data";
 import type {
   TrafficVolumeRecord,
@@ -56,6 +58,18 @@ export interface CrashFilters {
   motorist: boolean;
 }
 
+export interface MapStats {
+  crashCount: number;
+  crashPedestrian: number;
+  crashCyclist: number;
+  crashVehicle: number;
+  topHotspots: { name: string; count: number }[];
+  pedestrianLocations: number;
+  totalPedVolume: number;
+  trafficSegments: number;
+  subwayStations: number;
+}
+
 interface ThesisMapProps {
   layers: LayerVisibility;
   crashFilters: CrashFilters;
@@ -64,14 +78,6 @@ interface ThesisMapProps {
   pedestrianData: PedestrianCountRecord[] | undefined;
   crashData: CrashRecord[] | undefined;
   onStatsUpdate: (updater: MapStats | ((prev: MapStats) => MapStats)) => void;
-}
-
-export interface MapStats {
-  crashCount: number;
-  pedestrianLocations: number;
-  totalPedVolume: number;
-  trafficSegments: number;
-  subwayStations: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,8 +106,8 @@ function volumeToLabel(vol: number): string {
 }
 
 function crashColor(type: string): string {
-  if (type === "pedestrian") return "#ef4444";
-  if (type === "cyclist") return "#f97316";
+  if (type === "pedestrian") return "#e85d75";
+  if (type === "cyclist") return "#f0a030";
   return "#aaaaaa";
 }
 
@@ -117,10 +123,12 @@ function crashLabel(type: string): string {
 
 function createSubwayBulletIcon(
   lines: Array<{ name: string; color: string }>,
-  darkMode: boolean
+  darkMode: boolean,
+  dimmed: boolean
 ): L.DivIcon {
   const borderColor = darkMode ? "#ffffff" : "#333333";
   const shadowOpacity = darkMode ? 0.5 : 0.2;
+  const opacity = dimmed ? 0.55 : 1;
   const bullets = lines
     .map((line) => {
       const textColor = line.color === "#FCCC0A" ? "#333333" : "#ffffff";
@@ -128,7 +136,7 @@ function createSubwayBulletIcon(
     })
     .join("");
   return L.divIcon({
-    html: `<div style="display:flex;align-items:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,${shadowOpacity}));">${bullets}</div>`,
+    html: `<div style="display:flex;align-items:center;opacity:${opacity};filter:drop-shadow(0 1px 2px rgba(0,0,0,${shadowOpacity}));">${bullets}</div>`,
     className: "subway-icon-container",
     iconSize: [lines.length * 23, 24],
     iconAnchor: [(lines.length * 23) / 2, 12],
@@ -155,6 +163,127 @@ function MapResizer() {
     const timeout = setTimeout(() => map.invalidateSize(), 100);
     return () => clearTimeout(timeout);
   }, [map]);
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Zoom tracker — tells parent the current zoom level
+// ---------------------------------------------------------------------------
+function ZoomTracker({
+  onZoomChange,
+}: {
+  onZoomChange: (zoom: number) => void;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    const handler = () => onZoomChange(map.getZoom());
+    map.on("zoomend", handler);
+    handler();
+    return () => {
+      map.off("zoomend", handler);
+    };
+  }, [map, onZoomChange]);
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Crash heatmap layer (imperative Leaflet plugin, no react-leaflet wrapper)
+// ---------------------------------------------------------------------------
+function CrashHeatmapLayer({
+  crashes,
+  filters,
+  visible,
+}: {
+  crashes: CrashPoint[];
+  filters: CrashFilters;
+  visible: boolean;
+}) {
+  const map = useMap();
+  const layersRef = useRef<{
+    ped?: L.HeatLayer;
+    cyc?: L.HeatLayer;
+    veh?: L.HeatLayer;
+  }>({});
+
+  useEffect(() => {
+    // Clean up previous layers
+    Object.values(layersRef.current).forEach((l) => l?.remove());
+    layersRef.current = {};
+
+    if (!visible) return;
+
+    const pedPts: [number, number, number][] = [];
+    const cycPts: [number, number, number][] = [];
+    const vehPts: [number, number, number][] = [];
+
+    for (const c of crashes) {
+      if (c.type === "pedestrian")
+        pedPts.push([c.position[0], c.position[1], 1]);
+      else if (c.type === "cyclist")
+        cycPts.push([c.position[0], c.position[1], 1]);
+      else vehPts.push([c.position[0], c.position[1], 1]);
+    }
+
+    // Vehicle heatmap (render first, behind others)
+    if (filters.motorist && vehPts.length > 0) {
+      layersRef.current.veh = L.heatLayer(vehPts, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        max: 1.0,
+        gradient: {
+          0.0: "#f0f0f0",
+          0.2: "#d9d9d9",
+          0.4: "#bdbdbd",
+          0.6: "#969696",
+          0.8: "#636363",
+          1.0: "#252525",
+        },
+      }).addTo(map);
+    }
+
+    // Cyclist heatmap
+    if (filters.cyclist && cycPts.length > 0) {
+      layersRef.current.cyc = L.heatLayer(cycPts, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        max: 1.0,
+        gradient: {
+          0.0: "#fff5eb",
+          0.2: "#fdd0a2",
+          0.4: "#fdae6b",
+          0.6: "#fd8d3c",
+          0.8: "#e6550d",
+          1.0: "#a63603",
+        },
+      }).addTo(map);
+    }
+
+    // Pedestrian heatmap (on top — most important for the thesis)
+    if (filters.pedestrian && pedPts.length > 0) {
+      layersRef.current.ped = L.heatLayer(pedPts, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        max: 1.0,
+        gradient: {
+          0.0: "#fee5d9",
+          0.2: "#fcae91",
+          0.4: "#fb6a4a",
+          0.6: "#de2d26",
+          0.8: "#a50f15",
+          1.0: "#67000d",
+        },
+      }).addTo(map);
+    }
+
+    return () => {
+      Object.values(layersRef.current).forEach((l) => l?.remove());
+      layersRef.current = {};
+    };
+  }, [crashes, filters, visible, map]);
+
   return null;
 }
 
@@ -204,11 +333,16 @@ export default function ThesisMap({
   crashData,
   onStatsUpdate,
 }: ThesisMapProps) {
+  const [zoom, setZoom] = useState(15);
+  const handleZoomChange = useCallback((z: number) => setZoom(z), []);
+  const showHeatmap = zoom < 16;
+
   // ----- Process LTN Boundary -----
   const ltnData = useMemo(() => {
     const boundary: LatLng[] = [];
     const boundaryRoads: {
       name: string;
+      label: string;
       role: string;
       positions: LatLng[];
     }[] = [];
@@ -232,6 +366,7 @@ export default function ThesisMap({
         const coords = (feature.geometry as GeoJSON.LineString).coordinates;
         boundaryRoads.push({
           name: props.name || "Boundary Road",
+          label: props.label || "",
           role: props.role || "Through traffic corridor",
           positions: coords.map((c) => toLatLng(c as [number, number])),
         });
@@ -281,7 +416,6 @@ export default function ThesisMap({
         continue;
       }
 
-      // Parse WKT geometry — coordinates are in State Plane (EPSG:2263)
       const rawPoint = parseWktPoint(rec.wktgeom);
       const rawLine = !rawPoint ? parseWktLineString(rec.wktgeom) : null;
       const rawMultiLine =
@@ -289,16 +423,12 @@ export default function ThesisMap({
           ? parseWktMultiLineString(rec.wktgeom)
           : null;
 
-      // Convert State Plane → WGS84
       let wgs84Coords: [number, number][] | [number, number][][] | null =
         null;
       let isMulti = false;
 
       if (rawPoint) {
-        const converted = statePlaneToWGS84(rawPoint[0], rawPoint[1]);
-        if (!isInStudyArea(converted[0], converted[1])) continue;
-        // Single point — skip, we need line segments for rendering
-        continue;
+        continue; // Single points can't be rendered as line segments
       } else if (rawLine) {
         const converted = rawLine.map(([x, y]) => statePlaneToWGS84(x, y));
         const inArea = converted.some(([lng, lat]) =>
@@ -365,7 +495,7 @@ export default function ThesisMap({
     return segments;
   }, [trafficData]);
 
-  // ----- Process Pedestrian Data (fixed: only match may_XX/sep_XX columns) -----
+  // ----- Process Pedestrian Data (only match may_XX/sep_XX columns) -----
   const pedPoints = useMemo<PedPoint[]>(() => {
     if (!pedestrianData) return [];
 
@@ -386,7 +516,6 @@ export default function ThesisMap({
       if (isNaN(lng) || isNaN(lat)) continue;
       if (!isInStudyArea(lng, lat, 0.005)) continue;
 
-      // Only scan columns matching the pedestrian count pattern
       let maxCount = 0;
       for (const [key, val] of Object.entries(rec)) {
         if (typeof val === "string" && PED_COUNT_COL_PATTERN.test(key)) {
@@ -444,7 +573,7 @@ export default function ThesisMap({
     return points;
   }, [crashData]);
 
-  // Filter crashes by type
+  // Filter crashes by type (used for individual dots at high zoom)
   const filteredCrashes = useMemo(() => {
     return crashPoints.filter((c) => {
       if (c.type === "pedestrian" && !crashFilters.pedestrian) return false;
@@ -454,17 +583,43 @@ export default function ThesisMap({
     });
   }, [crashPoints, crashFilters]);
 
+  // ----- Top hotspot intersections -----
+  const topHotspots = useMemo(() => {
+    const groups = new Map<string, { name: string; count: number }>();
+    for (const c of crashPoints) {
+      const rlat = Math.round(c.position[0] / 0.0003) * 0.0003;
+      const rlng = Math.round(c.position[1] / 0.0003) * 0.0003;
+      const key = `${rlat.toFixed(4)},${rlng.toFixed(4)}`;
+
+      const existing = groups.get(key);
+      if (existing) {
+        existing.count++;
+      } else {
+        const name =
+          c.street && c.cross
+            ? `${c.street} & ${c.cross}`
+            : c.street || "Unknown";
+        groups.set(key, { name, count: 1 });
+      }
+    }
+
+    return Array.from(groups.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+  }, [crashPoints]);
+
   // ----- Theme-dependent icons (memoized) -----
   const diamondIcon = useMemo(() => createDiamondIcon(darkMode), [darkMode]);
   const stationIcons = useMemo(
     () =>
-      subwayStations.map((s) => createSubwayBulletIcon(s.lines, darkMode)),
+      subwayStations.map((s) =>
+        createSubwayBulletIcon(s.lines, darkMode, s.outsideBoundary)
+      ),
     [darkMode]
   );
 
   // ----- Theme-dependent colors -----
-  const boundaryColor = darkMode ? "#ffffff" : "#1a1a1a";
-  const boundaryFillColor = darkMode ? "#3b82f6" : "#3b82f6";
+  const boundaryStrokeColor = darkMode ? "#ffffff" : "#1a1a1a";
 
   // ----- Stats Updates -----
   useEffect(() => {
@@ -484,11 +639,18 @@ export default function ThesisMap({
   }, [pedPoints.length]);
 
   useEffect(() => {
+    const pedCount = crashPoints.filter((c) => c.type === "pedestrian").length;
+    const cycCount = crashPoints.filter((c) => c.type === "cyclist").length;
+    const vehCount = crashPoints.filter((c) => c.type === "vehicle").length;
     onStatsUpdate((prev) => ({
       ...prev,
       crashCount: crashPoints.length,
+      crashPedestrian: pedCount,
+      crashCyclist: cycCount,
+      crashVehicle: vehCount,
+      topHotspots,
     }));
-  }, [crashPoints.length]);
+  }, [crashPoints.length, topHotspots]);
 
   useEffect(() => {
     onStatsUpdate((prev) => ({
@@ -526,6 +688,7 @@ export default function ThesisMap({
       />
 
       <MapResizer />
+      <ZoomTracker onZoomChange={handleZoomChange} />
 
       {/* === 2. Subway Route Lines (below data layers) === */}
       {layers.transit &&
@@ -541,15 +704,15 @@ export default function ThesisMap({
           />
         ))}
 
-      {/* === 3. LTN boundary fill (subtle, below traffic) === */}
+      {/* === 3. LTN boundary fill (subtle blue tint) === */}
       {layers.ltn && ltnData.boundary.length > 0 && (
         <Polygon
           positions={ltnData.boundary}
           pathOptions={{
             color: "transparent",
             weight: 0,
-            fillColor: boundaryFillColor,
-            fillOpacity: darkMode ? 0.1 : 0.06,
+            fillColor: "#4a90d9",
+            fillOpacity: 0.05,
           }}
         />
       )}
@@ -636,17 +799,27 @@ export default function ThesisMap({
           )
         )}
 
-      {/* === 5. Crash Data === */}
+      {/* === 5. Crash Heatmap (zoom < 16) === */}
+      {layers.crashes && (
+        <CrashHeatmapLayer
+          crashes={crashPoints}
+          filters={crashFilters}
+          visible={showHeatmap}
+        />
+      )}
+
+      {/* === 5b. Crash Individual Dots (zoom >= 16) === */}
       {layers.crashes &&
+        !showHeatmap &&
         filteredCrashes.map((c, i) => (
           <CircleMarker
             key={`crash-${i}`}
             center={c.position}
-            radius={4}
+            radius={5}
             pathOptions={{
               color: darkMode ? "#ffffff" : "#333333",
               fillColor: crashColor(c.type),
-              fillOpacity: 0.8,
+              fillOpacity: 0.7,
               weight: 1,
               opacity: 0.4,
             }}
@@ -727,19 +900,26 @@ export default function ThesisMap({
           </CircleMarker>
         ))}
 
-      {/* === 7. LTN Boundary Roads (dashed) === */}
+      {/* === 7. LTN Boundary Roads (dashed) with street labels === */}
       {layers.ltn &&
         ltnData.boundaryRoads.map((road, i) => (
           <Polyline
             key={`br-${i}`}
             positions={road.positions}
             pathOptions={{
-              color: boundaryColor,
+              color: boundaryStrokeColor,
               weight: 3,
-              dashArray: "12, 8",
+              dashArray: "10, 6",
               opacity: 0.8,
             }}
           >
+            <Tooltip
+              permanent
+              direction="center"
+              className="boundary-label"
+            >
+              {road.label}
+            </Tooltip>
             <Popup>
               <div className="popup-content">
                 <div className="font-semibold mb-1">{road.name}</div>
@@ -781,6 +961,7 @@ export default function ThesisMap({
             position={[s.lat, s.lng]}
             icon={stationIcons[i]}
             zIndexOffset={1000}
+            opacity={s.outsideBoundary ? 0.7 : 1}
           >
             <Popup>
               <div className="popup-content">
@@ -814,6 +995,11 @@ export default function ThesisMap({
                 </div>
                 <div className="text-xs text-gray-500">{s.lineName}</div>
                 <div className="text-xs text-gray-500">{s.crossStreet}</div>
+                {s.outsideBoundary && (
+                  <div className="text-xs text-gray-400 mt-1 italic">
+                    Outside proposed LTN boundary
+                  </div>
+                )}
               </div>
             </Popup>
           </Marker>

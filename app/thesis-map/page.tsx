@@ -44,6 +44,10 @@ export default function ThesisMapPage() {
 
   const [stats, setStats] = useState<MapStats>({
     crashCount: 0,
+    crashPedestrian: 0,
+    crashCyclist: 0,
+    crashVehicle: 0,
+    topHotspots: [],
     pedestrianLocations: 0,
     totalPedVolume: 0,
     trafficSegments: 0,
