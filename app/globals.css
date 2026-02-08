@@ -18,40 +18,71 @@ body {
   padding: 0;
 }
 
-/* Mapbox overrides */
-.mapboxgl-popup-content {
+/* Leaflet popup overrides */
+.leaflet-popup-content-wrapper {
   background: var(--panel-bg) !important;
   color: var(--foreground) !important;
   border: 1px solid var(--panel-border) !important;
   border-radius: 8px !important;
-  padding: 12px 16px !important;
-  font-size: 13px !important;
-  max-width: 320px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
-.mapboxgl-popup-close-button {
-  color: var(--text-muted) !important;
-  font-size: 18px !important;
-  padding: 4px 8px !important;
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
 }
 
-.mapboxgl-popup-tip {
-  border-top-color: var(--panel-bg) !important;
-}
-
-.mapboxgl-ctrl-group {
+.leaflet-popup-tip {
   background: var(--panel-bg) !important;
   border: 1px solid var(--panel-border) !important;
+  box-shadow: none !important;
 }
 
-.mapboxgl-ctrl-group button {
-  background-color: var(--panel-bg) !important;
+.leaflet-popup-close-button {
+  color: var(--text-muted) !important;
+  font-size: 18px !important;
+}
+
+.leaflet-popup-close-button:hover {
   color: var(--foreground) !important;
 }
 
-.mapboxgl-ctrl-attrib-inner {
+/* Leaflet control overrides */
+.leaflet-control-zoom a {
+  background: var(--panel-bg) !important;
+  color: var(--foreground) !important;
+  border-color: var(--panel-border) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--panel-border) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(10, 10, 10, 0.8) !important;
   color: var(--text-muted) !important;
+  font-size: 9px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--text-muted) !important;
+}
+
+/* Subway station tooltip */
+.subway-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 3px #0a0a0a, 0 0 6px #0a0a0a !important;
+  padding: 0 !important;
+}
+
+.subway-tooltip::before {
+  display: none !important;
 }
 
 /* Scrollbar styling */

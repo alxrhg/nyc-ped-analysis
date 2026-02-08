@@ -1,8 +1,19 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { useMemo, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Polygon,
+  Polyline,
+  CircleMarker,
+  Popup,
+  Tooltip,
+  Marker,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { STUDY_AREA } from "@/lib/nyc-open-data";
 import type {
   TrafficVolumeRecord,
@@ -18,14 +29,16 @@ import {
 import ltnBoundary from "@/data/ltn-boundary";
 import subwayStations from "@/data/subway-stations.json";
 
-// Use Mapbox's public demo token — users should replace with their own
-const MAPBOX_TOKEN =
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
-  "pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw";
+// Leaflet uses [lat, lng], our data stores [lng, lat]
+type LatLng = [number, number];
 
-const CENTER: [number, number] = [
-  (STUDY_AREA.west + STUDY_AREA.east) / 2,
+function toLatLng(lngLat: [number, number]): LatLng {
+  return [lngLat[1], lngLat[0]];
+}
+
+const CENTER: LatLng = [
   (STUDY_AREA.south + STUDY_AREA.north) / 2,
+  (STUDY_AREA.west + STUDY_AREA.east) / 2,
 ];
 
 export interface LayerVisibility {
@@ -59,6 +72,95 @@ export interface MapStats {
   subwayStations: number;
 }
 
+// Diamond SVG icon for modal filters
+const diamondIcon = L.divIcon({
+  className: "",
+  html: `<svg width="16" height="16" viewBox="0 0 16 16" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))">
+    <path d="M8 1 L15 8 L8 15 L1 8 Z" fill="#f59e0b" stroke="#0a0a0a" stroke-width="1"/>
+  </svg>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+// Helper: interpolate traffic volume to color
+function volumeToColor(vol: number): string {
+  if (vol > 30000) return "#991b1b";
+  if (vol > 15000) return "#ef4444";
+  if (vol > 5000) return "#eab308";
+  return "#22c55e";
+}
+
+function volumeToWeight(vol: number): number {
+  if (vol > 30000) return 6;
+  if (vol > 15000) return 5;
+  if (vol > 5000) return 3;
+  return 2;
+}
+
+function volumeToLabel(vol: number): string {
+  if (vol > 30000) return "Very High";
+  if (vol > 15000) return "High";
+  if (vol > 5000) return "Moderate";
+  return "Low";
+}
+
+function crashColor(type: string): string {
+  if (type === "pedestrian") return "#ef4444";
+  if (type === "cyclist") return "#f97316";
+  return "#6b7280";
+}
+
+function crashLabel(type: string): string {
+  if (type === "pedestrian") return "Pedestrian Involved";
+  if (type === "cyclist") return "Cyclist Involved";
+  return "Vehicle Only";
+}
+
+// Component to invalidate map size when container changes
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    const timeout = setTimeout(() => map.invalidateSize(), 100);
+    return () => clearTimeout(timeout);
+  }, [map]);
+  return null;
+}
+
+// ---------- Processed data types ----------
+
+interface TrafficSegment {
+  id: string;
+  positions: LatLng[] | LatLng[][];
+  isMulti: boolean;
+  volume: number;
+  street: string;
+  fromst: string;
+  tost: string;
+  direction: string;
+}
+
+interface PedPoint {
+  position: LatLng;
+  location: string;
+  volume: number;
+}
+
+interface CrashPoint {
+  position: LatLng;
+  type: string;
+  date: string;
+  time: string;
+  street: string;
+  cross: string;
+  injured: number;
+  killed: number;
+  factor: string;
+}
+
+// ==========================================
+// Main Component
+// ==========================================
+
 export default function ThesisMap({
   layers,
   crashFilters,
@@ -67,277 +169,58 @@ export default function ThesisMap({
   crashData,
   onStatsUpdate,
 }: ThesisMapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
+  // ----- Process LTN Boundary -----
+  const ltnData = useMemo(() => {
+    const boundary: LatLng[] = [];
+    const boundaryRoads: { name: string; role: string; positions: LatLng[] }[] =
+      [];
+    const modalFilters: {
+      name: string;
+      description: string;
+      position: LatLng;
+    }[] = [];
 
-  // Initialize map
-  useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    for (const feature of ltnBoundary.features) {
+      const props = feature.properties;
+      if (
+        props?.type === "boundary" &&
+        feature.geometry.type === "Polygon"
+      ) {
+        const coords = (feature.geometry as GeoJSON.Polygon).coordinates[0];
+        for (const c of coords) {
+          boundary.push(toLatLng(c as [number, number]));
+        }
+      } else if (
+        props?.type === "boundary_road" &&
+        feature.geometry.type === "LineString"
+      ) {
+        const coords = (feature.geometry as GeoJSON.LineString).coordinates;
+        boundaryRoads.push({
+          name: props.name || "Boundary Road",
+          role: props.role || "Through traffic corridor",
+          positions: coords.map((c) => toLatLng(c as [number, number])),
+        });
+      } else if (
+        props?.type === "modal_filter" &&
+        feature.geometry.type === "Point"
+      ) {
+        const coords = (feature.geometry as GeoJSON.Point).coordinates;
+        modalFilters.push({
+          name: props.name || "Modal Filter",
+          description:
+            props.description || "Proposed modal filter location",
+          position: toLatLng(coords as [number, number]),
+        });
+      }
+    }
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: CENTER,
-      zoom: 15,
-      minZoom: 13,
-      maxZoom: 19,
-      attributionControl: false,
-    });
-
-    map.current.addControl(
-      new mapboxgl.NavigationControl({ showCompass: false }),
-      "top-right"
-    );
-    map.current.addControl(
-      new mapboxgl.AttributionControl({ compact: true }),
-      "bottom-right"
-    );
-
-    map.current.on("load", () => {
-      setMapLoaded(true);
-    });
-
-    return () => {
-      map.current?.remove();
-      map.current = null;
-    };
+    return { boundary, boundaryRoads, modalFilters };
   }, []);
 
-  // ----- LTN Boundary Layer -----
-  useEffect(() => {
-    if (!mapLoaded || !map.current) return;
-    const m = map.current;
+  // ----- Process Traffic Data -----
+  const trafficSegments = useMemo<TrafficSegment[]>(() => {
+    if (!trafficData) return [];
 
-    if (!m.getSource("ltn-boundary")) {
-      m.addSource("ltn-boundary", {
-        type: "geojson",
-        data: ltnBoundary as GeoJSON.FeatureCollection,
-      });
-
-      // Boundary fill
-      m.addLayer({
-        id: "ltn-fill",
-        type: "fill",
-        source: "ltn-boundary",
-        filter: ["==", ["get", "type"], "boundary"],
-        paint: {
-          "fill-color": "#3b82f6",
-          "fill-opacity": 0.08,
-        },
-      });
-
-      // Boundary roads (dashed)
-      m.addLayer({
-        id: "ltn-boundary-roads",
-        type: "line",
-        source: "ltn-boundary",
-        filter: ["==", ["get", "type"], "boundary_road"],
-        paint: {
-          "line-color": "#3b82f6",
-          "line-width": 3,
-          "line-dasharray": [4, 3],
-          "line-opacity": 0.8,
-        },
-      });
-
-      // Modal filter markers (diamonds)
-      m.addLayer({
-        id: "ltn-modal-filters",
-        type: "symbol",
-        source: "ltn-boundary",
-        filter: ["==", ["get", "type"], "modal_filter"],
-        layout: {
-          "icon-image": "diamond",
-          "icon-size": 0.8,
-          "icon-allow-overlap": true,
-          "text-field": ["get", "name"],
-          "text-size": 10,
-          "text-offset": [0, 1.5],
-          "text-anchor": "top",
-          "text-optional": true,
-        },
-        paint: {
-          "text-color": "#93c5fd",
-          "text-halo-color": "#0a0a0a",
-          "text-halo-width": 1,
-        },
-      });
-
-      // Click handler for modal filters
-      m.on("click", "ltn-modal-filters", (e) => {
-        if (!e.features?.[0]) return;
-        const props = e.features[0].properties;
-        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
-
-        showPopup(
-          coords as [number, number],
-          `<div>
-            <div style="font-weight:600;color:#93c5fd;margin-bottom:4px">
-              ${props?.name || "Modal Filter"}
-            </div>
-            <div style="color:#9ca3af;font-size:12px">
-              ${props?.description || "Proposed modal filter location"}
-            </div>
-            <div style="margin-top:6px;padding-top:6px;border-top:1px solid #2a2a2a;color:#f59e0b;font-size:11px">
-              PROPOSED — Not existing infrastructure
-            </div>
-          </div>`
-        );
-      });
-
-      // Click handler for boundary roads
-      m.on("click", "ltn-boundary-roads", (e) => {
-        if (!e.features?.[0]) return;
-        const props = e.features[0].properties;
-
-        showPopup(
-          e.lngLat.toArray() as [number, number],
-          `<div>
-            <div style="font-weight:600;color:#93c5fd;margin-bottom:4px">
-              ${props?.name || "Boundary Road"}
-            </div>
-            <div style="color:#9ca3af;font-size:12px">
-              ${props?.role || "Through traffic corridor"}
-            </div>
-          </div>`
-        );
-      });
-
-      // Cursor changes
-      m.on("mouseenter", "ltn-modal-filters", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "ltn-modal-filters", () => {
-        m.getCanvas().style.cursor = "";
-      });
-      m.on("mouseenter", "ltn-boundary-roads", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "ltn-boundary-roads", () => {
-        m.getCanvas().style.cursor = "";
-      });
-    }
-
-    // Add diamond icon if not present
-    if (!m.hasImage("diamond")) {
-      const size = 24;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d")!;
-      ctx.fillStyle = "#f59e0b";
-      ctx.beginPath();
-      ctx.moveTo(size / 2, 2);
-      ctx.lineTo(size - 2, size / 2);
-      ctx.lineTo(size / 2, size - 2);
-      ctx.lineTo(2, size / 2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = "#0a0a0a";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      m.addImage("diamond", {
-        width: size,
-        height: size,
-        data: ctx.getImageData(0, 0, size, size).data,
-      });
-    }
-  }, [mapLoaded]);
-
-  // ----- Subway Stations Layer -----
-  useEffect(() => {
-    if (!mapLoaded || !map.current) return;
-    const m = map.current;
-
-    if (!m.getSource("subway-stations")) {
-      const geojson: GeoJSON.FeatureCollection = {
-        type: "FeatureCollection",
-        features: subwayStations.map((s) => ({
-          type: "Feature" as const,
-          properties: {
-            name: s.name,
-            lines: s.lines.join("/"),
-            color: s.color,
-            cross_street: s.cross_street,
-          },
-          geometry: {
-            type: "Point" as const,
-            coordinates: s.coordinates,
-          },
-        })),
-      };
-
-      m.addSource("subway-stations", { type: "geojson", data: geojson });
-
-      m.addLayer({
-        id: "subway-circles",
-        type: "circle",
-        source: "subway-stations",
-        paint: {
-          "circle-radius": 7,
-          "circle-color": ["get", "color"],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#ffffff",
-        },
-      });
-
-      m.addLayer({
-        id: "subway-labels",
-        type: "symbol",
-        source: "subway-stations",
-        layout: {
-          "text-field": ["get", "lines"],
-          "text-size": 9,
-          "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
-          "text-offset": [0, -1.5],
-          "text-anchor": "bottom",
-        },
-        paint: {
-          "text-color": "#ffffff",
-          "text-halo-color": "#0a0a0a",
-          "text-halo-width": 1,
-        },
-      });
-
-      m.on("click", "subway-circles", (e) => {
-        if (!e.features?.[0]) return;
-        const props = e.features[0].properties;
-        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
-
-        showPopup(
-          coords as [number, number],
-          `<div>
-            <div style="font-weight:600;margin-bottom:4px">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${props?.color};margin-right:6px"></span>
-              ${props?.name} Station
-            </div>
-            <div style="color:#9ca3af;font-size:12px">
-              Lines: <strong>${props?.lines}</strong><br/>
-              at ${props?.cross_street}
-            </div>
-          </div>`
-        );
-      });
-
-      m.on("mouseenter", "subway-circles", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "subway-circles", () => {
-        m.getCanvas().style.cursor = "";
-      });
-    }
-  }, [mapLoaded]);
-
-  // ----- Traffic Volume Layer -----
-  useEffect(() => {
-    if (!mapLoaded || !map.current || !trafficData) return;
-    const m = map.current;
-
-    // Aggregate traffic volumes by segment
     const segmentMap = new Map<
       string,
       {
@@ -354,31 +237,24 @@ export default function ThesisMap({
 
     for (const rec of trafficData) {
       if (!rec.wktgeom || !rec.segmentid) continue;
-
       const vol = parseInt(rec.vol || "0", 10);
       if (isNaN(vol)) continue;
 
-      // Try parsing as different WKT types
       const point = parseWktPoint(rec.wktgeom);
-      if (point) {
-        if (!isInStudyArea(point[0], point[1])) continue;
-      }
+      if (point && !isInStudyArea(point[0], point[1])) continue;
 
       const existing = segmentMap.get(rec.segmentid);
       if (existing) {
         existing.totalVol += vol;
         existing.count += 1;
       } else {
-        // Try to parse geometry
         const line = parseWktLineString(rec.wktgeom);
         const multiLine = !line
           ? parseWktMultiLineString(rec.wktgeom)
           : null;
         const coords = line || multiLine;
-
         if (!coords) continue;
 
-        // Check if any coordinate is in the study area
         const flat = Array.isArray(coords[0]?.[0])
           ? (coords as [number, number][][]).flat()
           : (coords as [number, number][]);
@@ -386,7 +262,7 @@ export default function ThesisMap({
         if (!inArea) continue;
 
         segmentMap.set(rec.segmentid, {
-          coords: coords,
+          coords,
           totalVol: vol,
           count: 1,
           street: rec.street || "Unknown",
@@ -398,152 +274,44 @@ export default function ThesisMap({
       }
     }
 
-    // Build GeoJSON from aggregated data
-    const features: GeoJSON.Feature[] = [];
+    const segments: TrafficSegment[] = [];
     segmentMap.forEach((seg, id) => {
-      const avgDailyVol = Math.round(seg.totalVol / Math.max(seg.count, 1));
+      const avgVol = Math.round(seg.totalVol / Math.max(seg.count, 1));
       if (seg.isMulti) {
-        features.push({
-          type: "Feature",
-          properties: {
-            id,
-            volume: avgDailyVol,
-            street: seg.street,
-            fromst: seg.fromst,
-            tost: seg.tost,
-            direction: seg.direction,
-          },
-          geometry: {
-            type: "MultiLineString",
-            coordinates: seg.coords as [number, number][][],
-          },
+        segments.push({
+          id,
+          positions: (seg.coords as [number, number][][]).map((line) =>
+            line.map(toLatLng)
+          ),
+          isMulti: true,
+          volume: avgVol,
+          street: seg.street,
+          fromst: seg.fromst,
+          tost: seg.tost,
+          direction: seg.direction,
         });
       } else {
-        features.push({
-          type: "Feature",
-          properties: {
-            id,
-            volume: avgDailyVol,
-            street: seg.street,
-            fromst: seg.fromst,
-            tost: seg.tost,
-            direction: seg.direction,
-          },
-          geometry: {
-            type: "LineString",
-            coordinates: seg.coords as [number, number][],
-          },
+        segments.push({
+          id,
+          positions: (seg.coords as [number, number][]).map(toLatLng),
+          isMulti: false,
+          volume: avgVol,
+          street: seg.street,
+          fromst: seg.fromst,
+          tost: seg.tost,
+          direction: seg.direction,
         });
       }
     });
 
-    const geojson: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
-      features,
-    };
+    return segments;
+  }, [trafficData]);
 
-    if (m.getSource("traffic-volume")) {
-      (m.getSource("traffic-volume") as mapboxgl.GeoJSONSource).setData(
-        geojson
-      );
-    } else {
-      m.addSource("traffic-volume", { type: "geojson", data: geojson });
+  // ----- Process Pedestrian Data -----
+  const pedPoints = useMemo<PedPoint[]>(() => {
+    if (!pedestrianData) return [];
 
-      m.addLayer(
-        {
-          id: "traffic-lines",
-          type: "line",
-          source: "traffic-volume",
-          paint: {
-            "line-color": [
-              "interpolate",
-              ["linear"],
-              ["get", "volume"],
-              0,
-              "#22c55e",
-              5000,
-              "#eab308",
-              15000,
-              "#ef4444",
-              30000,
-              "#991b1b",
-            ],
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["get", "volume"],
-              0,
-              2,
-              30000,
-              8,
-            ],
-            "line-opacity": 0.85,
-          },
-        },
-        "subway-circles" // insert below subway layer
-      );
-
-      m.on("click", "traffic-lines", (e) => {
-        if (!e.features?.[0]) return;
-        const props = e.features[0].properties;
-        const vol = props?.volume || 0;
-
-        let intensity = "Low";
-        let color = "#22c55e";
-        if (vol > 30000) {
-          intensity = "Very High";
-          color = "#991b1b";
-        } else if (vol > 15000) {
-          intensity = "High";
-          color = "#ef4444";
-        } else if (vol > 5000) {
-          intensity = "Moderate";
-          color = "#eab308";
-        }
-
-        showPopup(
-          e.lngLat.toArray() as [number, number],
-          `<div>
-            <div style="font-weight:600;margin-bottom:4px">
-              ${props?.street || "Unknown Street"}
-            </div>
-            <div style="color:#9ca3af;font-size:12px;margin-bottom:4px">
-              ${props?.fromst} to ${props?.tost}
-              ${props?.direction ? `(${props.direction})` : ""}
-            </div>
-            <div style="font-size:14px">
-              <span style="color:${color};font-weight:600">${vol.toLocaleString()}</span>
-              <span style="color:#9ca3af"> avg daily traffic</span>
-            </div>
-            <div style="color:${color};font-size:12px;margin-top:2px">
-              ${intensity} volume
-            </div>
-          </div>`
-        );
-      });
-
-      m.on("mouseenter", "traffic-lines", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "traffic-lines", () => {
-        m.getCanvas().style.cursor = "";
-      });
-    }
-
-    onStatsUpdate((prev) => ({
-      ...prev,
-      trafficSegments: segmentMap.size,
-    }));
-  }, [mapLoaded, trafficData]);
-
-  // ----- Pedestrian Counts Layer -----
-  useEffect(() => {
-    if (!mapLoaded || !map.current || !pedestrianData) return;
-    const m = map.current;
-
-    // Process pedestrian data
-    const features: GeoJSON.Feature[] = [];
-    let totalVolume = 0;
+    const points: PedPoint[] = [];
 
     for (const rec of pedestrianData) {
       let lng: number | undefined;
@@ -560,7 +328,6 @@ export default function ThesisMap({
       if (isNaN(lng) || isNaN(lat)) continue;
       if (!isInStudyArea(lng, lat, 0.005)) continue;
 
-      // Sum all count columns
       let maxCount = 0;
       for (const [key, val] of Object.entries(rec)) {
         if (
@@ -574,102 +341,21 @@ export default function ThesisMap({
         }
       }
 
-      if (maxCount > 0) totalVolume += maxCount;
-
-      features.push({
-        type: "Feature",
-        properties: {
-          location: rec.loc || "Unknown",
-          volume: maxCount,
-          borough: rec.borough || "",
-        },
-        geometry: {
-          type: "Point",
-          coordinates: [lng, lat],
-        },
+      points.push({
+        position: [lat, lng],
+        location: rec.loc || "Unknown",
+        volume: maxCount,
       });
     }
 
-    const geojson: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
-      features,
-    };
+    return points;
+  }, [pedestrianData]);
 
-    if (m.getSource("pedestrian-counts")) {
-      (m.getSource("pedestrian-counts") as mapboxgl.GeoJSONSource).setData(
-        geojson
-      );
-    } else {
-      m.addSource("pedestrian-counts", { type: "geojson", data: geojson });
+  // ----- Process Crash Data -----
+  const crashPoints = useMemo<CrashPoint[]>(() => {
+    if (!crashData) return [];
 
-      m.addLayer(
-        {
-          id: "pedestrian-circles",
-          type: "circle",
-          source: "pedestrian-counts",
-          paint: {
-            "circle-radius": [
-              "interpolate",
-              ["linear"],
-              ["get", "volume"],
-              0,
-              4,
-              5000,
-              10,
-              20000,
-              18,
-              50000,
-              26,
-            ],
-            "circle-color": "#a78bfa",
-            "circle-opacity": 0.7,
-            "circle-stroke-width": 1,
-            "circle-stroke-color": "#c4b5fd",
-          },
-        },
-        "subway-circles"
-      );
-
-      m.on("click", "pedestrian-circles", (e) => {
-        if (!e.features?.[0]) return;
-        const props = e.features[0].properties;
-        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
-
-        showPopup(
-          coords as [number, number],
-          `<div>
-            <div style="font-weight:600;color:#a78bfa;margin-bottom:4px">
-              ${props?.location || "Pedestrian Count Location"}
-            </div>
-            <div style="font-size:14px">
-              <span style="font-weight:600">${(props?.volume || 0).toLocaleString()}</span>
-              <span style="color:#9ca3af"> max recorded pedestrians</span>
-            </div>
-          </div>`
-        );
-      });
-
-      m.on("mouseenter", "pedestrian-circles", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "pedestrian-circles", () => {
-        m.getCanvas().style.cursor = "";
-      });
-    }
-
-    onStatsUpdate((prev) => ({
-      ...prev,
-      pedestrianLocations: features.length,
-      totalPedVolume: totalVolume,
-    }));
-  }, [mapLoaded, pedestrianData]);
-
-  // ----- Crash Data Layer -----
-  useEffect(() => {
-    if (!mapLoaded || !map.current || !crashData) return;
-    const m = map.current;
-
-    const features: GeoJSON.Feature[] = [];
+    const points: CrashPoint[] = [];
 
     for (const rec of crashData) {
       const lat = parseFloat(rec.latitude || "");
@@ -684,170 +370,60 @@ export default function ThesisMap({
         parseInt(rec.number_of_cyclist_injured || "0", 10) > 0 ||
         parseInt(rec.number_of_cyclist_killed || "0", 10) > 0;
 
-      let crashType = "vehicle";
-      if (pedInvolved) crashType = "pedestrian";
-      else if (cycInvolved) crashType = "cyclist";
+      let type = "vehicle";
+      if (pedInvolved) type = "pedestrian";
+      else if (cycInvolved) type = "cyclist";
 
-      features.push({
-        type: "Feature",
-        properties: {
-          type: crashType,
-          date: rec.crash_date?.split("T")[0] || "",
-          time: rec.crash_time || "",
-          street: rec.on_street_name || "",
-          cross: rec.cross_street_name || "",
-          injured: parseInt(rec.number_of_persons_injured || "0", 10),
-          killed: parseInt(rec.number_of_persons_killed || "0", 10),
-          pedInjured: parseInt(rec.number_of_pedestrians_injured || "0", 10),
-          pedKilled: parseInt(rec.number_of_pedestrians_killed || "0", 10),
-          cycInjured: parseInt(rec.number_of_cyclist_injured || "0", 10),
-          cycKilled: parseInt(rec.number_of_cyclist_killed || "0", 10),
-          factor: rec.contributing_factor_vehicle_1 || "",
-        },
-        geometry: {
-          type: "Point",
-          coordinates: [lng, lat],
-        },
+      points.push({
+        position: [lat, lng],
+        type,
+        date: rec.crash_date?.split("T")[0] || "",
+        time: rec.crash_time || "",
+        street: rec.on_street_name || "",
+        cross: rec.cross_street_name || "",
+        injured: parseInt(rec.number_of_persons_injured || "0", 10),
+        killed: parseInt(rec.number_of_persons_killed || "0", 10),
+        factor: rec.contributing_factor_vehicle_1 || "",
       });
     }
 
-    const geojson: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
-      features,
-    };
+    return points;
+  }, [crashData]);
 
-    if (m.getSource("crash-data")) {
-      (m.getSource("crash-data") as mapboxgl.GeoJSONSource).setData(geojson);
-    } else {
-      m.addSource("crash-data", { type: "geojson", data: geojson });
+  // Filter crashes by type
+  const filteredCrashes = useMemo(() => {
+    return crashPoints.filter((c) => {
+      if (c.type === "pedestrian" && !crashFilters.pedestrian) return false;
+      if (c.type === "cyclist" && !crashFilters.cyclist) return false;
+      if (c.type === "vehicle" && !crashFilters.motorist) return false;
+      return true;
+    });
+  }, [crashPoints, crashFilters]);
 
-      m.addLayer(
-        {
-          id: "crash-points",
-          type: "circle",
-          source: "crash-data",
-          paint: {
-            "circle-radius": 4,
-            "circle-color": [
-              "match",
-              ["get", "type"],
-              "pedestrian",
-              "#ef4444",
-              "cyclist",
-              "#f97316",
-              "#6b7280",
-            ],
-            "circle-opacity": 0.8,
-            "circle-stroke-width": 1,
-            "circle-stroke-color": "#ffffff",
-            "circle-stroke-opacity": 0.4,
-          },
-        },
-        "subway-circles"
-      );
-
-      m.on("click", "crash-points", (e) => {
-        if (!e.features?.[0]) return;
-        const props = e.features[0].properties;
-        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
-
-        const typeColor =
-          props?.type === "pedestrian"
-            ? "#ef4444"
-            : props?.type === "cyclist"
-              ? "#f97316"
-              : "#6b7280";
-        const typeLabel =
-          props?.type === "pedestrian"
-            ? "Pedestrian Involved"
-            : props?.type === "cyclist"
-              ? "Cyclist Involved"
-              : "Vehicle Only";
-
-        showPopup(
-          coords as [number, number],
-          `<div>
-            <div style="font-weight:600;color:${typeColor};margin-bottom:4px">
-              ${typeLabel}
-            </div>
-            <div style="color:#9ca3af;font-size:12px;margin-bottom:4px">
-              ${props?.date || ""} ${props?.time || ""}<br/>
-              ${props?.street || ""}${props?.cross ? ` & ${props.cross}` : ""}
-            </div>
-            <div style="font-size:12px">
-              ${(props?.injured ?? 0) > 0 ? `<span style="color:#eab308">Injured: ${props?.injured}</span>` : ""}
-              ${(props?.killed ?? 0) > 0 ? `<span style="color:#ef4444;margin-left:8px">Killed: ${props?.killed}</span>` : ""}
-              ${(props?.injured ?? 0) === 0 && (props?.killed ?? 0) === 0 ? '<span style="color:#9ca3af">No injuries reported</span>' : ""}
-            </div>
-            ${props?.factor && props?.factor !== "Unspecified" ? `<div style="color:#9ca3af;font-size:11px;margin-top:4px">Factor: ${props?.factor}</div>` : ""}
-          </div>`
-        );
-      });
-
-      m.on("mouseenter", "crash-points", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "crash-points", () => {
-        m.getCanvas().style.cursor = "";
-      });
-    }
-
+  // ----- Stats Updates -----
+  useEffect(() => {
     onStatsUpdate((prev) => ({
       ...prev,
-      crashCount: features.length,
+      trafficSegments: trafficSegments.length,
     }));
-  }, [mapLoaded, crashData]);
+  }, [trafficSegments.length]);
 
-  // ----- Layer Visibility -----
   useEffect(() => {
-    if (!mapLoaded || !map.current) return;
-    const m = map.current;
+    const totalVol = pedPoints.reduce((sum, p) => sum + p.volume, 0);
+    onStatsUpdate((prev) => ({
+      ...prev,
+      pedestrianLocations: pedPoints.length,
+      totalPedVolume: totalVol,
+    }));
+  }, [pedPoints.length]);
 
-    const layerMap: Record<string, string[]> = {
-      traffic: ["traffic-lines"],
-      pedestrian: ["pedestrian-circles"],
-      crashes: ["crash-points"],
-      transit: ["subway-circles", "subway-labels"],
-      ltn: ["ltn-fill", "ltn-boundary-roads", "ltn-modal-filters"],
-    };
-
-    for (const [key, layerIds] of Object.entries(layerMap)) {
-      const visible = layers[key as keyof LayerVisibility];
-      for (const layerId of layerIds) {
-        if (m.getLayer(layerId)) {
-          m.setLayoutProperty(
-            layerId,
-            "visibility",
-            visible ? "visible" : "none"
-          );
-        }
-      }
-    }
-  }, [mapLoaded, layers]);
-
-  // ----- Crash Filter -----
   useEffect(() => {
-    if (!mapLoaded || !map.current) return;
-    const m = map.current;
-    if (!m.getLayer("crash-points")) return;
+    onStatsUpdate((prev) => ({
+      ...prev,
+      crashCount: crashPoints.length,
+    }));
+  }, [crashPoints.length]);
 
-    const typeFilters: string[] = [];
-    if (crashFilters.pedestrian) typeFilters.push("pedestrian");
-    if (crashFilters.cyclist) typeFilters.push("cyclist");
-    if (crashFilters.motorist) typeFilters.push("vehicle");
-
-    if (typeFilters.length === 0 || typeFilters.length === 3) {
-      m.setFilter("crash-points", null);
-    } else {
-      m.setFilter("crash-points", [
-        "in",
-        ["get", "type"],
-        ["literal", typeFilters],
-      ]);
-    }
-  }, [mapLoaded, crashFilters]);
-
-  // Stats update for subway stations
   useEffect(() => {
     onStatsUpdate((prev) => ({
       ...prev,
@@ -855,19 +431,305 @@ export default function ThesisMap({
     }));
   }, []);
 
-  const showPopup = useCallback(
-    (coords: [number, number], html: string) => {
-      if (!map.current) return;
-      popupRef.current?.remove();
-      popupRef.current = new mapboxgl.Popup({ closeOnClick: true })
-        .setLngLat(coords)
-        .setHTML(html)
-        .addTo(map.current);
-    },
-    []
-  );
+  // Pedestrian circle radius from volume
+  const pedRadius = (vol: number) => {
+    if (vol >= 50000) return 20;
+    if (vol >= 20000) return 14;
+    if (vol >= 5000) return 9;
+    if (vol > 0) return 5;
+    return 3;
+  };
 
   return (
-    <div ref={mapContainer} className="w-full h-full" />
+    <MapContainer
+      center={CENTER}
+      zoom={15}
+      minZoom={13}
+      maxZoom={19}
+      className="w-full h-full"
+      zoomControl={false}
+    >
+      {/* CartoDB Dark Matter tiles — free, no API key */}
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      />
+
+      <MapResizer />
+
+      {/* ===== Layer 5: Proposed LTN Boundary ===== */}
+      {layers.ltn && (
+        <>
+          {/* Boundary fill */}
+          {ltnData.boundary.length > 0 && (
+            <Polygon
+              positions={ltnData.boundary}
+              pathOptions={{
+                color: "#3b82f6",
+                weight: 0,
+                fillColor: "#3b82f6",
+                fillOpacity: 0.1,
+              }}
+            />
+          )}
+
+          {/* Boundary roads (dashed) */}
+          {ltnData.boundaryRoads.map((road, i) => (
+            <Polyline
+              key={`br-${i}`}
+              positions={road.positions}
+              pathOptions={{
+                color: "#3b82f6",
+                weight: 3,
+                dashArray: "12, 8",
+                opacity: 0.8,
+              }}
+            >
+              <Popup>
+                <div className="popup-content">
+                  <div className="font-semibold text-blue-300 mb-1">
+                    {road.name}
+                  </div>
+                  <div className="text-xs text-gray-400">{road.role}</div>
+                </div>
+              </Popup>
+            </Polyline>
+          ))}
+
+          {/* Modal filter markers */}
+          {ltnData.modalFilters.map((mf, i) => (
+            <Marker key={`mf-${i}`} position={mf.position} icon={diamondIcon}>
+              <Popup>
+                <div className="popup-content">
+                  <div className="font-semibold text-blue-300 mb-1">
+                    {mf.name}
+                  </div>
+                  <div className="text-xs text-gray-400 mb-2">
+                    {mf.description}
+                  </div>
+                  <div className="text-xs text-amber-400 border-t border-gray-700 pt-1">
+                    PROPOSED — Not existing infrastructure
+                  </div>
+                </div>
+              </Popup>
+              <Tooltip direction="top" offset={[0, -10]}>
+                {mf.name}
+              </Tooltip>
+            </Marker>
+          ))}
+        </>
+      )}
+
+      {/* ===== Layer 1: Traffic Volume ===== */}
+      {layers.traffic &&
+        trafficSegments.map((seg) =>
+          seg.isMulti ? (
+            (seg.positions as LatLng[][]).map((line, li) => (
+              <Polyline
+                key={`t-${seg.id}-${li}`}
+                positions={line}
+                pathOptions={{
+                  color: volumeToColor(seg.volume),
+                  weight: volumeToWeight(seg.volume),
+                  opacity: 0.85,
+                }}
+              >
+                <Popup>
+                  <div className="popup-content">
+                    <div className="font-semibold mb-1">{seg.street}</div>
+                    <div className="text-xs text-gray-400 mb-1">
+                      {seg.fromst} to {seg.tost}
+                      {seg.direction ? ` (${seg.direction})` : ""}
+                    </div>
+                    <div>
+                      <span
+                        className="font-semibold"
+                        style={{ color: volumeToColor(seg.volume) }}
+                      >
+                        {seg.volume.toLocaleString()}
+                      </span>{" "}
+                      <span className="text-xs text-gray-400">
+                        avg daily traffic
+                      </span>
+                    </div>
+                    <div
+                      className="text-xs mt-0.5"
+                      style={{ color: volumeToColor(seg.volume) }}
+                    >
+                      {volumeToLabel(seg.volume)} volume
+                    </div>
+                  </div>
+                </Popup>
+              </Polyline>
+            ))
+          ) : (
+            <Polyline
+              key={`t-${seg.id}`}
+              positions={seg.positions as LatLng[]}
+              pathOptions={{
+                color: volumeToColor(seg.volume),
+                weight: volumeToWeight(seg.volume),
+                opacity: 0.85,
+              }}
+            >
+              <Popup>
+                <div className="popup-content">
+                  <div className="font-semibold mb-1">{seg.street}</div>
+                  <div className="text-xs text-gray-400 mb-1">
+                    {seg.fromst} to {seg.tost}
+                    {seg.direction ? ` (${seg.direction})` : ""}
+                  </div>
+                  <div>
+                    <span
+                      className="font-semibold"
+                      style={{ color: volumeToColor(seg.volume) }}
+                    >
+                      {seg.volume.toLocaleString()}
+                    </span>{" "}
+                    <span className="text-xs text-gray-400">
+                      avg daily traffic
+                    </span>
+                  </div>
+                  <div
+                    className="text-xs mt-0.5"
+                    style={{ color: volumeToColor(seg.volume) }}
+                  >
+                    {volumeToLabel(seg.volume)} volume
+                  </div>
+                </div>
+              </Popup>
+            </Polyline>
+          )
+        )}
+
+      {/* ===== Layer 2: Pedestrian Counts ===== */}
+      {layers.pedestrian &&
+        pedPoints.map((p, i) => (
+          <CircleMarker
+            key={`ped-${i}`}
+            center={p.position}
+            radius={pedRadius(p.volume)}
+            pathOptions={{
+              color: "#c4b5fd",
+              fillColor: "#a78bfa",
+              fillOpacity: 0.7,
+              weight: 1,
+            }}
+          >
+            <Popup>
+              <div className="popup-content">
+                <div className="font-semibold text-purple-300 mb-1">
+                  {p.location}
+                </div>
+                <div>
+                  <span className="font-semibold">
+                    {p.volume.toLocaleString()}
+                  </span>{" "}
+                  <span className="text-xs text-gray-400">
+                    max recorded pedestrians
+                  </span>
+                </div>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
+
+      {/* ===== Layer 3: Crash Data ===== */}
+      {layers.crashes &&
+        filteredCrashes.map((c, i) => (
+          <CircleMarker
+            key={`crash-${i}`}
+            center={c.position}
+            radius={4}
+            pathOptions={{
+              color: "#ffffff",
+              fillColor: crashColor(c.type),
+              fillOpacity: 0.8,
+              weight: 1,
+              opacity: 0.4,
+            }}
+          >
+            <Popup>
+              <div className="popup-content">
+                <div
+                  className="font-semibold mb-1"
+                  style={{ color: crashColor(c.type) }}
+                >
+                  {crashLabel(c.type)}
+                </div>
+                <div className="text-xs text-gray-400 mb-1">
+                  {c.date} {c.time}
+                  <br />
+                  {c.street}
+                  {c.cross ? ` & ${c.cross}` : ""}
+                </div>
+                <div className="text-xs">
+                  {c.injured > 0 && (
+                    <span className="text-yellow-400">
+                      Injured: {c.injured}
+                    </span>
+                  )}
+                  {c.killed > 0 && (
+                    <span className="text-red-400 ml-2">
+                      Killed: {c.killed}
+                    </span>
+                  )}
+                  {c.injured === 0 && c.killed === 0 && (
+                    <span className="text-gray-400">
+                      No injuries reported
+                    </span>
+                  )}
+                </div>
+                {c.factor && c.factor !== "Unspecified" && (
+                  <div className="text-xs text-gray-400 mt-1">
+                    Factor: {c.factor}
+                  </div>
+                )}
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
+
+      {/* ===== Layer 4: Subway Stations ===== */}
+      {layers.transit &&
+        subwayStations.map((s, i) => (
+          <CircleMarker
+            key={`sub-${i}`}
+            center={[s.coordinates[1], s.coordinates[0]]}
+            radius={7}
+            pathOptions={{
+              color: "#ffffff",
+              fillColor: s.color,
+              fillOpacity: 1,
+              weight: 2,
+            }}
+          >
+            <Tooltip
+              permanent
+              direction="top"
+              offset={[0, -10]}
+              className="subway-tooltip"
+            >
+              {s.lines.join("/")}
+            </Tooltip>
+            <Popup>
+              <div className="popup-content">
+                <div className="font-semibold mb-1">
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full mr-1.5"
+                    style={{ backgroundColor: s.color }}
+                  />
+                  {s.name} Station
+                </div>
+                <div className="text-xs text-gray-400">
+                  Lines: <strong>{s.lines.join("/")}</strong>
+                  <br />
+                  at {s.cross_street}
+                </div>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
+    </MapContainer>
   );
 }
