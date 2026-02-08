@@ -1,0 +1,350 @@
+"use client";
+
+import type { LayerVisibility, CrashFilters, MapStats } from "./ThesisMap";
+
+interface SidebarProps {
+  layers: LayerVisibility;
+  onToggleLayer: (layer: keyof LayerVisibility) => void;
+  crashFilters: CrashFilters;
+  onToggleCrashFilter: (filter: keyof CrashFilters) => void;
+  stats: MapStats;
+  loading: {
+    traffic: boolean;
+    pedestrian: boolean;
+    crashes: boolean;
+  };
+}
+
+function LayerToggle({
+  label,
+  checked,
+  onChange,
+  color,
+  loading,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+  color: string;
+  loading?: boolean;
+}) {
+  return (
+    <label className="flex items-center gap-2 cursor-pointer py-1 group">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      <span
+        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+          checked ? "border-transparent" : "border-[#3a3a3a]"
+        }`}
+        style={{ backgroundColor: checked ? color : "transparent" }}
+      >
+        {checked && (
+          <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M2 6l3 3 5-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+      </span>
+      <span className="text-sm text-[#ededed] group-hover:text-white transition-colors flex-1">
+        {label}
+      </span>
+      {loading && (
+        <span className="w-3 h-3 border-2 border-[#3a3a3a] border-t-[#9ca3af] rounded-full animate-spin" />
+      )}
+    </label>
+  );
+}
+
+function StatItem({
+  label,
+  value,
+  loading,
+}: {
+  label: string;
+  value: string | number;
+  loading?: boolean;
+}) {
+  return (
+    <div className="flex justify-between items-center py-1">
+      <span className="text-xs text-[#9ca3af]">{label}</span>
+      {loading ? (
+        <span className="w-3 h-3 border-2 border-[#3a3a3a] border-t-[#9ca3af] rounded-full animate-spin" />
+      ) : (
+        <span className="text-sm font-medium text-[#ededed]">
+          {typeof value === "number" ? value.toLocaleString() : value}
+        </span>
+      )}
+    </div>
+  );
+}
+
+export default function Sidebar({
+  layers,
+  onToggleLayer,
+  crashFilters,
+  onToggleCrashFilter,
+  stats,
+  loading,
+}: SidebarProps) {
+  return (
+    <aside className="w-80 bg-[#141414] border-r border-[#2a2a2a] flex flex-col overflow-y-auto shrink-0">
+      {/* Layers */}
+      <div className="p-4 border-b border-[#2a2a2a]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-3">
+          Map Layers
+        </h2>
+
+        <LayerToggle
+          label="Traffic Volume"
+          checked={layers.traffic}
+          onChange={() => onToggleLayer("traffic")}
+          color="#eab308"
+          loading={loading.traffic}
+        />
+        <LayerToggle
+          label="Pedestrian Counts"
+          checked={layers.pedestrian}
+          onChange={() => onToggleLayer("pedestrian")}
+          color="#a78bfa"
+          loading={loading.pedestrian}
+        />
+        <LayerToggle
+          label="Motor Vehicle Crashes"
+          checked={layers.crashes}
+          onChange={() => onToggleLayer("crashes")}
+          color="#ef4444"
+          loading={loading.crashes}
+        />
+        <LayerToggle
+          label="Subway Stations"
+          checked={layers.transit}
+          onChange={() => onToggleLayer("transit")}
+          color="#3b82f6"
+        />
+        <LayerToggle
+          label="Proposed LTN Boundary"
+          checked={layers.ltn}
+          onChange={() => onToggleLayer("ltn")}
+          color="#60a5fa"
+        />
+      </div>
+
+      {/* Crash filters */}
+      {layers.crashes && (
+        <div className="p-4 border-b border-[#2a2a2a]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-3">
+            Crash Filters
+          </h2>
+          <label className="flex items-center gap-2 cursor-pointer py-1 text-sm">
+            <input
+              type="checkbox"
+              checked={crashFilters.pedestrian}
+              onChange={() => onToggleCrashFilter("pedestrian")}
+              className="accent-[#ef4444]"
+            />
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: "#ef4444" }}
+            />
+            Pedestrian involved
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer py-1 text-sm">
+            <input
+              type="checkbox"
+              checked={crashFilters.cyclist}
+              onChange={() => onToggleCrashFilter("cyclist")}
+              className="accent-[#f97316]"
+            />
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: "#f97316" }}
+            />
+            Cyclist involved
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer py-1 text-sm">
+            <input
+              type="checkbox"
+              checked={crashFilters.motorist}
+              onChange={() => onToggleCrashFilter("motorist")}
+              className="accent-[#6b7280]"
+            />
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: "#6b7280" }}
+            />
+            Vehicle only
+          </label>
+        </div>
+      )}
+
+      {/* Legend */}
+      <div className="p-4 border-b border-[#2a2a2a]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-3">
+          Legend
+        </h2>
+
+        {layers.traffic && (
+          <div className="mb-3">
+            <div className="text-xs text-[#9ca3af] mb-1.5">
+              Traffic Volume (ADT)
+            </div>
+            <div className="flex items-center gap-1">
+              <div
+                className="h-2 flex-1 rounded-sm"
+                style={{
+                  background:
+                    "linear-gradient(to right, #22c55e, #eab308, #ef4444, #991b1b)",
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-[#9ca3af] mt-0.5">
+              <span>&lt;5K</span>
+              <span>15K</span>
+              <span>30K+</span>
+            </div>
+          </div>
+        )}
+
+        {layers.pedestrian && (
+          <div className="mb-3">
+            <div className="text-xs text-[#9ca3af] mb-1.5">
+              Pedestrian Volume
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: "#a78bfa" }}
+              />
+              <span className="text-[10px] text-[#9ca3af]">
+                Circle size = count
+              </span>
+            </div>
+          </div>
+        )}
+
+        {layers.crashes && (
+          <div className="mb-3">
+            <div className="text-xs text-[#9ca3af] mb-1.5">Crash Type</div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: "#ef4444" }}
+                />
+                <span className="text-[10px] text-[#9ca3af]">
+                  Pedestrian involved
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: "#f97316" }}
+                />
+                <span className="text-[10px] text-[#9ca3af]">
+                  Cyclist involved
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: "#6b7280" }}
+                />
+                <span className="text-[10px] text-[#9ca3af]">
+                  Vehicle only
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {layers.transit && (
+          <div className="mb-3">
+            <div className="text-xs text-[#9ca3af] mb-1.5">
+              Subway Stations
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full border border-white"
+                style={{ backgroundColor: "#3b82f6" }}
+              />
+              <span className="text-[10px] text-[#9ca3af]">
+                Station (colored by line)
+              </span>
+            </div>
+          </div>
+        )}
+
+        {layers.ltn && (
+          <div className="mb-3">
+            <div className="text-xs text-[#9ca3af] mb-1.5">
+              Proposed LTN <span className="text-[#f59e0b]">(thesis proposal)</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-0.5 border-t-2 border-dashed border-[#3b82f6]" />
+                <span className="text-[10px] text-[#9ca3af]">
+                  Boundary road
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rotate-45"
+                  style={{ backgroundColor: "#f59e0b" }}
+                />
+                <span className="text-[10px] text-[#9ca3af]">
+                  Modal filter
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Statistics */}
+      <div className="p-4 flex-1">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-3">
+          Corridor Summary
+        </h2>
+
+        <StatItem
+          label="Crash incidents (3 yr)"
+          value={stats.crashCount}
+          loading={loading.crashes}
+        />
+        <StatItem
+          label="Pedestrian count locations"
+          value={stats.pedestrianLocations}
+          loading={loading.pedestrian}
+        />
+        <StatItem
+          label="Traffic segments"
+          value={stats.trafficSegments}
+          loading={loading.traffic}
+        />
+        <StatItem
+          label="Subway stations"
+          value={stats.subwayStations}
+        />
+
+        <div className="mt-4 pt-4 border-t border-[#2a2a2a]">
+          <p className="text-[10px] text-[#6b7280] leading-relaxed">
+            All data sourced live from NYC Open Data SODA API. Crash data
+            covers the last 3 years. Traffic and pedestrian counts reflect the
+            most recent available survey periods. The Proposed LTN Boundary
+            layer represents a thesis proposal, not existing or planned
+            infrastructure.
+          </p>
+        </div>
+      </div>
+    </aside>
+  );
+}

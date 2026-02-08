@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Canal St",
+    "lines": ["1", "2"],
+    "color": "#EE352E",
+    "coordinates": [-74.0063, 40.7207],
+    "cross_street": "Varick St"
+  },
+  {
+    "name": "Canal St",
+    "lines": ["6"],
+    "color": "#00933C",
+    "coordinates": [-73.9998, 40.7182],
+    "cross_street": "Lafayette St"
+  },
+  {
+    "name": "Canal St",
+    "lines": ["N", "Q", "R", "W"],
+    "color": "#FCCC0A",
+    "coordinates": [-74.0019, 40.7191],
+    "cross_street": "Broadway"
+  },
+  {
+    "name": "Canal St",
+    "lines": ["J", "Z"],
+    "color": "#996633",
+    "coordinates": [-73.9997, 40.7158],
+    "cross_street": "Centre St"
+  },
+  {
+    "name": "Spring St",
+    "lines": ["A", "C", "E"],
+    "color": "#2850AD",
+    "coordinates": [-74.0040, 40.7264],
+    "cross_street": "Varick St"
+  },
+  {
+    "name": "Spring St",
+    "lines": ["6"],
+    "color": "#00933C",
+    "coordinates": [-73.9972, 40.7223],
+    "cross_street": "Lafayette St"
+  },
+  {
+    "name": "Prince St",
+    "lines": ["N", "Q", "R", "W"],
+    "color": "#FCCC0A",
+    "coordinates": [-73.9978, 40.7243],
+    "cross_street": "Broadway"
+  },
+  {
+    "name": "Bowery",
+    "lines": ["J", "Z"],
+    "color": "#996633",
+    "coordinates": [-73.9938, 40.7204],
+    "cross_street": "Bowery"
+  },
+  {
+    "name": "Houston St",
+    "lines": ["1"],
+    "color": "#EE352E",
+    "coordinates": [-74.0053, 40.7282],
+    "cross_street": "Varick St"
+  },
+  {
+    "name": "Broadway-Lafayette",
+    "lines": ["B", "D", "F", "M"],
+    "color": "#FF6319",
+    "coordinates": [-73.9962, 40.7254],
+    "cross_street": "Lafayette St"
+  }
+]
