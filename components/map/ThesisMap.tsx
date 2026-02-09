@@ -224,20 +224,18 @@ function CrashHeatmapLayer({
       else vehPts.push([c.position[0], c.position[1], 1]);
     }
 
+    const heatOpts = { radius: 12, blur: 8, maxZoom: 17, minOpacity: 0 };
+
     // Vehicle heatmap (render first, behind others)
     if (filters.motorist && vehPts.length > 0) {
       layersRef.current.veh = L.heatLayer(vehPts, {
-        radius: 25,
-        blur: 15,
-        maxZoom: 17,
+        ...heatOpts,
         max: 1.0,
         gradient: {
-          0.0: "#f0f0f0",
-          0.2: "#d9d9d9",
-          0.4: "#bdbdbd",
-          0.6: "#969696",
-          0.8: "#636363",
-          1.0: "#252525",
+          0.4: "rgba(189,189,189,0.35)",
+          0.6: "rgba(150,150,150,0.5)",
+          0.8: "rgba(99,99,99,0.6)",
+          1.0: "rgba(37,37,37,0.7)",
         },
       }).addTo(map);
     }
@@ -245,17 +243,13 @@ function CrashHeatmapLayer({
     // Cyclist heatmap
     if (filters.cyclist && cycPts.length > 0) {
       layersRef.current.cyc = L.heatLayer(cycPts, {
-        radius: 25,
-        blur: 15,
-        maxZoom: 17,
+        ...heatOpts,
         max: 1.0,
         gradient: {
-          0.0: "#fff5eb",
-          0.2: "#fdd0a2",
-          0.4: "#fdae6b",
-          0.6: "#fd8d3c",
-          0.8: "#e6550d",
-          1.0: "#a63603",
+          0.4: "rgba(253,174,107,0.35)",
+          0.6: "rgba(253,141,60,0.5)",
+          0.8: "rgba(230,85,13,0.65)",
+          1.0: "rgba(166,54,3,0.8)",
         },
       }).addTo(map);
     }
@@ -263,17 +257,13 @@ function CrashHeatmapLayer({
     // Pedestrian heatmap (on top — most important for the thesis)
     if (filters.pedestrian && pedPts.length > 0) {
       layersRef.current.ped = L.heatLayer(pedPts, {
-        radius: 25,
-        blur: 15,
-        maxZoom: 17,
+        ...heatOpts,
         max: 1.0,
         gradient: {
-          0.0: "#fee5d9",
-          0.2: "#fcae91",
-          0.4: "#fb6a4a",
-          0.6: "#de2d26",
-          0.8: "#a50f15",
-          1.0: "#67000d",
+          0.4: "rgba(251,106,74,0.35)",
+          0.6: "rgba(222,45,38,0.5)",
+          0.8: "rgba(165,15,21,0.65)",
+          1.0: "rgba(103,0,13,0.8)",
         },
       }).addTo(map);
     }
