@@ -494,6 +494,27 @@ def create_subway_walk_map():
             fill_opacity=1.0,
         ).add_to(m)
 
+    # Highlight box: Houston / Bowery / Canal / 6th Ave (SoHo/NoLita)
+    box_corners = [
+        [40.7272, -74.0005],  # Houston & 6th Ave (NW)
+        [40.7253, -73.9927],  # Houston & Bowery (NE)
+        [40.7183, -73.9979],  # Canal & Bowery (SE)
+        [40.7234, -74.0048],  # Canal & 6th Ave (SW)
+    ]
+    folium.Polygon(
+        locations=box_corners,
+        color="#222222",
+        weight=3,
+        fill=True,
+        fill_color="#222222",
+        fill_opacity=0.05,
+        dash_array="8",
+        popup=Popup(
+            "<b>Houston / Bowery / Canal / 6th Ave</b>",
+            max_width=250,
+        ),
+    ).add_to(m)
+
     # Legend
     legend_html = """
     <div style="
