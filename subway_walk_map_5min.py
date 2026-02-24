@@ -494,15 +494,62 @@ def create_subway_walk_map():
             fill_opacity=1.0,
         ).add_to(m)
 
-    # Highlight box: Houston / Bowery / Canal / 6th Ave (SoHo/NoLita)
-    box_corners = [
-        [40.7272, -74.0005],  # Houston & 6th Ave (NW)
-        [40.7253, -73.9927],  # Houston & Bowery (NE)
-        [40.7183, -73.9979],  # Canal & Bowery (SE)
-        [40.7234, -74.0048],  # Canal & 6th Ave (SW)
+    # Street-grid outline: Houston / Bowery / Canal / 6th Ave
+    # Traced along actual street centerlines (streets curve in lower Manhattan)
+
+    # Houston St (west to east: 6th Ave → Bowery) — fairly straight
+    houston = [
+        [40.72724, -74.00046],  # 6th Ave
+        [40.72685, -73.99910],  # MacDougal St
+        [40.72660, -73.99800],  # Sullivan St
+        [40.72630, -73.99690],  # Thompson St
+        [40.72595, -73.99530],  # LaGuardia Pl
+        [40.72560, -73.99420],  # Broadway
+        [40.72535, -73.99275],  # Bowery
     ]
+
+    # Bowery (north to south: Houston → Canal) — curves southwest
+    bowery = [
+        [40.72535, -73.99275],  # Houston St
+        [40.72420, -73.99335],  # Jersey St
+        [40.72310, -73.99380],  # Prince St
+        [40.72190, -73.99440],  # Spring St
+        [40.72100, -73.99490],  # Kenmare St
+        [40.71970, -73.99570],  # Broome St
+        [40.71870, -73.99650],  # Grand St
+        [40.71750, -73.99730],  # Hester St
+        [40.71620, -73.99835],  # Canal St
+    ]
+
+    # Canal St (east to west: Bowery → 6th Ave) — curves northwest
+    canal = [
+        [40.71620, -73.99835],  # Bowery
+        [40.71680, -73.99960],  # Centre St
+        [40.71780, -74.00030],  # Lafayette St
+        [40.71885, -74.00105],  # Broadway
+        [40.72000, -74.00190],  # Mercer St
+        [40.72060, -74.00250],  # Greene St
+        [40.72120, -74.00300],  # Wooster St
+        [40.72170, -74.00340],  # W Broadway
+        [40.72240, -74.00400],  # Thompson St
+        [40.72325, -74.00470],  # 6th Ave
+    ]
+
+    # 6th Ave / Ave of the Americas (south to north: Canal → Houston)
+    sixth_ave = [
+        [40.72325, -74.00470],  # Canal St
+        [40.72400, -74.00380],  # Watts/Grand St
+        [40.72470, -74.00300],  # Broome St
+        [40.72540, -74.00220],  # Spring St
+        [40.72610, -74.00150],  # Prince/Charlton St
+        [40.72670, -74.00090],  # W Houston approach
+        [40.72724, -74.00046],  # Houston St (closes the loop)
+    ]
+
+    outline = houston + bowery + canal + sixth_ave
+
     folium.Polygon(
-        locations=box_corners,
+        locations=outline,
         color="#222222",
         weight=3,
         fill=True,
