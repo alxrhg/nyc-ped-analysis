@@ -1,0 +1,4600 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_fa0364643ec87d154fe6e5bc6be54bd7 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    
+<div style="
+    position: fixed; bottom: 20px; left: 20px; z-index: 9999;
+    background: white; padding: 14px 18px; border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25); font-family: sans-serif;
+    font-size: 12px; max-width: 400px;">
+  <h4 style="margin:0 0 8px 0; font-size:14px;">
+    Random Forest Model Summary
+  </h4>
+  <p style="margin:0 0 6px 0; color:#555;">
+    <b>File:</b> RF_wknd_n20_am_models.pckl<br>
+    <b>Type:</b> RandomForestRegressor &bull; 100 trees &bull; 10 features<br>
+    <b>Period:</b> Weekend AM
+  </p>
+  <table style="border-collapse:collapse; font-size:11px;">
+    <tr style="font-weight:bold; border-bottom:1px solid #ddd;">
+      <td style="padding:2px 6px">Feature</td>
+      <td style="padding:2px 6px">Importance</td>
+      <td style="padding:2px 6px">Bar</td>
+    </tr>
+    <tr><td style='padding:2px 6px'>Feature 7</td><td style='padding:2px 6px'>0.1714</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:69px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 4</td><td style='padding:2px 6px'>0.1307</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:52px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 5</td><td style='padding:2px 6px'>0.1134</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:45px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 0</td><td style='padding:2px 6px'>0.1049</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:42px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 6</td><td style='padding:2px 6px'>0.0943</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:38px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 3</td><td style='padding:2px 6px'>0.0870</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:35px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 9</td><td style='padding:2px 6px'>0.0816</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:33px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 8</td><td style='padding:2px 6px'>0.0783</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:31px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 2</td><td style='padding:2px 6px'>0.0699</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:28px;border-radius:2px'></div></td></tr><tr><td style='padding:2px 6px'>Feature 1</td><td style='padding:2px 6px'>0.0684</td><td style='padding:2px 0'><div style='background:#3b82f6;height:12px;width:27px;border-radius:2px'></div></td></tr>
+  </table>
+  <hr style="margin:8px 0; border:none; border-top:1px solid #ddd;">
+  <div>
+    <span style="display:inline-block;width:12px;height:12px;background:#e63946;border-radius:50%;margin-right:4px;vertical-align:middle"></span> Manhattan (60)
+    <span style="display:inline-block;width:12px;height:12px;background:#457b9d;border-radius:50%;margin-right:4px;margin-left:8px;vertical-align:middle"></span> Brooklyn (20)<br>
+    <span style="display:inline-block;width:12px;height:12px;background:#2a9d8f;border-radius:50%;margin-right:4px;vertical-align:middle"></span> Queens (15)
+    <span style="display:inline-block;width:12px;height:12px;background:#e9c46a;border-radius:50%;margin-right:4px;margin-left:8px;vertical-align:middle"></span> Bronx (12)
+    <span style="display:inline-block;width:12px;height:12px;background:#f4a261;border-radius:50%;margin-right:4px;margin-left:8px;vertical-align:middle"></span> S.I. (7)
+  </div>
+</div>
+    
+            <div class="folium-map" id="map_fa0364643ec87d154fe6e5bc6be54bd7" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_fa0364643ec87d154fe6e5bc6be54bd7 = L.map(
+                "map_fa0364643ec87d154fe6e5bc6be54bd7",
+                {
+                    center: [40.7128, -74.006],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_10f3027771e64d58bbfb98f1bc71a199 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_10f3027771e64d58bbfb98f1bc71a199.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_502b1f6ca2a7539e57a48bca783e501c = L.circleMarker(
+                [40.7069, -74.0113],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_2e2a4bb35aaaa044cb69b8419b3b0d63 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_98e6f381905663b53bf436de1ecb452f = $(`<div id="html_98e6f381905663b53bf436de1ecb452f" style="width: 100.0%; height: 100.0%;"><b>Broadway & Wall St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_2e2a4bb35aaaa044cb69b8419b3b0d63.setContent(html_98e6f381905663b53bf436de1ecb452f);
+            
+        
+
+        circle_marker_502b1f6ca2a7539e57a48bca783e501c.bindPopup(popup_2e2a4bb35aaaa044cb69b8419b3b0d63)
+        ;
+
+        
+    
+    
+            circle_marker_502b1f6ca2a7539e57a48bca783e501c.bindTooltip(
+                `<div>
+                     Broadway & Wall St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0a6c2b72bf10f90fb9d4226dfb97a175 = L.circleMarker(
+                [40.7094, -74.0065],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_c810dc0977987e72896f25350c1c9d34 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_7926092de1361ab93a533e174d678cfe = $(`<div id="html_7926092de1361ab93a533e174d678cfe" style="width: 100.0%; height: 100.0%;"><b>Fulton St (btwn Broadway & Nassau)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_c810dc0977987e72896f25350c1c9d34.setContent(html_7926092de1361ab93a533e174d678cfe);
+            
+        
+
+        circle_marker_0a6c2b72bf10f90fb9d4226dfb97a175.bindPopup(popup_c810dc0977987e72896f25350c1c9d34)
+        ;
+
+        
+    
+    
+            circle_marker_0a6c2b72bf10f90fb9d4226dfb97a175.bindTooltip(
+                `<div>
+                     Fulton St (btwn Broadway & Nassau)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3569beeecab1006aabb22d14273a6158 = L.circleMarker(
+                [40.7177, -73.9998],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_21344c615bab7a1cf54ae64b6b6d4e5d = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_96dadaeeec4eedffad1246083ba84703 = $(`<div id="html_96dadaeeec4eedffad1246083ba84703" style="width: 100.0%; height: 100.0%;"><b>Canal St (btwn Broadway & Centre)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_21344c615bab7a1cf54ae64b6b6d4e5d.setContent(html_96dadaeeec4eedffad1246083ba84703);
+            
+        
+
+        circle_marker_3569beeecab1006aabb22d14273a6158.bindPopup(popup_21344c615bab7a1cf54ae64b6b6d4e5d)
+        ;
+
+        
+    
+    
+            circle_marker_3569beeecab1006aabb22d14273a6158.bindTooltip(
+                `<div>
+                     Canal St (btwn Broadway & Centre)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_335ac1d279e4081965a0b936ac3fe16d = L.circleMarker(
+                [40.7255, -73.9968],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_18374ebd2d77230e0755beda5a390977 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_ad5661470a25a8ed5dc1f563f2ccd8f6 = $(`<div id="html_ad5661470a25a8ed5dc1f563f2ccd8f6" style="width: 100.0%; height: 100.0%;"><b>Broadway & Houston St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_18374ebd2d77230e0755beda5a390977.setContent(html_ad5661470a25a8ed5dc1f563f2ccd8f6);
+            
+        
+
+        circle_marker_335ac1d279e4081965a0b936ac3fe16d.bindPopup(popup_18374ebd2d77230e0755beda5a390977)
+        ;
+
+        
+    
+    
+            circle_marker_335ac1d279e4081965a0b936ac3fe16d.bindTooltip(
+                `<div>
+                     Broadway & Houston St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_49c5285a956e4983b7ff7aac272d6254 = L.circleMarker(
+                [40.7237, -73.9977],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_6eba0e3155fe5cb22e2e8d29305fe313 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_97ee1dde0fa5c12e5f08b653aa5a868e = $(`<div id="html_97ee1dde0fa5c12e5f08b653aa5a868e" style="width: 100.0%; height: 100.0%;"><b>Broadway & Prince St (SoHo)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6eba0e3155fe5cb22e2e8d29305fe313.setContent(html_97ee1dde0fa5c12e5f08b653aa5a868e);
+            
+        
+
+        circle_marker_49c5285a956e4983b7ff7aac272d6254.bindPopup(popup_6eba0e3155fe5cb22e2e8d29305fe313)
+        ;
+
+        
+    
+    
+            circle_marker_49c5285a956e4983b7ff7aac272d6254.bindTooltip(
+                `<div>
+                     Broadway & Prince St (SoHo)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4a2625d8ba68127361ca83d515ce2ac3 = L.circleMarker(
+                [40.7224, -73.9987],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_58745c61d9d0fc83c54c8ae56652b22c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_bf9b93ab8519d29f294ddcff0b1b47c0 = $(`<div id="html_bf9b93ab8519d29f294ddcff0b1b47c0" style="width: 100.0%; height: 100.0%;"><b>Broadway & Spring St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_58745c61d9d0fc83c54c8ae56652b22c.setContent(html_bf9b93ab8519d29f294ddcff0b1b47c0);
+            
+        
+
+        circle_marker_4a2625d8ba68127361ca83d515ce2ac3.bindPopup(popup_58745c61d9d0fc83c54c8ae56652b22c)
+        ;
+
+        
+    
+    
+            circle_marker_4a2625d8ba68127361ca83d515ce2ac3.bindTooltip(
+                `<div>
+                     Broadway & Spring St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_46e8cbf230efdaf12a83188eae4e24ec = L.circleMarker(
+                [40.7266, -73.9946],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_2e3799d93614da58163a8ee2e043e7d7 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_260f1ba73f0ce28f29808187fe528d95 = $(`<div id="html_260f1ba73f0ce28f29808187fe528d95" style="width: 100.0%; height: 100.0%;"><b>Broadway & Bleecker St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_2e3799d93614da58163a8ee2e043e7d7.setContent(html_260f1ba73f0ce28f29808187fe528d95);
+            
+        
+
+        circle_marker_46e8cbf230efdaf12a83188eae4e24ec.bindPopup(popup_2e3799d93614da58163a8ee2e043e7d7)
+        ;
+
+        
+    
+    
+            circle_marker_46e8cbf230efdaf12a83188eae4e24ec.bindTooltip(
+                `<div>
+                     Broadway & Bleecker St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_13a85fb2c5479ae872aad0c2db6389be = L.circleMarker(
+                [40.7359, -73.9911],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_800f279b255f0a62b9b5c9fafb936eb0 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_f19cb02dd368f7a1a0e8694442807264 = $(`<div id="html_f19cb02dd368f7a1a0e8694442807264" style="width: 100.0%; height: 100.0%;"><b>Union Square West (14th St)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_800f279b255f0a62b9b5c9fafb936eb0.setContent(html_f19cb02dd368f7a1a0e8694442807264);
+            
+        
+
+        circle_marker_13a85fb2c5479ae872aad0c2db6389be.bindPopup(popup_800f279b255f0a62b9b5c9fafb936eb0)
+        ;
+
+        
+    
+    
+            circle_marker_13a85fb2c5479ae872aad0c2db6389be.bindTooltip(
+                `<div>
+                     Union Square West (14th St)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d7dddba93aa19eaa4a502a1763473623 = L.circleMarker(
+                [40.7362, -73.9925],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_6aaf3c16767d7706a750d5e01bbfbf55 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2611689c38bcdf732a72f673fc066711 = $(`<div id="html_2611689c38bcdf732a72f673fc066711" style="width: 100.0%; height: 100.0%;"><b>14th St & 5th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6aaf3c16767d7706a750d5e01bbfbf55.setContent(html_2611689c38bcdf732a72f673fc066711);
+            
+        
+
+        circle_marker_d7dddba93aa19eaa4a502a1763473623.bindPopup(popup_6aaf3c16767d7706a750d5e01bbfbf55)
+        ;
+
+        
+    
+    
+            circle_marker_d7dddba93aa19eaa4a502a1763473623.bindTooltip(
+                `<div>
+                     14th St & 5th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_58eb4cc2f77134e82496650ac22e88a9 = L.circleMarker(
+                [40.7413, -73.9897],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_c3cbacc29f610a86598084fe177cb620 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a61c8bafdd22f44ca079c215b0f35b0d = $(`<div id="html_a61c8bafdd22f44ca079c215b0f35b0d" style="width: 100.0%; height: 100.0%;"><b>23rd St & 5th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_c3cbacc29f610a86598084fe177cb620.setContent(html_a61c8bafdd22f44ca079c215b0f35b0d);
+            
+        
+
+        circle_marker_58eb4cc2f77134e82496650ac22e88a9.bindPopup(popup_c3cbacc29f610a86598084fe177cb620)
+        ;
+
+        
+    
+    
+            circle_marker_58eb4cc2f77134e82496650ac22e88a9.bindTooltip(
+                `<div>
+                     23rd St & 5th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a632a83deca793bb3a7f0213081c0cf9 = L.circleMarker(
+                [40.7492, -73.9879],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_50f6fdd7c278f63a350c833e1b73b3fc = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_de6276863f333dbe46b992c0e110bf25 = $(`<div id="html_de6276863f333dbe46b992c0e110bf25" style="width: 100.0%; height: 100.0%;"><b>34th St & 6th Ave (Herald Sq)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_50f6fdd7c278f63a350c833e1b73b3fc.setContent(html_de6276863f333dbe46b992c0e110bf25);
+            
+        
+
+        circle_marker_a632a83deca793bb3a7f0213081c0cf9.bindPopup(popup_50f6fdd7c278f63a350c833e1b73b3fc)
+        ;
+
+        
+    
+    
+            circle_marker_a632a83deca793bb3a7f0213081c0cf9.bindTooltip(
+                `<div>
+                     34th St & 6th Ave (Herald Sq)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fbba488a79da7878b884405107a232a3 = L.circleMarker(
+                [40.7504, -73.9914],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_7e8f24df000c6e20a4b642884f598185 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_257d3082d6108c10354ba8eb3abd5842 = $(`<div id="html_257d3082d6108c10354ba8eb3abd5842" style="width: 100.0%; height: 100.0%;"><b>34th St & 7th Ave (Penn Station)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_7e8f24df000c6e20a4b642884f598185.setContent(html_257d3082d6108c10354ba8eb3abd5842);
+            
+        
+
+        circle_marker_fbba488a79da7878b884405107a232a3.bindPopup(popup_7e8f24df000c6e20a4b642884f598185)
+        ;
+
+        
+    
+    
+            circle_marker_fbba488a79da7878b884405107a232a3.bindTooltip(
+                `<div>
+                     34th St & 7th Ave (Penn Station)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_39089116b8910b7b405e116df3e85537 = L.circleMarker(
+                [40.7486, -73.9876],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_d9df8bb9a5805bb1950d1b2caa9e018d = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_5ea32e5da12a9f76807a57b899bf1fef = $(`<div id="html_5ea32e5da12a9f76807a57b899bf1fef" style="width: 100.0%; height: 100.0%;"><b>34th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d9df8bb9a5805bb1950d1b2caa9e018d.setContent(html_5ea32e5da12a9f76807a57b899bf1fef);
+            
+        
+
+        circle_marker_39089116b8910b7b405e116df3e85537.bindPopup(popup_d9df8bb9a5805bb1950d1b2caa9e018d)
+        ;
+
+        
+    
+    
+            circle_marker_39089116b8910b7b405e116df3e85537.bindTooltip(
+                `<div>
+                     34th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_49a4f224230870263e00f35021644ee7 = L.circleMarker(
+                [40.7537, -73.982],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_88cd52e3ca06ed029f8e86f8a11bca25 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_22ddf4e248cf8e4783c3673eb4f5559f = $(`<div id="html_22ddf4e248cf8e4783c3673eb4f5559f" style="width: 100.0%; height: 100.0%;"><b>42nd St & 5th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_88cd52e3ca06ed029f8e86f8a11bca25.setContent(html_22ddf4e248cf8e4783c3673eb4f5559f);
+            
+        
+
+        circle_marker_49a4f224230870263e00f35021644ee7.bindPopup(popup_88cd52e3ca06ed029f8e86f8a11bca25)
+        ;
+
+        
+    
+    
+            circle_marker_49a4f224230870263e00f35021644ee7.bindTooltip(
+                `<div>
+                     42nd St & 5th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_68025093ca0dde0b3d14f2fef7629bd7 = L.circleMarker(
+                [40.7546, -73.9843],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_f66c23f92a5a7e7c6ab1e9568ef29527 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_89f2358233e7708528add4c90859e01b = $(`<div id="html_89f2358233e7708528add4c90859e01b" style="width: 100.0%; height: 100.0%;"><b>42nd St & 6th Ave (Bryant Park)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_f66c23f92a5a7e7c6ab1e9568ef29527.setContent(html_89f2358233e7708528add4c90859e01b);
+            
+        
+
+        circle_marker_68025093ca0dde0b3d14f2fef7629bd7.bindPopup(popup_f66c23f92a5a7e7c6ab1e9568ef29527)
+        ;
+
+        
+    
+    
+            circle_marker_68025093ca0dde0b3d14f2fef7629bd7.bindTooltip(
+                `<div>
+                     42nd St & 6th Ave (Bryant Park)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_de82801201df738f73da2e11f9bc389a = L.circleMarker(
+                [40.756, -73.987],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_9255d09314434e1c49a9a05ed6eb9440 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_e1235d698edbd939c64ebdbd44569eba = $(`<div id="html_e1235d698edbd939c64ebdbd44569eba" style="width: 100.0%; height: 100.0%;"><b>42nd St & 7th Ave (Times Square)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_9255d09314434e1c49a9a05ed6eb9440.setContent(html_e1235d698edbd939c64ebdbd44569eba);
+            
+        
+
+        circle_marker_de82801201df738f73da2e11f9bc389a.bindPopup(popup_9255d09314434e1c49a9a05ed6eb9440)
+        ;
+
+        
+    
+    
+            circle_marker_de82801201df738f73da2e11f9bc389a.bindTooltip(
+                `<div>
+                     42nd St & 7th Ave (Times Square)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f827df4f33757c2bf1368f92d9193f67 = L.circleMarker(
+                [40.7567, -73.991],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_3ac6e51538252b9b81a1949d1323db6c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_89a00ab98db688faf05236e73204b2a0 = $(`<div id="html_89a00ab98db688faf05236e73204b2a0" style="width: 100.0%; height: 100.0%;"><b>42nd St & 8th Ave (Port Authority)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_3ac6e51538252b9b81a1949d1323db6c.setContent(html_89a00ab98db688faf05236e73204b2a0);
+            
+        
+
+        circle_marker_f827df4f33757c2bf1368f92d9193f67.bindPopup(popup_3ac6e51538252b9b81a1949d1323db6c)
+        ;
+
+        
+    
+    
+            circle_marker_f827df4f33757c2bf1368f92d9193f67.bindTooltip(
+                `<div>
+                     42nd St & 8th Ave (Port Authority)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f9962ab5acf9f8ca6698085511a3343c = L.circleMarker(
+                [40.7558, -73.9862],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_0c8f5e5c09a766707911651282420834 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d63483b74e16fb279a49750f18d76afb = $(`<div id="html_d63483b74e16fb279a49750f18d76afb" style="width: 100.0%; height: 100.0%;"><b>42nd St & Broadway (Times Square)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_0c8f5e5c09a766707911651282420834.setContent(html_d63483b74e16fb279a49750f18d76afb);
+            
+        
+
+        circle_marker_f9962ab5acf9f8ca6698085511a3343c.bindPopup(popup_0c8f5e5c09a766707911651282420834)
+        ;
+
+        
+    
+    
+            circle_marker_f9962ab5acf9f8ca6698085511a3343c.bindTooltip(
+                `<div>
+                     42nd St & Broadway (Times Square)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_53b1a1c31dc7018ac107c7641592b7d1 = L.circleMarker(
+                [40.7591, -73.9854],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_ef3a8204da9aca3cf701ceba7b9170fd = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a0a404c12d402bee8e80f0fa21f89e31 = $(`<div id="html_a0a404c12d402bee8e80f0fa21f89e31" style="width: 100.0%; height: 100.0%;"><b>47th St & 7th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_ef3a8204da9aca3cf701ceba7b9170fd.setContent(html_a0a404c12d402bee8e80f0fa21f89e31);
+            
+        
+
+        circle_marker_53b1a1c31dc7018ac107c7641592b7d1.bindPopup(popup_ef3a8204da9aca3cf701ceba7b9170fd)
+        ;
+
+        
+    
+    
+            circle_marker_53b1a1c31dc7018ac107c7641592b7d1.bindTooltip(
+                `<div>
+                     47th St & 7th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4499165c9a1244e937b591bc0d0d0d49 = L.circleMarker(
+                [40.7607, -73.9847],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_95ddd658e38841de8763be5e9fb5a3a4 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d253af5abf6f7323b78a2bc7551122d1 = $(`<div id="html_d253af5abf6f7323b78a2bc7551122d1" style="width: 100.0%; height: 100.0%;"><b>49th St & 7th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_95ddd658e38841de8763be5e9fb5a3a4.setContent(html_d253af5abf6f7323b78a2bc7551122d1);
+            
+        
+
+        circle_marker_4499165c9a1244e937b591bc0d0d0d49.bindPopup(popup_95ddd658e38841de8763be5e9fb5a3a4)
+        ;
+
+        
+    
+    
+            circle_marker_4499165c9a1244e937b591bc0d0d0d49.bindTooltip(
+                `<div>
+                     49th St & 7th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_10b4416e216edc5e382972068830307b = L.circleMarker(
+                [40.759, -73.9785],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_167555da15826898b5091acc12dddcc7 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_b190b0bc42394f7d479e60828c92566b = $(`<div id="html_b190b0bc42394f7d479e60828c92566b" style="width: 100.0%; height: 100.0%;"><b>50th St & 5th Ave (Rockefeller Ctr)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_167555da15826898b5091acc12dddcc7.setContent(html_b190b0bc42394f7d479e60828c92566b);
+            
+        
+
+        circle_marker_10b4416e216edc5e382972068830307b.bindPopup(popup_167555da15826898b5091acc12dddcc7)
+        ;
+
+        
+    
+    
+            circle_marker_10b4416e216edc5e382972068830307b.bindTooltip(
+                `<div>
+                     50th St & 5th Ave (Rockefeller Ctr)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d5d9cc6a329427422fea9522063d061c = L.circleMarker(
+                [40.7637, -73.9744],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_134479c5e78c1f93a3bcb305fb203fb0 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_73bf31432197f4654ace3a2f255eb527 = $(`<div id="html_73bf31432197f4654ace3a2f255eb527" style="width: 100.0%; height: 100.0%;"><b>57th St & 5th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_134479c5e78c1f93a3bcb305fb203fb0.setContent(html_73bf31432197f4654ace3a2f255eb527);
+            
+        
+
+        circle_marker_d5d9cc6a329427422fea9522063d061c.bindPopup(popup_134479c5e78c1f93a3bcb305fb203fb0)
+        ;
+
+        
+    
+    
+            circle_marker_d5d9cc6a329427422fea9522063d061c.bindTooltip(
+                `<div>
+                     57th St & 5th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d0e2e45eb5ab819a4d7c46c136f37826 = L.circleMarker(
+                [40.7647, -73.9817],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_7da3658ca59e26ff61ef5cd3f2ea24a4 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_91dbb18d8541d39afdfd733187222104 = $(`<div id="html_91dbb18d8541d39afdfd733187222104" style="width: 100.0%; height: 100.0%;"><b>57th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_7da3658ca59e26ff61ef5cd3f2ea24a4.setContent(html_91dbb18d8541d39afdfd733187222104);
+            
+        
+
+        circle_marker_d0e2e45eb5ab819a4d7c46c136f37826.bindPopup(popup_7da3658ca59e26ff61ef5cd3f2ea24a4)
+        ;
+
+        
+    
+    
+            circle_marker_d0e2e45eb5ab819a4d7c46c136f37826.bindTooltip(
+                `<div>
+                     57th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8cb1e63886768561e8c6cf4f6329d6d0 = L.circleMarker(
+                [40.7627, -73.9679],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_3fc6ce26118c758054e18f2852536560 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_25a9f21d0e4da6a8e2a45b29938b9c03 = $(`<div id="html_25a9f21d0e4da6a8e2a45b29938b9c03" style="width: 100.0%; height: 100.0%;"><b>59th St & Lexington Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_3fc6ce26118c758054e18f2852536560.setContent(html_25a9f21d0e4da6a8e2a45b29938b9c03);
+            
+        
+
+        circle_marker_8cb1e63886768561e8c6cf4f6329d6d0.bindPopup(popup_3fc6ce26118c758054e18f2852536560)
+        ;
+
+        
+    
+    
+            circle_marker_8cb1e63886768561e8c6cf4f6329d6d0.bindTooltip(
+                `<div>
+                     59th St & Lexington Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4e07cc661c3d79a44511af907d66e458 = L.circleMarker(
+                [40.768, -73.9819],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_80a72622e1b82ec3a8e24ee508163fe1 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_67496a5a4754bb05778206b844f292a6 = $(`<div id="html_67496a5a4754bb05778206b844f292a6" style="width: 100.0%; height: 100.0%;"><b>59th St & Columbus Circle</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_80a72622e1b82ec3a8e24ee508163fe1.setContent(html_67496a5a4754bb05778206b844f292a6);
+            
+        
+
+        circle_marker_4e07cc661c3d79a44511af907d66e458.bindPopup(popup_80a72622e1b82ec3a8e24ee508163fe1)
+        ;
+
+        
+    
+    
+            circle_marker_4e07cc661c3d79a44511af907d66e458.bindTooltip(
+                `<div>
+                     59th St & Columbus Circle
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0a8bd3273980d748e5a3ce5787c70206 = L.circleMarker(
+                [40.7791, -73.981],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_d0c93e7e59076023ea130706008a0786 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_fcc0f4f9149ab85289ecae32d807b72d = $(`<div id="html_fcc0f4f9149ab85289ecae32d807b72d" style="width: 100.0%; height: 100.0%;"><b>72nd St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d0c93e7e59076023ea130706008a0786.setContent(html_fcc0f4f9149ab85289ecae32d807b72d);
+            
+        
+
+        circle_marker_0a8bd3273980d748e5a3ce5787c70206.bindPopup(popup_d0c93e7e59076023ea130706008a0786)
+        ;
+
+        
+    
+    
+            circle_marker_0a8bd3273980d748e5a3ce5787c70206.bindTooltip(
+                `<div>
+                     72nd St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_bd076a3541982b2b1f8273827e4894e5 = L.circleMarker(
+                [40.7779, -73.9783],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_8acf22b76f0642e8c3a38873b7d6cfb8 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a719f45b823f30181d2babe3b42719de = $(`<div id="html_a719f45b823f30181d2babe3b42719de" style="width: 100.0%; height: 100.0%;"><b>72nd St & Columbus Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_8acf22b76f0642e8c3a38873b7d6cfb8.setContent(html_a719f45b823f30181d2babe3b42719de);
+            
+        
+
+        circle_marker_bd076a3541982b2b1f8273827e4894e5.bindPopup(popup_8acf22b76f0642e8c3a38873b7d6cfb8)
+        ;
+
+        
+    
+    
+            circle_marker_bd076a3541982b2b1f8273827e4894e5.bindTooltip(
+                `<div>
+                     72nd St & Columbus Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_cc667198c6727b467c78aeec6b973fd6 = L.circleMarker(
+                [40.7882, -73.9761],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_379003f8b1b5b529c05734416c8396f6 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_0bfef9f305b8a9db994d57a9a074f667 = $(`<div id="html_0bfef9f305b8a9db994d57a9a074f667" style="width: 100.0%; height: 100.0%;"><b>86th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_379003f8b1b5b529c05734416c8396f6.setContent(html_0bfef9f305b8a9db994d57a9a074f667);
+            
+        
+
+        circle_marker_cc667198c6727b467c78aeec6b973fd6.bindPopup(popup_379003f8b1b5b529c05734416c8396f6)
+        ;
+
+        
+    
+    
+            circle_marker_cc667198c6727b467c78aeec6b973fd6.bindTooltip(
+                `<div>
+                     86th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6be9c384972c0fa5e2dbbc14a0ecfcf3 = L.circleMarker(
+                [40.7798, -73.9557],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_1cf72737030017b63ec820d84e8a01e3 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_266c216aa83e977e71964073e3c16153 = $(`<div id="html_266c216aa83e977e71964073e3c16153" style="width: 100.0%; height: 100.0%;"><b>86th St & Lexington Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_1cf72737030017b63ec820d84e8a01e3.setContent(html_266c216aa83e977e71964073e3c16153);
+            
+        
+
+        circle_marker_6be9c384972c0fa5e2dbbc14a0ecfcf3.bindPopup(popup_1cf72737030017b63ec820d84e8a01e3)
+        ;
+
+        
+    
+    
+            circle_marker_6be9c384972c0fa5e2dbbc14a0ecfcf3.bindTooltip(
+                `<div>
+                     86th St & Lexington Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c8e125789f62e2a9b89cf8572c9a4f5b = L.circleMarker(
+                [40.7944, -73.972],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_161763d220252f2aa55937e472ea7b41 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2828659c892371b4794bcc2bf0f125f9 = $(`<div id="html_2828659c892371b4794bcc2bf0f125f9" style="width: 100.0%; height: 100.0%;"><b>96th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_161763d220252f2aa55937e472ea7b41.setContent(html_2828659c892371b4794bcc2bf0f125f9);
+            
+        
+
+        circle_marker_c8e125789f62e2a9b89cf8572c9a4f5b.bindPopup(popup_161763d220252f2aa55937e472ea7b41)
+        ;
+
+        
+    
+    
+            circle_marker_c8e125789f62e2a9b89cf8572c9a4f5b.bindTooltip(
+                `<div>
+                     96th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ca3d488360683a9ba903d989a97ba894 = L.circleMarker(
+                [40.8082, -73.9451],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_95234468df7c9619952e54c511ff1805 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d0983f03cf170e113341cb864e8d766b = $(`<div id="html_d0983f03cf170e113341cb864e8d766b" style="width: 100.0%; height: 100.0%;"><b>125th St & Lenox Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_95234468df7c9619952e54c511ff1805.setContent(html_d0983f03cf170e113341cb864e8d766b);
+            
+        
+
+        circle_marker_ca3d488360683a9ba903d989a97ba894.bindPopup(popup_95234468df7c9619952e54c511ff1805)
+        ;
+
+        
+    
+    
+            circle_marker_ca3d488360683a9ba903d989a97ba894.bindTooltip(
+                `<div>
+                     125th St & Lenox Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b87ba2ea0f2e3788947c29cb7986ad6f = L.circleMarker(
+                [40.8087, -73.9476],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_6e5877537b0c730ecaa928f76cf881fb = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_86a6c49bf71bb565f60959ff718e3c51 = $(`<div id="html_86a6c49bf71bb565f60959ff718e3c51" style="width: 100.0%; height: 100.0%;"><b>125th St & Adam Clayton Powell</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6e5877537b0c730ecaa928f76cf881fb.setContent(html_86a6c49bf71bb565f60959ff718e3c51);
+            
+        
+
+        circle_marker_b87ba2ea0f2e3788947c29cb7986ad6f.bindPopup(popup_6e5877537b0c730ecaa928f76cf881fb)
+        ;
+
+        
+    
+    
+            circle_marker_b87ba2ea0f2e3788947c29cb7986ad6f.bindTooltip(
+                `<div>
+                     125th St & Adam Clayton Powell
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a7d2a0bc691a80b6162541ee4d380ab6 = L.circleMarker(
+                [40.8158, -73.9584],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_7ca91bbeb21c8e71b6d10995847f3b4f = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a6925f1ffb001e2e61273b6ed9bda2dd = $(`<div id="html_a6925f1ffb001e2e61273b6ed9bda2dd" style="width: 100.0%; height: 100.0%;"><b>125th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_7ca91bbeb21c8e71b6d10995847f3b4f.setContent(html_a6925f1ffb001e2e61273b6ed9bda2dd);
+            
+        
+
+        circle_marker_a7d2a0bc691a80b6162541ee4d380ab6.bindPopup(popup_7ca91bbeb21c8e71b6d10995847f3b4f)
+        ;
+
+        
+    
+    
+            circle_marker_a7d2a0bc691a80b6162541ee4d380ab6.bindTooltip(
+                `<div>
+                     125th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ba26f279e22ed5d6bd422e4b1a581846 = L.circleMarker(
+                [40.8035, -73.9396],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_37b5690aac625619f1e10a93ddfabe44 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_886d0f4a0586016009ca9417c7ea1b9e = $(`<div id="html_886d0f4a0586016009ca9417c7ea1b9e" style="width: 100.0%; height: 100.0%;"><b>125th St & 5th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_37b5690aac625619f1e10a93ddfabe44.setContent(html_886d0f4a0586016009ca9417c7ea1b9e);
+            
+        
+
+        circle_marker_ba26f279e22ed5d6bd422e4b1a581846.bindPopup(popup_37b5690aac625619f1e10a93ddfabe44)
+        ;
+
+        
+    
+    
+            circle_marker_ba26f279e22ed5d6bd422e4b1a581846.bindTooltip(
+                `<div>
+                     125th St & 5th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e8c30d5a9d7c045bb57db5f3ac69d657 = L.circleMarker(
+                [40.8231, -73.9414],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_6cf757e28bfb17f0ff17c7e6918bf267 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_ecf2f0daf5fad46473c43e344e3e9f79 = $(`<div id="html_ecf2f0daf5fad46473c43e344e3e9f79" style="width: 100.0%; height: 100.0%;"><b>145th St & St Nicholas Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6cf757e28bfb17f0ff17c7e6918bf267.setContent(html_ecf2f0daf5fad46473c43e344e3e9f79);
+            
+        
+
+        circle_marker_e8c30d5a9d7c045bb57db5f3ac69d657.bindPopup(popup_6cf757e28bfb17f0ff17c7e6918bf267)
+        ;
+
+        
+    
+    
+            circle_marker_e8c30d5a9d7c045bb57db5f3ac69d657.bindTooltip(
+                `<div>
+                     145th St & St Nicholas Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_52cf14cf86ea521c6b9b602d332386ac = L.circleMarker(
+                [40.7632, -73.9674],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_10d328f78369e4167ea47ac62cdd02c4 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_fc4417b450ce62ce0cbd039f2d0650b0 = $(`<div id="html_fc4417b450ce62ce0cbd039f2d0650b0" style="width: 100.0%; height: 100.0%;"><b>Lexington Ave & 60th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_10d328f78369e4167ea47ac62cdd02c4.setContent(html_fc4417b450ce62ce0cbd039f2d0650b0);
+            
+        
+
+        circle_marker_52cf14cf86ea521c6b9b602d332386ac.bindPopup(popup_10d328f78369e4167ea47ac62cdd02c4)
+        ;
+
+        
+    
+    
+            circle_marker_52cf14cf86ea521c6b9b602d332386ac.bindTooltip(
+                `<div>
+                     Lexington Ave & 60th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6a85f4d2eab737d31f459e24310ed244 = L.circleMarker(
+                [40.753, -73.98],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_ff7ae5938474b9d03c5dc35dfe2bd545 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_76bded2a0d882a74e0a0f1e2aa2fa473 = $(`<div id="html_76bded2a0d882a74e0a0f1e2aa2fa473" style="width: 100.0%; height: 100.0%;"><b>Madison Ave & 42nd St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_ff7ae5938474b9d03c5dc35dfe2bd545.setContent(html_76bded2a0d882a74e0a0f1e2aa2fa473);
+            
+        
+
+        circle_marker_6a85f4d2eab737d31f459e24310ed244.bindPopup(popup_ff7ae5938474b9d03c5dc35dfe2bd545)
+        ;
+
+        
+    
+    
+            circle_marker_6a85f4d2eab737d31f459e24310ed244.bindTooltip(
+                `<div>
+                     Madison Ave & 42nd St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_344f1af2d4a082beb7d49032f95bf5f6 = L.circleMarker(
+                [40.7482, -73.9813],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_bab2e3e23847bd33c58ddd4629e4777e = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_e4393aa4b02f3bc8047c9b9f0cb55662 = $(`<div id="html_e4393aa4b02f3bc8047c9b9f0cb55662" style="width: 100.0%; height: 100.0%;"><b>Park Ave & 34th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_bab2e3e23847bd33c58ddd4629e4777e.setContent(html_e4393aa4b02f3bc8047c9b9f0cb55662);
+            
+        
+
+        circle_marker_344f1af2d4a082beb7d49032f95bf5f6.bindPopup(popup_bab2e3e23847bd33c58ddd4629e4777e)
+        ;
+
+        
+    
+    
+            circle_marker_344f1af2d4a082beb7d49032f95bf5f6.bindTooltip(
+                `<div>
+                     Park Ave & 34th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8bc976445b18ed0f0b0819f4c9b1040a = L.circleMarker(
+                [40.7321, -73.9826],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_5b89d988d06a702ff682efc3dde91ee5 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_abaed3ce76495ec1c9e47ef1231f3882 = $(`<div id="html_abaed3ce76495ec1c9e47ef1231f3882" style="width: 100.0%; height: 100.0%;"><b>1st Ave & 14th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_5b89d988d06a702ff682efc3dde91ee5.setContent(html_abaed3ce76495ec1c9e47ef1231f3882);
+            
+        
+
+        circle_marker_8bc976445b18ed0f0b0819f4c9b1040a.bindPopup(popup_5b89d988d06a702ff682efc3dde91ee5)
+        ;
+
+        
+    
+    
+            circle_marker_8bc976445b18ed0f0b0819f4c9b1040a.bindTooltip(
+                `<div>
+                     1st Ave & 14th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_101ea33e4fb6d4421d2229fef397db5f = L.circleMarker(
+                [40.7775, -73.9535],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_ba038fc1bf7d56748ec121e00ea86444 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_6216db9cdac94dd716acfa843aa712bb = $(`<div id="html_6216db9cdac94dd716acfa843aa712bb" style="width: 100.0%; height: 100.0%;"><b>2nd Ave & 86th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_ba038fc1bf7d56748ec121e00ea86444.setContent(html_6216db9cdac94dd716acfa843aa712bb);
+            
+        
+
+        circle_marker_101ea33e4fb6d4421d2229fef397db5f.bindPopup(popup_ba038fc1bf7d56748ec121e00ea86444)
+        ;
+
+        
+    
+    
+            circle_marker_101ea33e4fb6d4421d2229fef397db5f.bindTooltip(
+                `<div>
+                     2nd Ave & 86th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_cd57ca2356d29768882398e406cfb66a = L.circleMarker(
+                [40.7783, -73.9554],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_878f9781b5a990615d7ab615c2fb2084 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_9c59657298bddce0745aa7d63b2e599c = $(`<div id="html_9c59657298bddce0745aa7d63b2e599c" style="width: 100.0%; height: 100.0%;"><b>3rd Ave & 86th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_878f9781b5a990615d7ab615c2fb2084.setContent(html_9c59657298bddce0745aa7d63b2e599c);
+            
+        
+
+        circle_marker_cd57ca2356d29768882398e406cfb66a.bindPopup(popup_878f9781b5a990615d7ab615c2fb2084)
+        ;
+
+        
+    
+    
+            circle_marker_cd57ca2356d29768882398e406cfb66a.bindTooltip(
+                `<div>
+                     3rd Ave & 86th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e0b5160ac7393ca948abc201e1b2b10a = L.circleMarker(
+                [40.7789, -73.9811],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_942f03a198a9e1b654ec901cc5c2fbaf = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_9fd5ccff9cd957d3bf09801a85d3b5b9 = $(`<div id="html_9fd5ccff9cd957d3bf09801a85d3b5b9" style="width: 100.0%; height: 100.0%;"><b>Amsterdam Ave & 72nd St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_942f03a198a9e1b654ec901cc5c2fbaf.setContent(html_9fd5ccff9cd957d3bf09801a85d3b5b9);
+            
+        
+
+        circle_marker_e0b5160ac7393ca948abc201e1b2b10a.bindPopup(popup_942f03a198a9e1b654ec901cc5c2fbaf)
+        ;
+
+        
+    
+    
+            circle_marker_e0b5160ac7393ca948abc201e1b2b10a.bindTooltip(
+                `<div>
+                     Amsterdam Ave & 72nd St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_10971117a37a191a4b7251024601bbba = L.circleMarker(
+                [40.7403, -74.0007],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_6bac75ba11c5c247b95333b056ac9d33 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_6be5dbc4d74136546d56bbd927878170 = $(`<div id="html_6be5dbc4d74136546d56bbd927878170" style="width: 100.0%; height: 100.0%;"><b>8th Ave & 14th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6bac75ba11c5c247b95333b056ac9d33.setContent(html_6be5dbc4d74136546d56bbd927878170);
+            
+        
+
+        circle_marker_10971117a37a191a4b7251024601bbba.bindPopup(popup_6bac75ba11c5c247b95333b056ac9d33)
+        ;
+
+        
+    
+    
+            circle_marker_10971117a37a191a4b7251024601bbba.bindTooltip(
+                `<div>
+                     8th Ave & 14th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0ba5b1f62f8ad3f2fbb4366f7ba56388 = L.circleMarker(
+                [40.737, -73.9969],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_d84f37c417bd36987bd5de1ca6b0c898 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d581b2f2b6803cf9da38ebc26125a846 = $(`<div id="html_d581b2f2b6803cf9da38ebc26125a846" style="width: 100.0%; height: 100.0%;"><b>6th Ave & 14th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d84f37c417bd36987bd5de1ca6b0c898.setContent(html_d581b2f2b6803cf9da38ebc26125a846);
+            
+        
+
+        circle_marker_0ba5b1f62f8ad3f2fbb4366f7ba56388.bindPopup(popup_d84f37c417bd36987bd5de1ca6b0c898)
+        ;
+
+        
+    
+    
+            circle_marker_0ba5b1f62f8ad3f2fbb4366f7ba56388.bindTooltip(
+                `<div>
+                     6th Ave & 14th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fcbd21f8a44cb33766282d4a81830e05 = L.circleMarker(
+                [40.7267, -73.9838],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_eae46371ac885ce66f8fc92bb6f79e8f = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2ad27760b02335da3edeb8148bc01803 = $(`<div id="html_2ad27760b02335da3edeb8148bc01803" style="width: 100.0%; height: 100.0%;"><b>Ave A & 7th St (East Village)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_eae46371ac885ce66f8fc92bb6f79e8f.setContent(html_2ad27760b02335da3edeb8148bc01803);
+            
+        
+
+        circle_marker_fcbd21f8a44cb33766282d4a81830e05.bindPopup(popup_eae46371ac885ce66f8fc92bb6f79e8f)
+        ;
+
+        
+    
+    
+            circle_marker_fcbd21f8a44cb33766282d4a81830e05.bindTooltip(
+                `<div>
+                     Ave A & 7th St (East Village)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0bd7dcdca4fc37eb1fa93f36200ee4b5 = L.circleMarker(
+                [40.729, -73.9885],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_88e7e63f976d11d291ef0dc1de54649a = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_f5891d2c53097166e17330248defe69a = $(`<div id="html_f5891d2c53097166e17330248defe69a" style="width: 100.0%; height: 100.0%;"><b>St Marks Pl & 2nd Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_88e7e63f976d11d291ef0dc1de54649a.setContent(html_f5891d2c53097166e17330248defe69a);
+            
+        
+
+        circle_marker_0bd7dcdca4fc37eb1fa93f36200ee4b5.bindPopup(popup_88e7e63f976d11d291ef0dc1de54649a)
+        ;
+
+        
+    
+    
+            circle_marker_0bd7dcdca4fc37eb1fa93f36200ee4b5.bindTooltip(
+                `<div>
+                     St Marks Pl & 2nd Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_04beb2786b1ad66573fe8b812010f3d4 = L.circleMarker(
+                [40.7337, -74.0025],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_9b9a5a79f05f53868df2fe2335a21c1b = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_188bd39cc8cfd3e0bbbcc56ceacb296d = $(`<div id="html_188bd39cc8cfd3e0bbbcc56ceacb296d" style="width: 100.0%; height: 100.0%;"><b>Christopher St & 7th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_9b9a5a79f05f53868df2fe2335a21c1b.setContent(html_188bd39cc8cfd3e0bbbcc56ceacb296d);
+            
+        
+
+        circle_marker_04beb2786b1ad66573fe8b812010f3d4.bindPopup(popup_9b9a5a79f05f53868df2fe2335a21c1b)
+        ;
+
+        
+    
+    
+            circle_marker_04beb2786b1ad66573fe8b812010f3d4.bindTooltip(
+                `<div>
+                     Christopher St & 7th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b403c5a04d372bb8af66f029177518c6 = L.circleMarker(
+                [40.7321, -74.0001],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_1912fc4f7a27bf7047449f2db6babc76 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_459e5c5829ab18bc207bc07508e2cbbe = $(`<div id="html_459e5c5829ab18bc207bc07508e2cbbe" style="width: 100.0%; height: 100.0%;"><b>West 4th St & 6th Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_1912fc4f7a27bf7047449f2db6babc76.setContent(html_459e5c5829ab18bc207bc07508e2cbbe);
+            
+        
+
+        circle_marker_b403c5a04d372bb8af66f029177518c6.bindPopup(popup_1912fc4f7a27bf7047449f2db6babc76)
+        ;
+
+        
+    
+    
+            circle_marker_b403c5a04d372bb8af66f029177518c6.bindTooltip(
+                `<div>
+                     West 4th St & 6th Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a0194588e8f0fb55f26d3c24742a3275 = L.circleMarker(
+                [40.7141, -74.0074],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_e0f4f66b5c699d77254465e7a11d5070 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_297c40830089886a602a60feff888992 = $(`<div id="html_297c40830089886a602a60feff888992" style="width: 100.0%; height: 100.0%;"><b>Chambers St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_e0f4f66b5c699d77254465e7a11d5070.setContent(html_297c40830089886a602a60feff888992);
+            
+        
+
+        circle_marker_a0194588e8f0fb55f26d3c24742a3275.bindPopup(popup_e0f4f66b5c699d77254465e7a11d5070)
+        ;
+
+        
+    
+    
+            circle_marker_a0194588e8f0fb55f26d3c24742a3275.bindTooltip(
+                `<div>
+                     Chambers St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b741908ce5f23b5c97ac47246aa6f697 = L.circleMarker(
+                [40.7096, -74.0105],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_a749a0339e56a408682e874ea974cf54 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_33f31cf8fbf7ea94cddae9012698743c = $(`<div id="html_33f31cf8fbf7ea94cddae9012698743c" style="width: 100.0%; height: 100.0%;"><b>Cortlandt St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_a749a0339e56a408682e874ea974cf54.setContent(html_33f31cf8fbf7ea94cddae9012698743c);
+            
+        
+
+        circle_marker_b741908ce5f23b5c97ac47246aa6f697.bindPopup(popup_a749a0339e56a408682e874ea974cf54)
+        ;
+
+        
+    
+    
+            circle_marker_b741908ce5f23b5c97ac47246aa6f697.bindTooltip(
+                `<div>
+                     Cortlandt St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ccd3dbb970498c04f105b6b7e5ce8d74 = L.circleMarker(
+                [40.7056, -74.0084],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_840886b7e557e1864dcaf785808ccb51 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_8711c32041d05739444e07dc67f0be85 = $(`<div id="html_8711c32041d05739444e07dc67f0be85" style="width: 100.0%; height: 100.0%;"><b>Water St & Wall St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_840886b7e557e1864dcaf785808ccb51.setContent(html_8711c32041d05739444e07dc67f0be85);
+            
+        
+
+        circle_marker_ccd3dbb970498c04f105b6b7e5ce8d74.bindPopup(popup_840886b7e557e1864dcaf785808ccb51)
+        ;
+
+        
+    
+    
+            circle_marker_ccd3dbb970498c04f105b6b7e5ce8d74.bindTooltip(
+                `<div>
+                     Water St & Wall St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_066ea228c90a34ace8f79556471b67cc = L.circleMarker(
+                [40.7117, -74.01],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_5d20a34086010365cb5ad0877e0b8c32 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_151543e740fb1600ac2749477f9dc10c = $(`<div id="html_151543e740fb1600ac2749477f9dc10c" style="width: 100.0%; height: 100.0%;"><b>Church St & Vesey St (WTC)</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_5d20a34086010365cb5ad0877e0b8c32.setContent(html_151543e740fb1600ac2749477f9dc10c);
+            
+        
+
+        circle_marker_066ea228c90a34ace8f79556471b67cc.bindPopup(popup_5d20a34086010365cb5ad0877e0b8c32)
+        ;
+
+        
+    
+    
+            circle_marker_066ea228c90a34ace8f79556471b67cc.bindTooltip(
+                `<div>
+                     Church St & Vesey St (WTC)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_038366e80847bfede23d77fd4e1460e4 = L.circleMarker(
+                [40.8651, -73.9275],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_677fd842286047b7f36adde2cda5016f = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d7bd5e6ea09958c05e921357619a6517 = $(`<div id="html_d7bd5e6ea09958c05e921357619a6517" style="width: 100.0%; height: 100.0%;"><b>Dyckman St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_677fd842286047b7f36adde2cda5016f.setContent(html_d7bd5e6ea09958c05e921357619a6517);
+            
+        
+
+        circle_marker_038366e80847bfede23d77fd4e1460e4.bindPopup(popup_677fd842286047b7f36adde2cda5016f)
+        ;
+
+        
+    
+    
+            circle_marker_038366e80847bfede23d77fd4e1460e4.bindTooltip(
+                `<div>
+                     Dyckman St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_882ce99df843705228008d1e5383338c = L.circleMarker(
+                [40.8488, -73.9346],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_e32808d22c9576d0eaa78b2b6f30ba0b = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_ee151e2e7f0bcc6c5249d27f45f5df4b = $(`<div id="html_ee151e2e7f0bcc6c5249d27f45f5df4b" style="width: 100.0%; height: 100.0%;"><b>181st St & St Nicholas Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_e32808d22c9576d0eaa78b2b6f30ba0b.setContent(html_ee151e2e7f0bcc6c5249d27f45f5df4b);
+            
+        
+
+        circle_marker_882ce99df843705228008d1e5383338c.bindPopup(popup_e32808d22c9576d0eaa78b2b6f30ba0b)
+        ;
+
+        
+    
+    
+            circle_marker_882ce99df843705228008d1e5383338c.bindTooltip(
+                `<div>
+                     181st St & St Nicholas Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_90fad33ea4f282d564d068cf1f4657fa = L.circleMarker(
+                [40.8406, -73.9393],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_c760b3e7d485051f57569fdb8f0f15bb = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_acc4ba63188b311dbab21e34002a34c8 = $(`<div id="html_acc4ba63188b311dbab21e34002a34c8" style="width: 100.0%; height: 100.0%;"><b>168th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_c760b3e7d485051f57569fdb8f0f15bb.setContent(html_acc4ba63188b311dbab21e34002a34c8);
+            
+        
+
+        circle_marker_90fad33ea4f282d564d068cf1f4657fa.bindPopup(popup_c760b3e7d485051f57569fdb8f0f15bb)
+        ;
+
+        
+    
+    
+            circle_marker_90fad33ea4f282d564d068cf1f4657fa.bindTooltip(
+                `<div>
+                     168th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4fde704699023235a1c36f0850c104bd = L.circleMarker(
+                [40.8314, -73.9385],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_4efcffecab88e1be92b318e6c26c0107 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_84d503db8d208aa8237782707c811e41 = $(`<div id="html_84d503db8d208aa8237782707c811e41" style="width: 100.0%; height: 100.0%;"><b>155th St & St Nicholas Ave</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_4efcffecab88e1be92b318e6c26c0107.setContent(html_84d503db8d208aa8237782707c811e41);
+            
+        
+
+        circle_marker_4fde704699023235a1c36f0850c104bd.bindPopup(popup_4efcffecab88e1be92b318e6c26c0107)
+        ;
+
+        
+    
+    
+            circle_marker_4fde704699023235a1c36f0850c104bd.bindTooltip(
+                `<div>
+                     155th St & St Nicholas Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_25d0a6a8efd30422ec699cbfba99aa90 = L.circleMarker(
+                [40.8014, -73.9659],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_efa030efc84b08f60c91b1e6fbc7d7d2 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_c43d896397e6f8221e05d439bbb5249b = $(`<div id="html_c43d896397e6f8221e05d439bbb5249b" style="width: 100.0%; height: 100.0%;"><b>110th St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_efa030efc84b08f60c91b1e6fbc7d7d2.setContent(html_c43d896397e6f8221e05d439bbb5249b);
+            
+        
+
+        circle_marker_25d0a6a8efd30422ec699cbfba99aa90.bindPopup(popup_efa030efc84b08f60c91b1e6fbc7d7d2)
+        ;
+
+        
+    
+    
+            circle_marker_25d0a6a8efd30422ec699cbfba99aa90.bindTooltip(
+                `<div>
+                     110th St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_172aea38d9d9005c6f1731612fcc58f1 = L.circleMarker(
+                [40.7335, -73.987],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_f8da9ebeae7addd93771359ce747e8f8 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_38f7ac8963530e68d146828200591038 = $(`<div id="html_38f7ac8963530e68d146828200591038" style="width: 100.0%; height: 100.0%;"><b>3rd Ave & 14th St</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_f8da9ebeae7addd93771359ce747e8f8.setContent(html_38f7ac8963530e68d146828200591038);
+            
+        
+
+        circle_marker_172aea38d9d9005c6f1731612fcc58f1.bindPopup(popup_f8da9ebeae7addd93771359ce747e8f8)
+        ;
+
+        
+    
+    
+            circle_marker_172aea38d9d9005c6f1731612fcc58f1.bindTooltip(
+                `<div>
+                     3rd Ave & 14th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_652ae4d680c55b2bc6cb16fad391357e = L.circleMarker(
+                [40.7298, -73.9912],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_b68644a16f1f94a483c9320553e9848b = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_b7d83bc11eece6a4648997a04f7c4668 = $(`<div id="html_b7d83bc11eece6a4648997a04f7c4668" style="width: 100.0%; height: 100.0%;"><b>Astor Pl & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_b68644a16f1f94a483c9320553e9848b.setContent(html_b7d83bc11eece6a4648997a04f7c4668);
+            
+        
+
+        circle_marker_652ae4d680c55b2bc6cb16fad391357e.bindPopup(popup_b68644a16f1f94a483c9320553e9848b)
+        ;
+
+        
+    
+    
+            circle_marker_652ae4d680c55b2bc6cb16fad391357e.bindTooltip(
+                `<div>
+                     Astor Pl & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_796fe8eb7a35979d9f06ac8288662018 = L.circleMarker(
+                [40.7197, -73.9991],
+                {"bubblingMouseEvents": true, "color": "#e63946", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e63946", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f);
+        
+    
+        var popup_9196db548c2d6e9707e7c9a4401d7230 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_00453b1968a3a4f1cbac8acf8ebdfde1 = $(`<div id="html_00453b1968a3a4f1cbac8acf8ebdfde1" style="width: 100.0%; height: 100.0%;"><b>Grand St & Broadway</b><br>Borough: Manhattan<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_9196db548c2d6e9707e7c9a4401d7230.setContent(html_00453b1968a3a4f1cbac8acf8ebdfde1);
+            
+        
+
+        circle_marker_796fe8eb7a35979d9f06ac8288662018.bindPopup(popup_9196db548c2d6e9707e7c9a4401d7230)
+        ;
+
+        
+    
+    
+            circle_marker_796fe8eb7a35979d9f06ac8288662018.bindTooltip(
+                `<div>
+                     Grand St & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var marker_cluster_ca81c4112fff82083da3cb60745d9554 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_b9fd02cdcee489c0c3b3db4201596f83 = L.circleMarker(
+                [40.685, -73.9779],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_80447660037fe46939965c293f5c8f71 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_ae7aff9589303012a9091187b1011d8d = $(`<div id="html_ae7aff9589303012a9091187b1011d8d" style="width: 100.0%; height: 100.0%;"><b>Atlantic Ave & Flatbush Ave</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_80447660037fe46939965c293f5c8f71.setContent(html_ae7aff9589303012a9091187b1011d8d);
+            
+        
+
+        circle_marker_b9fd02cdcee489c0c3b3db4201596f83.bindPopup(popup_80447660037fe46939965c293f5c8f71)
+        ;
+
+        
+    
+    
+            circle_marker_b9fd02cdcee489c0c3b3db4201596f83.bindTooltip(
+                `<div>
+                     Atlantic Ave & Flatbush Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a6a1e8f322d79d799ae264fe29d37fcd = L.circleMarker(
+                [40.6911, -73.984],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_31c91bb54c3cda1cb421d9088b1d395e = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2c63d439254380474c2a5a50d2d46137 = $(`<div id="html_2c63d439254380474c2a5a50d2d46137" style="width: 100.0%; height: 100.0%;"><b>Fulton St & Flatbush Ave Ext</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_31c91bb54c3cda1cb421d9088b1d395e.setContent(html_2c63d439254380474c2a5a50d2d46137);
+            
+        
+
+        circle_marker_a6a1e8f322d79d799ae264fe29d37fcd.bindPopup(popup_31c91bb54c3cda1cb421d9088b1d395e)
+        ;
+
+        
+    
+    
+            circle_marker_a6a1e8f322d79d799ae264fe29d37fcd.bindTooltip(
+                `<div>
+                     Fulton St & Flatbush Ave Ext
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6feaef048e7771c14eb1bebac270cf6d = L.circleMarker(
+                [40.693, -73.9923],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_be7e25685dcdeff53106e728f3272f21 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_7f11ee9a5abb5ace4af6f7394f39bc58 = $(`<div id="html_7f11ee9a5abb5ace4af6f7394f39bc58" style="width: 100.0%; height: 100.0%;"><b>Court St & Montague St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_be7e25685dcdeff53106e728f3272f21.setContent(html_7f11ee9a5abb5ace4af6f7394f39bc58);
+            
+        
+
+        circle_marker_6feaef048e7771c14eb1bebac270cf6d.bindPopup(popup_be7e25685dcdeff53106e728f3272f21)
+        ;
+
+        
+    
+    
+            circle_marker_6feaef048e7771c14eb1bebac270cf6d.bindTooltip(
+                `<div>
+                     Court St & Montague St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b4480982cbe68606b6f16e2b0bf49ab6 = L.circleMarker(
+                [40.6839, -73.9886],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_f9f1da7fc736f2507ee21f763a4532b9 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_6eb1e440e8c9d1226b21e0762eb2c6cd = $(`<div id="html_6eb1e440e8c9d1226b21e0762eb2c6cd" style="width: 100.0%; height: 100.0%;"><b>Smith St & Bergen St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_f9f1da7fc736f2507ee21f763a4532b9.setContent(html_6eb1e440e8c9d1226b21e0762eb2c6cd);
+            
+        
+
+        circle_marker_b4480982cbe68606b6f16e2b0bf49ab6.bindPopup(popup_f9f1da7fc736f2507ee21f763a4532b9)
+        ;
+
+        
+    
+    
+            circle_marker_b4480982cbe68606b6f16e2b0bf49ab6.bindTooltip(
+                `<div>
+                     Smith St & Bergen St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_31acdc3e1b44fe6d270e71adc1a4be3c = L.circleMarker(
+                [40.6212, -74.0222],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_69b016283c3efb6b29779d0c9cc53473 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_8024b801f4c4b30f2cc1b29a2b802baa = $(`<div id="html_8024b801f4c4b30f2cc1b29a2b802baa" style="width: 100.0%; height: 100.0%;"><b>5th Ave & 86th St (Bay Ridge)</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_69b016283c3efb6b29779d0c9cc53473.setContent(html_8024b801f4c4b30f2cc1b29a2b802baa);
+            
+        
+
+        circle_marker_31acdc3e1b44fe6d270e71adc1a4be3c.bindPopup(popup_69b016283c3efb6b29779d0c9cc53473)
+        ;
+
+        
+    
+    
+            circle_marker_31acdc3e1b44fe6d270e71adc1a4be3c.bindTooltip(
+                `<div>
+                     5th Ave & 86th St (Bay Ridge)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_98f10937a18623ccfd00edc6fb1d6e87 = L.circleMarker(
+                [40.7142, -73.9443],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_830cf4d1fbcc59c5b49814f165ec2ded = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_00da08592593b4aeb90c584bdbfd2851 = $(`<div id="html_00da08592593b4aeb90c584bdbfd2851" style="width: 100.0%; height: 100.0%;"><b>Graham Ave & Metropolitan Ave</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_830cf4d1fbcc59c5b49814f165ec2ded.setContent(html_00da08592593b4aeb90c584bdbfd2851);
+            
+        
+
+        circle_marker_98f10937a18623ccfd00edc6fb1d6e87.bindPopup(popup_830cf4d1fbcc59c5b49814f165ec2ded)
+        ;
+
+        
+    
+    
+            circle_marker_98f10937a18623ccfd00edc6fb1d6e87.bindTooltip(
+                `<div>
+                     Graham Ave & Metropolitan Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a10b85146b935f045b03276d5149ca31 = L.circleMarker(
+                [40.7175, -73.9575],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_551d54ee92378a2d57dc2002c980fb2a = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_021f9adc7cdef1d10f5f9c4386a391b3 = $(`<div id="html_021f9adc7cdef1d10f5f9c4386a391b3" style="width: 100.0%; height: 100.0%;"><b>Bedford Ave & N 7th St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_551d54ee92378a2d57dc2002c980fb2a.setContent(html_021f9adc7cdef1d10f5f9c4386a391b3);
+            
+        
+
+        circle_marker_a10b85146b935f045b03276d5149ca31.bindPopup(popup_551d54ee92378a2d57dc2002c980fb2a)
+        ;
+
+        
+    
+    
+            circle_marker_a10b85146b935f045b03276d5149ca31.bindTooltip(
+                `<div>
+                     Bedford Ave & N 7th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_75219f64122e2d4a33c49710d149c518 = L.circleMarker(
+                [40.6049, -73.9594],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_40d2f91635ed9a65b9e237cef986aee8 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a79b2dccb56e85be2a9b60b39d657f4a = $(`<div id="html_a79b2dccb56e85be2a9b60b39d657f4a" style="width: 100.0%; height: 100.0%;"><b>Kings Highway & E 16th St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_40d2f91635ed9a65b9e237cef986aee8.setContent(html_a79b2dccb56e85be2a9b60b39d657f4a);
+            
+        
+
+        circle_marker_75219f64122e2d4a33c49710d149c518.bindPopup(popup_40d2f91635ed9a65b9e237cef986aee8)
+        ;
+
+        
+    
+    
+            circle_marker_75219f64122e2d4a33c49710d149c518.bindTooltip(
+                `<div>
+                     Kings Highway & E 16th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4bcbf0536b526cff3a6839045eec4663 = L.circleMarker(
+                [40.6019, -73.9958],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_d2fd7d4b836f48f89971cfdbe603d38a = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_31c3bddc2522f35b34576d47858914db = $(`<div id="html_31c3bddc2522f35b34576d47858914db" style="width: 100.0%; height: 100.0%;"><b>86th St & Bay Pkwy (Bensonhurst)</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d2fd7d4b836f48f89971cfdbe603d38a.setContent(html_31c3bddc2522f35b34576d47858914db);
+            
+        
+
+        circle_marker_4bcbf0536b526cff3a6839045eec4663.bindPopup(popup_d2fd7d4b836f48f89971cfdbe603d38a)
+        ;
+
+        
+    
+    
+            circle_marker_4bcbf0536b526cff3a6839045eec4663.bindTooltip(
+                `<div>
+                     86th St & Bay Pkwy (Bensonhurst)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3a0311523f67714533fe1a29156217fd = L.circleMarker(
+                [40.651, -73.9631],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_2365a20d96c9fba03473fb74dacb06c9 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_f2d320698f8704e419bd9e55b27e31ba = $(`<div id="html_f2d320698f8704e419bd9e55b27e31ba" style="width: 100.0%; height: 100.0%;"><b>Church Ave & Flatbush Ave</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_2365a20d96c9fba03473fb74dacb06c9.setContent(html_f2d320698f8704e419bd9e55b27e31ba);
+            
+        
+
+        circle_marker_3a0311523f67714533fe1a29156217fd.bindPopup(popup_2365a20d96c9fba03473fb74dacb06c9)
+        ;
+
+        
+    
+    
+            circle_marker_3a0311523f67714533fe1a29156217fd.bindTooltip(
+                `<div>
+                     Church Ave & Flatbush Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3d9525c43a569d550c90a5e15bba3edf = L.circleMarker(
+                [40.6924, -73.987],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_6301dba7da57e293cef8a87568b0c92f = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_40acea9de4eb4706821f2b6fd3671c45 = $(`<div id="html_40acea9de4eb4706821f2b6fd3671c45" style="width: 100.0%; height: 100.0%;"><b>Fulton St & Jay St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6301dba7da57e293cef8a87568b0c92f.setContent(html_40acea9de4eb4706821f2b6fd3671c45);
+            
+        
+
+        circle_marker_3d9525c43a569d550c90a5e15bba3edf.bindPopup(popup_6301dba7da57e293cef8a87568b0c92f)
+        ;
+
+        
+    
+    
+            circle_marker_3d9525c43a569d550c90a5e15bba3edf.bindTooltip(
+                `<div>
+                     Fulton St & Jay St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_02cf2f26891a57496e84baadf140621d = L.circleMarker(
+                [40.6968, -73.9857],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_ca44e2860b73f7c9ff9b0b17dd90352a = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_30fa6b19cd7dd222097973fc6c173e89 = $(`<div id="html_30fa6b19cd7dd222097973fc6c173e89" style="width: 100.0%; height: 100.0%;"><b>Myrtle Ave & Broadway</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_ca44e2860b73f7c9ff9b0b17dd90352a.setContent(html_30fa6b19cd7dd222097973fc6c173e89);
+            
+        
+
+        circle_marker_02cf2f26891a57496e84baadf140621d.bindPopup(popup_ca44e2860b73f7c9ff9b0b17dd90352a)
+        ;
+
+        
+    
+    
+            circle_marker_02cf2f26891a57496e84baadf140621d.bindTooltip(
+                `<div>
+                     Myrtle Ave & Broadway
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c1e4b7dcc2bd2e59007af2b127c8b6f8 = L.circleMarker(
+                [40.6703, -73.9808],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_fe927fe1e5687733ac002136fb6a35f5 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_4877254e54ddec5f1e72df23eb7b3b82 = $(`<div id="html_4877254e54ddec5f1e72df23eb7b3b82" style="width: 100.0%; height: 100.0%;"><b>7th Ave & 9th St (Park Slope)</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_fe927fe1e5687733ac002136fb6a35f5.setContent(html_4877254e54ddec5f1e72df23eb7b3b82);
+            
+        
+
+        circle_marker_c1e4b7dcc2bd2e59007af2b127c8b6f8.bindPopup(popup_fe927fe1e5687733ac002136fb6a35f5)
+        ;
+
+        
+    
+    
+            circle_marker_c1e4b7dcc2bd2e59007af2b127c8b6f8.bindTooltip(
+                `<div>
+                     7th Ave & 9th St (Park Slope)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_41bf916a23c7c697518bbd1ae66f65af = L.circleMarker(
+                [40.6808, -73.9499],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_515b6e4b16c850b8d7f4140f7aae06e0 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_685b353c3a2c04ac216093e2f098df5c = $(`<div id="html_685b353c3a2c04ac216093e2f098df5c" style="width: 100.0%; height: 100.0%;"><b>Nostrand Ave & Fulton St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_515b6e4b16c850b8d7f4140f7aae06e0.setContent(html_685b353c3a2c04ac216093e2f098df5c);
+            
+        
+
+        circle_marker_41bf916a23c7c697518bbd1ae66f65af.bindPopup(popup_515b6e4b16c850b8d7f4140f7aae06e0)
+        ;
+
+        
+    
+    
+            circle_marker_41bf916a23c7c697518bbd1ae66f65af.bindTooltip(
+                `<div>
+                     Nostrand Ave & Fulton St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2f357902214b968cddfdcffaed83ee96 = L.circleMarker(
+                [40.67, -73.9078],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_de95056626eeb0b1dfa1e7d315d0ea38 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_cf4adec03f7497680cb8e5ee7b769438 = $(`<div id="html_cf4adec03f7497680cb8e5ee7b769438" style="width: 100.0%; height: 100.0%;"><b>Pitkin Ave & Rockaway Ave</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_de95056626eeb0b1dfa1e7d315d0ea38.setContent(html_cf4adec03f7497680cb8e5ee7b769438);
+            
+        
+
+        circle_marker_2f357902214b968cddfdcffaed83ee96.bindPopup(popup_de95056626eeb0b1dfa1e7d315d0ea38)
+        ;
+
+        
+    
+    
+            circle_marker_2f357902214b968cddfdcffaed83ee96.bindTooltip(
+                `<div>
+                     Pitkin Ave & Rockaway Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_582153e02736001075d98ddaec783bbd = L.circleMarker(
+                [40.578, -73.9611],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_6283c8e5ddfc1ff07def149846f5cc46 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2ffaafd90336c6d0351158eb33d974a3 = $(`<div id="html_2ffaafd90336c6d0351158eb33d974a3" style="width: 100.0%; height: 100.0%;"><b>Brighton Beach Ave & Coney Island Ave</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_6283c8e5ddfc1ff07def149846f5cc46.setContent(html_2ffaafd90336c6d0351158eb33d974a3);
+            
+        
+
+        circle_marker_582153e02736001075d98ddaec783bbd.bindPopup(popup_6283c8e5ddfc1ff07def149846f5cc46)
+        ;
+
+        
+    
+    
+            circle_marker_582153e02736001075d98ddaec783bbd.bindTooltip(
+                `<div>
+                     Brighton Beach Ave & Coney Island Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f52a8ccbce41e2878da1b7e240845a3d = L.circleMarker(
+                [40.6709, -73.9889],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_f7c3c5508f2b6fcaf8ffe9d58b3446f5 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_3127d96af922765f0d38000410c601d2 = $(`<div id="html_3127d96af922765f0d38000410c601d2" style="width: 100.0%; height: 100.0%;"><b>4th Ave & 9th St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_f7c3c5508f2b6fcaf8ffe9d58b3446f5.setContent(html_3127d96af922765f0d38000410c601d2);
+            
+        
+
+        circle_marker_f52a8ccbce41e2878da1b7e240845a3d.bindPopup(popup_f7c3c5508f2b6fcaf8ffe9d58b3446f5)
+        ;
+
+        
+    
+    
+            circle_marker_f52a8ccbce41e2878da1b7e240845a3d.bindTooltip(
+                `<div>
+                     4th Ave & 9th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e8dee15b963eb1c81aa7720eb791c494 = L.circleMarker(
+                [40.6398, -73.9623],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_89044fe1d11b28bf6bc06bda7e22b813 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_29a4237a75fd220aedf4cde1bd250e1b = $(`<div id="html_29a4237a75fd220aedf4cde1bd250e1b" style="width: 100.0%; height: 100.0%;"><b>Cortelyou Rd & E 16th St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_89044fe1d11b28bf6bc06bda7e22b813.setContent(html_29a4237a75fd220aedf4cde1bd250e1b);
+            
+        
+
+        circle_marker_e8dee15b963eb1c81aa7720eb791c494.bindPopup(popup_89044fe1d11b28bf6bc06bda7e22b813)
+        ;
+
+        
+    
+    
+            circle_marker_e8dee15b963eb1c81aa7720eb791c494.bindTooltip(
+                `<div>
+                     Cortelyou Rd & E 16th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5bd29ef4f5c640263d1a77e4d056ba14 = L.circleMarker(
+                [40.6894, -73.9768],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_68a899b4ebc69f0169b0b2a1c1415e08 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_efddc4995692ac04aa651e134be84a11 = $(`<div id="html_efddc4995692ac04aa651e134be84a11" style="width: 100.0%; height: 100.0%;"><b>DeKalb Ave & Flatbush Ave</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_68a899b4ebc69f0169b0b2a1c1415e08.setContent(html_efddc4995692ac04aa651e134be84a11);
+            
+        
+
+        circle_marker_5bd29ef4f5c640263d1a77e4d056ba14.bindPopup(popup_68a899b4ebc69f0169b0b2a1c1415e08)
+        ;
+
+        
+    
+    
+            circle_marker_5bd29ef4f5c640263d1a77e4d056ba14.bindTooltip(
+                `<div>
+                     DeKalb Ave & Flatbush Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fbff515682feb939dece9177e4822b50 = L.circleMarker(
+                [40.6887, -73.9857],
+                {"bubblingMouseEvents": true, "color": "#457b9d", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#457b9d", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_ca81c4112fff82083da3cb60745d9554);
+        
+    
+        var popup_31295a6e3c3e94d060c660f058b1c003 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_b01205aed5bc34339baa1ebbecdccf80 = $(`<div id="html_b01205aed5bc34339baa1ebbecdccf80" style="width: 100.0%; height: 100.0%;"><b>Livingston St & Hoyt St</b><br>Borough: Brooklyn<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_31295a6e3c3e94d060c660f058b1c003.setContent(html_b01205aed5bc34339baa1ebbecdccf80);
+            
+        
+
+        circle_marker_fbff515682feb939dece9177e4822b50.bindPopup(popup_31295a6e3c3e94d060c660f058b1c003)
+        ;
+
+        
+    
+    
+            circle_marker_fbff515682feb939dece9177e4822b50.bindTooltip(
+                `<div>
+                     Livingston St & Hoyt St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_ca81c4112fff82083da3cb60745d9554.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var marker_cluster_6b045c03d4c880426f55beb430a1c4b5 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_6e5a59bc05cccc166a871c97fdb7dfce = L.circleMarker(
+                [40.7474, -73.8914],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_cab2ff6f40b3465b68440213bd0dd481 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_b6d61b33352b260d2dcdecf124acf14c = $(`<div id="html_b6d61b33352b260d2dcdecf124acf14c" style="width: 100.0%; height: 100.0%;"><b>Roosevelt Ave & 74th St (Jackson Hts)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_cab2ff6f40b3465b68440213bd0dd481.setContent(html_b6d61b33352b260d2dcdecf124acf14c);
+            
+        
+
+        circle_marker_6e5a59bc05cccc166a871c97fdb7dfce.bindPopup(popup_cab2ff6f40b3465b68440213bd0dd481)
+        ;
+
+        
+    
+    
+            circle_marker_6e5a59bc05cccc166a871c97fdb7dfce.bindTooltip(
+                `<div>
+                     Roosevelt Ave & 74th St (Jackson Hts)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4e39c36cbc3f03319ca596469df9744d = L.circleMarker(
+                [40.7025, -73.8009],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_a3c9eb3d21914d6e32f7dc56bd672cce = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_064a5193bf4816226b60c43249739022 = $(`<div id="html_064a5193bf4816226b60c43249739022" style="width: 100.0%; height: 100.0%;"><b>Jamaica Ave & Parsons Blvd</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_a3c9eb3d21914d6e32f7dc56bd672cce.setContent(html_064a5193bf4816226b60c43249739022);
+            
+        
+
+        circle_marker_4e39c36cbc3f03319ca596469df9744d.bindPopup(popup_a3c9eb3d21914d6e32f7dc56bd672cce)
+        ;
+
+        
+    
+    
+            circle_marker_4e39c36cbc3f03319ca596469df9744d.bindTooltip(
+                `<div>
+                     Jamaica Ave & Parsons Blvd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0030be0d4a618f3a81ab63fa024a1f35 = L.circleMarker(
+                [40.7619, -73.9182],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_7d1b24fbaa1f71ee5ce5fdbf6e23388c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_9c425b50c67d6589825113ad6d742ca3 = $(`<div id="html_9c425b50c67d6589825113ad6d742ca3" style="width: 100.0%; height: 100.0%;"><b>Steinway St & Broadway (Astoria)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_7d1b24fbaa1f71ee5ce5fdbf6e23388c.setContent(html_9c425b50c67d6589825113ad6d742ca3);
+            
+        
+
+        circle_marker_0030be0d4a618f3a81ab63fa024a1f35.bindPopup(popup_7d1b24fbaa1f71ee5ce5fdbf6e23388c)
+        ;
+
+        
+    
+    
+            circle_marker_0030be0d4a618f3a81ab63fa024a1f35.bindTooltip(
+                `<div>
+                     Steinway St & Broadway (Astoria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b951b4816664081c35666dcb130f3eb8 = L.circleMarker(
+                [40.7567, -73.9202],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_ca112291a6ba7f997c2d002a3c9a4286 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_694d7895bbbbbb2ee81a10e54ab2c8ae = $(`<div id="html_694d7895bbbbbb2ee81a10e54ab2c8ae" style="width: 100.0%; height: 100.0%;"><b>Broadway & 37th St (Astoria)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_ca112291a6ba7f997c2d002a3c9a4286.setContent(html_694d7895bbbbbb2ee81a10e54ab2c8ae);
+            
+        
+
+        circle_marker_b951b4816664081c35666dcb130f3eb8.bindPopup(popup_ca112291a6ba7f997c2d002a3c9a4286)
+        ;
+
+        
+    
+    
+            circle_marker_b951b4816664081c35666dcb130f3eb8.bindTooltip(
+                `<div>
+                     Broadway & 37th St (Astoria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_26dae5db8430b1f12e7256b61d5d8224 = L.circleMarker(
+                [40.7597, -73.8307],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_601ecad616a73725d53f5367f3245198 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_84f51b3d2eb3c47835ee8fe6043209c0 = $(`<div id="html_84f51b3d2eb3c47835ee8fe6043209c0" style="width: 100.0%; height: 100.0%;"><b>Main St & Roosevelt Ave (Flushing)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_601ecad616a73725d53f5367f3245198.setContent(html_84f51b3d2eb3c47835ee8fe6043209c0);
+            
+        
+
+        circle_marker_26dae5db8430b1f12e7256b61d5d8224.bindPopup(popup_601ecad616a73725d53f5367f3245198)
+        ;
+
+        
+    
+    
+            circle_marker_26dae5db8430b1f12e7256b61d5d8224.bindTooltip(
+                `<div>
+                     Main St & Roosevelt Ave (Flushing)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_cf1b8fd0095957bdb92d3e74db45f0ba = L.circleMarker(
+                [40.7484, -73.8916],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_f857c3516ec9a68bf117652338d30a3f = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_ed64fbb8b78185cc2da8c63968357004 = $(`<div id="html_ed64fbb8b78185cc2da8c63968357004" style="width: 100.0%; height: 100.0%;"><b>37th Ave & 74th St (Jackson Hts)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_f857c3516ec9a68bf117652338d30a3f.setContent(html_ed64fbb8b78185cc2da8c63968357004);
+            
+        
+
+        circle_marker_cf1b8fd0095957bdb92d3e74db45f0ba.bindPopup(popup_f857c3516ec9a68bf117652338d30a3f)
+        ;
+
+        
+    
+    
+            circle_marker_cf1b8fd0095957bdb92d3e74db45f0ba.bindTooltip(
+                `<div>
+                     37th Ave & 74th St (Jackson Hts)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_528478a0ac04d94a3157f041d9c6e039 = L.circleMarker(
+                [40.729, -73.8455],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_74c92fd8d014c933ef75e914236faf12 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2eb90f7c3c3ade61e7917b0e84f43543 = $(`<div id="html_2eb90f7c3c3ade61e7917b0e84f43543" style="width: 100.0%; height: 100.0%;"><b>Queens Blvd & 63rd Rd</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_74c92fd8d014c933ef75e914236faf12.setContent(html_2eb90f7c3c3ade61e7917b0e84f43543);
+            
+        
+
+        circle_marker_528478a0ac04d94a3157f041d9c6e039.bindPopup(popup_74c92fd8d014c933ef75e914236faf12)
+        ;
+
+        
+    
+    
+            circle_marker_528478a0ac04d94a3157f041d9c6e039.bindTooltip(
+                `<div>
+                     Queens Blvd & 63rd Rd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6909c88124af33ec6a83a4d1c66592bb = L.circleMarker(
+                [40.7208, -73.8457],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_0af441a7918027acc4d944aa90dbc8f5 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_73751d82e21f1911716c2a26626591b0 = $(`<div id="html_73751d82e21f1911716c2a26626591b0" style="width: 100.0%; height: 100.0%;"><b>Austin St & Ascan Ave (Forest Hills)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_0af441a7918027acc4d944aa90dbc8f5.setContent(html_73751d82e21f1911716c2a26626591b0);
+            
+        
+
+        circle_marker_6909c88124af33ec6a83a4d1c66592bb.bindPopup(popup_0af441a7918027acc4d944aa90dbc8f5)
+        ;
+
+        
+    
+    
+            circle_marker_6909c88124af33ec6a83a4d1c66592bb.bindTooltip(
+                `<div>
+                     Austin St & Ascan Ave (Forest Hills)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_536db09863f94809765819bb15c191b2 = L.circleMarker(
+                [40.7049, -73.7944],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_06f42b5bb3be70945bc77396f09583c7 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_cbc02a408db8c85fe4dc1b28729f5952 = $(`<div id="html_cbc02a408db8c85fe4dc1b28729f5952" style="width: 100.0%; height: 100.0%;"><b>Jamaica Ave & 164th St</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_06f42b5bb3be70945bc77396f09583c7.setContent(html_cbc02a408db8c85fe4dc1b28729f5952);
+            
+        
+
+        circle_marker_536db09863f94809765819bb15c191b2.bindPopup(popup_06f42b5bb3be70945bc77396f09583c7)
+        ;
+
+        
+    
+    
+            circle_marker_536db09863f94809765819bb15c191b2.bindTooltip(
+                `<div>
+                     Jamaica Ave & 164th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_06bf95ccfdb055a16d919cfd8a706388 = L.circleMarker(
+                [40.7141, -73.8857],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_bd0fa1162ef44121f02fab09147f5ad0 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_1837912104cc7ff39c79eb6ca3fb9e59 = $(`<div id="html_1837912104cc7ff39c79eb6ca3fb9e59" style="width: 100.0%; height: 100.0%;"><b>Metropolitan Ave & 70th St</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_bd0fa1162ef44121f02fab09147f5ad0.setContent(html_1837912104cc7ff39c79eb6ca3fb9e59);
+            
+        
+
+        circle_marker_06bf95ccfdb055a16d919cfd8a706388.bindPopup(popup_bd0fa1162ef44121f02fab09147f5ad0)
+        ;
+
+        
+    
+    
+            circle_marker_06bf95ccfdb055a16d919cfd8a706388.bindTooltip(
+                `<div>
+                     Metropolitan Ave & 70th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e61fd28a5cac9a7f23c0e8272a2ddf0d = L.circleMarker(
+                [40.7682, -73.9218],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_72677ed65a98396c06dcfcca48269ddf = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_6553d9bc22d6e4fd880b22087b49ca61 = $(`<div id="html_6553d9bc22d6e4fd880b22087b49ca61" style="width: 100.0%; height: 100.0%;"><b>30th Ave & 31st St (Astoria)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_72677ed65a98396c06dcfcca48269ddf.setContent(html_6553d9bc22d6e4fd880b22087b49ca61);
+            
+        
+
+        circle_marker_e61fd28a5cac9a7f23c0e8272a2ddf0d.bindPopup(popup_72677ed65a98396c06dcfcca48269ddf)
+        ;
+
+        
+    
+    
+            circle_marker_e61fd28a5cac9a7f23c0e8272a2ddf0d.bindTooltip(
+                `<div>
+                     30th Ave & 31st St (Astoria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d2df1fdd78cfd77ce27c7d3882267a44 = L.circleMarker(
+                [40.7753, -73.9129],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_b9465ffab7c9ca56288d9a4082482a97 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d50293cf6e880da774a1411afc28b411 = $(`<div id="html_d50293cf6e880da774a1411afc28b411" style="width: 100.0%; height: 100.0%;"><b>Ditmars Blvd & 31st St (Astoria)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_b9465ffab7c9ca56288d9a4082482a97.setContent(html_d50293cf6e880da774a1411afc28b411);
+            
+        
+
+        circle_marker_d2df1fdd78cfd77ce27c7d3882267a44.bindPopup(popup_b9465ffab7c9ca56288d9a4082482a97)
+        ;
+
+        
+    
+    
+            circle_marker_d2df1fdd78cfd77ce27c7d3882267a44.bindTooltip(
+                `<div>
+                     Ditmars Blvd & 31st St (Astoria)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d904552db4a951eed470a782dfecf215 = L.circleMarker(
+                [40.763, -73.8297],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_abf5a364169dc172894e24a1dda92114 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_f42486f73db25b6f29898068b93d12d8 = $(`<div id="html_f42486f73db25b6f29898068b93d12d8" style="width: 100.0%; height: 100.0%;"><b>Northern Blvd & Main St (Flushing)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_abf5a364169dc172894e24a1dda92114.setContent(html_f42486f73db25b6f29898068b93d12d8);
+            
+        
+
+        circle_marker_d904552db4a951eed470a782dfecf215.bindPopup(popup_abf5a364169dc172894e24a1dda92114)
+        ;
+
+        
+    
+    
+            circle_marker_d904552db4a951eed470a782dfecf215.bindTooltip(
+                `<div>
+                     Northern Blvd & Main St (Flushing)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c1c490044d7e7594e868f254e3182569 = L.circleMarker(
+                [40.7102, -73.819],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_d1f681ac31437f1b625b737032d78591 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_56a1e8c97855f2e005b05beb55ccc818 = $(`<div id="html_56a1e8c97855f2e005b05beb55ccc818" style="width: 100.0%; height: 100.0%;"><b>Lefferts Blvd & Metropolitan Ave</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d1f681ac31437f1b625b737032d78591.setContent(html_56a1e8c97855f2e005b05beb55ccc818);
+            
+        
+
+        circle_marker_c1c490044d7e7594e868f254e3182569.bindPopup(popup_d1f681ac31437f1b625b737032d78591)
+        ;
+
+        
+    
+    
+            circle_marker_c1c490044d7e7594e868f254e3182569.bindTooltip(
+                `<div>
+                     Lefferts Blvd & Metropolitan Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_97c4731a15d01782158842331723f410 = L.circleMarker(
+                [40.7045, -73.896],
+                {"bubblingMouseEvents": true, "color": "#2a9d8f", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2a9d8f", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_6b045c03d4c880426f55beb430a1c4b5);
+        
+    
+        var popup_8c90a71dea865d476e08fa4aea06bdba = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d3e697192e0f895de664efdbfd451d19 = $(`<div id="html_d3e697192e0f895de664efdbfd451d19" style="width: 100.0%; height: 100.0%;"><b>Myrtle Ave & Fresh Pond Rd (Ridgewood)</b><br>Borough: Queens<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_8c90a71dea865d476e08fa4aea06bdba.setContent(html_d3e697192e0f895de664efdbfd451d19);
+            
+        
+
+        circle_marker_97c4731a15d01782158842331723f410.bindPopup(popup_8c90a71dea865d476e08fa4aea06bdba)
+        ;
+
+        
+    
+    
+            circle_marker_97c4731a15d01782158842331723f410.bindTooltip(
+                `<div>
+                     Myrtle Ave & Fresh Pond Rd (Ridgewood)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_6b045c03d4c880426f55beb430a1c4b5.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_e0ed38a908be215017435a7750b99523 = L.circleMarker(
+                [40.8616, -73.8905],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_157b190a43118c514c16149c010c0d87 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_2357bcc3570e981c3765ff5fd807c22d = $(`<div id="html_2357bcc3570e981c3765ff5fd807c22d" style="width: 100.0%; height: 100.0%;"><b>E Fordham Rd & Grand Concourse</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_157b190a43118c514c16149c010c0d87.setContent(html_2357bcc3570e981c3765ff5fd807c22d);
+            
+        
+
+        circle_marker_e0ed38a908be215017435a7750b99523.bindPopup(popup_157b190a43118c514c16149c010c0d87)
+        ;
+
+        
+    
+    
+            circle_marker_e0ed38a908be215017435a7750b99523.bindTooltip(
+                `<div>
+                     E Fordham Rd & Grand Concourse
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ca23c1b57e7f4d562efe69cd31193ae6 = L.circleMarker(
+                [40.8618, -73.898],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_d14d2e92b85e665cba0f6acd01138513 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_54bb7a97ca4dcb2bcc7e1796106c4745 = $(`<div id="html_54bb7a97ca4dcb2bcc7e1796106c4745" style="width: 100.0%; height: 100.0%;"><b>E Fordham Rd & Jerome Ave</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d14d2e92b85e665cba0f6acd01138513.setContent(html_54bb7a97ca4dcb2bcc7e1796106c4745);
+            
+        
+
+        circle_marker_ca23c1b57e7f4d562efe69cd31193ae6.bindPopup(popup_d14d2e92b85e665cba0f6acd01138513)
+        ;
+
+        
+    
+    
+            circle_marker_ca23c1b57e7f4d562efe69cd31193ae6.bindTooltip(
+                `<div>
+                     E Fordham Rd & Jerome Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_bd13c6ac5b7e9977688cfd5d9b41d079 = L.circleMarker(
+                [40.8199, -73.9268],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_55720baaf707a24f96ad7ee7d697a632 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_9825a5e62b64daad19d070e3427dcc0b = $(`<div id="html_9825a5e62b64daad19d070e3427dcc0b" style="width: 100.0%; height: 100.0%;"><b>E 149th St & Grand Concourse (Hub)</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_55720baaf707a24f96ad7ee7d697a632.setContent(html_9825a5e62b64daad19d070e3427dcc0b);
+            
+        
+
+        circle_marker_bd13c6ac5b7e9977688cfd5d9b41d079.bindPopup(popup_55720baaf707a24f96ad7ee7d697a632)
+        ;
+
+        
+    
+    
+            circle_marker_bd13c6ac5b7e9977688cfd5d9b41d079.bindTooltip(
+                `<div>
+                     E 149th St & Grand Concourse (Hub)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2f430527a9ad955289aa9a38884ede7b = L.circleMarker(
+                [40.8279, -73.926],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_78ecbd2ecb1263fdca3f9cbabbea893a = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_8970ac1ae9a66078e65e1d1ccf6d3d73 = $(`<div id="html_8970ac1ae9a66078e65e1d1ccf6d3d73" style="width: 100.0%; height: 100.0%;"><b>161st St & River Ave (Yankee Std)</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_78ecbd2ecb1263fdca3f9cbabbea893a.setContent(html_8970ac1ae9a66078e65e1d1ccf6d3d73);
+            
+        
+
+        circle_marker_2f430527a9ad955289aa9a38884ede7b.bindPopup(popup_78ecbd2ecb1263fdca3f9cbabbea893a)
+        ;
+
+        
+    
+    
+            circle_marker_2f430527a9ad955289aa9a38884ede7b.bindTooltip(
+                `<div>
+                     161st St & River Ave (Yankee Std)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_17d10b7ff8d47c55f9cbc6f937167e16 = L.circleMarker(
+                [40.8188, -73.9175],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_ff6bfebea80b534fc5fd60acf05a94e7 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_ea44d309a46a41275c2f941ea785506b = $(`<div id="html_ea44d309a46a41275c2f941ea785506b" style="width: 100.0%; height: 100.0%;"><b>3rd Ave & E 149th St</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_ff6bfebea80b534fc5fd60acf05a94e7.setContent(html_ea44d309a46a41275c2f941ea785506b);
+            
+        
+
+        circle_marker_17d10b7ff8d47c55f9cbc6f937167e16.bindPopup(popup_ff6bfebea80b534fc5fd60acf05a94e7)
+        ;
+
+        
+    
+    
+            circle_marker_17d10b7ff8d47c55f9cbc6f937167e16.bindTooltip(
+                `<div>
+                     3rd Ave & E 149th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9524f910bb8f1ccc3deccf881355b0af = L.circleMarker(
+                [40.8279, -73.8924],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_4d2e1391dd595dd82908fd6c0fecacc0 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a2e2c25df4173ffa095a82311e9a31af = $(`<div id="html_a2e2c25df4173ffa095a82311e9a31af" style="width: 100.0%; height: 100.0%;"><b>Westchester Ave & Southern Blvd</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_4d2e1391dd595dd82908fd6c0fecacc0.setContent(html_a2e2c25df4173ffa095a82311e9a31af);
+            
+        
+
+        circle_marker_9524f910bb8f1ccc3deccf881355b0af.bindPopup(popup_4d2e1391dd595dd82908fd6c0fecacc0)
+        ;
+
+        
+    
+    
+            circle_marker_9524f910bb8f1ccc3deccf881355b0af.bindTooltip(
+                `<div>
+                     Westchester Ave & Southern Blvd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4708a15f5a75574bb8f8acb574f414ad = L.circleMarker(
+                [40.8453, -73.8949],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_2a3d17b8862f3b436575a38b5cbb715c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_222a76b4563266bff56d952351efa052 = $(`<div id="html_222a76b4563266bff56d952351efa052" style="width: 100.0%; height: 100.0%;"><b>E Tremont Ave & 3rd Ave</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_2a3d17b8862f3b436575a38b5cbb715c.setContent(html_222a76b4563266bff56d952351efa052);
+            
+        
+
+        circle_marker_4708a15f5a75574bb8f8acb574f414ad.bindPopup(popup_2a3d17b8862f3b436575a38b5cbb715c)
+        ;
+
+        
+    
+    
+            circle_marker_4708a15f5a75574bb8f8acb574f414ad.bindTooltip(
+                `<div>
+                     E Tremont Ave & 3rd Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7cfd1aa57e461f594d870276e8eb62ce = L.circleMarker(
+                [40.8534, -73.9015],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_8f92007c9216c65a326bf8fc3f7cc0f3 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_c420317c8f1672198111de0ef2dcea0f = $(`<div id="html_c420317c8f1672198111de0ef2dcea0f" style="width: 100.0%; height: 100.0%;"><b>Jerome Ave & Burnside Ave</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_8f92007c9216c65a326bf8fc3f7cc0f3.setContent(html_c420317c8f1672198111de0ef2dcea0f);
+            
+        
+
+        circle_marker_7cfd1aa57e461f594d870276e8eb62ce.bindPopup(popup_8f92007c9216c65a326bf8fc3f7cc0f3)
+        ;
+
+        
+    
+    
+            circle_marker_7cfd1aa57e461f594d870276e8eb62ce.bindTooltip(
+                `<div>
+                     Jerome Ave & Burnside Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4b1a2cddc69eaa344b4f0f52679fd69c = L.circleMarker(
+                [40.8663, -73.8968],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_99cbd4856bca7b4f2d77f01e2d0c1e8c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_43802981a69cb05ece815423492e4205 = $(`<div id="html_43802981a69cb05ece815423492e4205" style="width: 100.0%; height: 100.0%;"><b>Kingsbridge Rd & Grand Concourse</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_99cbd4856bca7b4f2d77f01e2d0c1e8c.setContent(html_43802981a69cb05ece815423492e4205);
+            
+        
+
+        circle_marker_4b1a2cddc69eaa344b4f0f52679fd69c.bindPopup(popup_99cbd4856bca7b4f2d77f01e2d0c1e8c)
+        ;
+
+        
+    
+    
+            circle_marker_4b1a2cddc69eaa344b4f0f52679fd69c.bindTooltip(
+                `<div>
+                     Kingsbridge Rd & Grand Concourse
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_034aa00aa6d23de5dc413672ed5292a6 = L.circleMarker(
+                [40.857, -73.8673],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_27ea5f82fa28a3d8fab9ecb144b00bc1 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_41ebe0fc6109a3b7fe35bcaa63fe5183 = $(`<div id="html_41ebe0fc6109a3b7fe35bcaa63fe5183" style="width: 100.0%; height: 100.0%;"><b>Pelham Pkwy & White Plains Rd</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_27ea5f82fa28a3d8fab9ecb144b00bc1.setContent(html_41ebe0fc6109a3b7fe35bcaa63fe5183);
+            
+        
+
+        circle_marker_034aa00aa6d23de5dc413672ed5292a6.bindPopup(popup_27ea5f82fa28a3d8fab9ecb144b00bc1)
+        ;
+
+        
+    
+    
+            circle_marker_034aa00aa6d23de5dc413672ed5292a6.bindTooltip(
+                `<div>
+                     Pelham Pkwy & White Plains Rd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2fd2e69570c27bf69f122f7304c68589 = L.circleMarker(
+                [40.8097, -73.9227],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_3f9cd6de7f94854d09362d91df7606f2 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_b3a01ec36d090a2d61a5681553f1ccfe = $(`<div id="html_b3a01ec36d090a2d61a5681553f1ccfe" style="width: 100.0%; height: 100.0%;"><b>E 138th St & 3rd Ave (Mott Haven)</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_3f9cd6de7f94854d09362d91df7606f2.setContent(html_b3a01ec36d090a2d61a5681553f1ccfe);
+            
+        
+
+        circle_marker_2fd2e69570c27bf69f122f7304c68589.bindPopup(popup_3f9cd6de7f94854d09362d91df7606f2)
+        ;
+
+        
+    
+    
+            circle_marker_2fd2e69570c27bf69f122f7304c68589.bindTooltip(
+                `<div>
+                     E 138th St & 3rd Ave (Mott Haven)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e0fa57fa1da7c3affbdaa428700a6f2b = L.circleMarker(
+                [40.8736, -73.8823],
+                {"bubblingMouseEvents": true, "color": "#e9c46a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e9c46a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5);
+        
+    
+        var popup_d977d4c9b95ce34b5a0b96286f9242e2 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_cff0e836fb7a88b90fb4936a01c5c3e0 = $(`<div id="html_cff0e836fb7a88b90fb4936a01c5c3e0" style="width: 100.0%; height: 100.0%;"><b>Bainbridge Ave & E 204th St</b><br>Borough: Bronx<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_d977d4c9b95ce34b5a0b96286f9242e2.setContent(html_cff0e836fb7a88b90fb4936a01c5c3e0);
+            
+        
+
+        circle_marker_e0fa57fa1da7c3affbdaa428700a6f2b.bindPopup(popup_d977d4c9b95ce34b5a0b96286f9242e2)
+        ;
+
+        
+    
+    
+            circle_marker_e0fa57fa1da7c3affbdaa428700a6f2b.bindTooltip(
+                `<div>
+                     Bainbridge Ave & E 204th St
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var marker_cluster_7c917c308a899c3b92b4404fa952e3f7 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_af3117d92cc6c2145994412c2d59b9fb = L.circleMarker(
+                [40.6434, -74.0768],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_5d833ea89ddf7f327dc7d730bfc97eec = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_b84711ab90185e0e677c8c343ae94c52 = $(`<div id="html_b84711ab90185e0e677c8c343ae94c52" style="width: 100.0%; height: 100.0%;"><b>Bay St & Victory Blvd (St George)</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_5d833ea89ddf7f327dc7d730bfc97eec.setContent(html_b84711ab90185e0e677c8c343ae94c52);
+            
+        
+
+        circle_marker_af3117d92cc6c2145994412c2d59b9fb.bindPopup(popup_5d833ea89ddf7f327dc7d730bfc97eec)
+        ;
+
+        
+    
+    
+            circle_marker_af3117d92cc6c2145994412c2d59b9fb.bindTooltip(
+                `<div>
+                     Bay St & Victory Blvd (St George)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5bf49a1fc1134a021a02497c28012c0d = L.circleMarker(
+                [40.5726, -74.1168],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_1e4767b7912a140ced16264585fd6a0c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_4003ae87549a9dc26e9d2fd2cbc4a1b2 = $(`<div id="html_4003ae87549a9dc26e9d2fd2cbc4a1b2" style="width: 100.0%; height: 100.0%;"><b>New Dorp Ln & Hylan Blvd</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_1e4767b7912a140ced16264585fd6a0c.setContent(html_4003ae87549a9dc26e9d2fd2cbc4a1b2);
+            
+        
+
+        circle_marker_5bf49a1fc1134a021a02497c28012c0d.bindPopup(popup_1e4767b7912a140ced16264585fd6a0c)
+        ;
+
+        
+    
+    
+            circle_marker_5bf49a1fc1134a021a02497c28012c0d.bindTooltip(
+                `<div>
+                     New Dorp Ln & Hylan Blvd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_870ac0cd8ba4edd82cbb81b59e79b766 = L.circleMarker(
+                [40.6316, -74.1165],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_54be0cb2fbe5c726f183142bb5c19cc8 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_a1840be9afffc5f967be4dfd85b0aa42 = $(`<div id="html_a1840be9afffc5f967be4dfd85b0aa42" style="width: 100.0%; height: 100.0%;"><b>Forest Ave & Hart Blvd</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_54be0cb2fbe5c726f183142bb5c19cc8.setContent(html_a1840be9afffc5f967be4dfd85b0aa42);
+            
+        
+
+        circle_marker_870ac0cd8ba4edd82cbb81b59e79b766.bindPopup(popup_54be0cb2fbe5c726f183142bb5c19cc8)
+        ;
+
+        
+    
+    
+            circle_marker_870ac0cd8ba4edd82cbb81b59e79b766.bindTooltip(
+                `<div>
+                     Forest Ave & Hart Blvd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e5433ea7f8c2a88003be6c3d38bab4dd = L.circleMarker(
+                [40.5532, -74.1512],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_b3bb4b11ba8cb433f448c0d7320ef365 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_1744083db3029f6a63a015a25fb5a7d6 = $(`<div id="html_1744083db3029f6a63a015a25fb5a7d6" style="width: 100.0%; height: 100.0%;"><b>Hylan Blvd & Nelson Ave (Great Kills)</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_b3bb4b11ba8cb433f448c0d7320ef365.setContent(html_1744083db3029f6a63a015a25fb5a7d6);
+            
+        
+
+        circle_marker_e5433ea7f8c2a88003be6c3d38bab4dd.bindPopup(popup_b3bb4b11ba8cb433f448c0d7320ef365)
+        ;
+
+        
+    
+    
+            circle_marker_e5433ea7f8c2a88003be6c3d38bab4dd.bindTooltip(
+                `<div>
+                     Hylan Blvd & Nelson Ave (Great Kills)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9e5f8ec0a4d5201ab194abbab2720c01 = L.circleMarker(
+                [40.5856, -74.1501],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_7eb09e0eb67552671525cdf05c371ac0 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_23c3b7357547b2471f9fff5834820251 = $(`<div id="html_23c3b7357547b2471f9fff5834820251" style="width: 100.0%; height: 100.0%;"><b>Richmond Ave & Richmond Hill Rd</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_7eb09e0eb67552671525cdf05c371ac0.setContent(html_23c3b7357547b2471f9fff5834820251);
+            
+        
+
+        circle_marker_9e5f8ec0a4d5201ab194abbab2720c01.bindPopup(popup_7eb09e0eb67552671525cdf05c371ac0)
+        ;
+
+        
+    
+    
+            circle_marker_9e5f8ec0a4d5201ab194abbab2720c01.bindTooltip(
+                `<div>
+                     Richmond Ave & Richmond Hill Rd
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9828c09ac3cb0422a5c126b4792fba86 = L.circleMarker(
+                [40.6335, -74.1236],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_fd4762a0093c5b169136966ac727ea2c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_3f0d16aabe41a70ec8f3c7a4ccfa123f = $(`<div id="html_3f0d16aabe41a70ec8f3c7a4ccfa123f" style="width: 100.0%; height: 100.0%;"><b>Castleton Ave & Jewett Ave</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_fd4762a0093c5b169136966ac727ea2c.setContent(html_3f0d16aabe41a70ec8f3c7a4ccfa123f);
+            
+        
+
+        circle_marker_9828c09ac3cb0422a5c126b4792fba86.bindPopup(popup_fd4762a0093c5b169136966ac727ea2c)
+        ;
+
+        
+    
+    
+            circle_marker_9828c09ac3cb0422a5c126b4792fba86.bindTooltip(
+                `<div>
+                     Castleton Ave & Jewett Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a08d21ec5cf989e25834c46b0c086a8e = L.circleMarker(
+                [40.6236, -74.129],
+                {"bubblingMouseEvents": true, "color": "#f4a261", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f4a261", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(marker_cluster_7c917c308a899c3b92b4404fa952e3f7);
+        
+    
+        var popup_5e54b76d9852e459ad9179ec6b4a49ec = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_5e9f3a9cc89bbe6a1ba09761e6c861ac = $(`<div id="html_5e9f3a9cc89bbe6a1ba09761e6c861ac" style="width: 100.0%; height: 100.0%;"><b>Victory Blvd & Jewett Ave</b><br>Borough: Staten Island<br><i>NYC DOT Bi-Annual Ped Count Location</i></div>`)[0];
+                popup_5e54b76d9852e459ad9179ec6b4a49ec.setContent(html_5e9f3a9cc89bbe6a1ba09761e6c861ac);
+            
+        
+
+        circle_marker_a08d21ec5cf989e25834c46b0c086a8e.bindPopup(popup_5e54b76d9852e459ad9179ec6b4a49ec)
+        ;
+
+        
+    
+    
+            circle_marker_a08d21ec5cf989e25834c46b0c086a8e.bindTooltip(
+                `<div>
+                     Victory Blvd & Jewett Ave
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_7c917c308a899c3b92b4404fa952e3f7.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var feature_group_519f76c02e3945180413f2832074e4a1 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var marker_80e54e0b24a4ef90a0d756a19fd0bf01 = L.marker(
+                [40.708, -74.0039],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_d480e0d2217b45c329fd821ad6c63acd = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_f7e508bad7072801353d9de4d96cce44 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_dae04776cb2a1fe48dea4dd4cb299576 = $(`<div id="html_dae04776cb2a1fe48dea4dd4cb299576" style="width: 100.0%; height: 100.0%;"><b>Brooklyn Bridge (Manhattan side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_f7e508bad7072801353d9de4d96cce44.setContent(html_dae04776cb2a1fe48dea4dd4cb299576);
+            
+        
+
+        marker_80e54e0b24a4ef90a0d756a19fd0bf01.bindPopup(popup_f7e508bad7072801353d9de4d96cce44)
+        ;
+
+        
+    
+    
+            marker_80e54e0b24a4ef90a0d756a19fd0bf01.bindTooltip(
+                `<div>
+                     Brooklyn Bridge (Manhattan side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_80e54e0b24a4ef90a0d756a19fd0bf01.setIcon(icon_d480e0d2217b45c329fd821ad6c63acd);
+            
+    
+            var marker_83d20b923e1c62b69127dcfc9e170312 = L.marker(
+                [40.6975, -73.9936],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_2dd6fd8640c8c9ec27e6d9051b72b294 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_273c44f33998211649769761f2a16107 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_cd3abb58152cd509d48e5ab7d70bf69f = $(`<div id="html_cd3abb58152cd509d48e5ab7d70bf69f" style="width: 100.0%; height: 100.0%;"><b>Brooklyn Bridge (Brooklyn side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_273c44f33998211649769761f2a16107.setContent(html_cd3abb58152cd509d48e5ab7d70bf69f);
+            
+        
+
+        marker_83d20b923e1c62b69127dcfc9e170312.bindPopup(popup_273c44f33998211649769761f2a16107)
+        ;
+
+        
+    
+    
+            marker_83d20b923e1c62b69127dcfc9e170312.bindTooltip(
+                `<div>
+                     Brooklyn Bridge (Brooklyn side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_83d20b923e1c62b69127dcfc9e170312.setIcon(icon_2dd6fd8640c8c9ec27e6d9051b72b294);
+            
+    
+            var marker_724a533d3554f3d45ef69a3c91e679c8 = L.marker(
+                [40.7126, -73.9974],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_39472631eee14806c8e3f22442224a6e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d43f02b2aecaf303810b68ecca0c8475 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_3c7bb394d911f6beac46d1afc48054c9 = $(`<div id="html_3c7bb394d911f6beac46d1afc48054c9" style="width: 100.0%; height: 100.0%;"><b>Manhattan Bridge (Manhattan side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_d43f02b2aecaf303810b68ecca0c8475.setContent(html_3c7bb394d911f6beac46d1afc48054c9);
+            
+        
+
+        marker_724a533d3554f3d45ef69a3c91e679c8.bindPopup(popup_d43f02b2aecaf303810b68ecca0c8475)
+        ;
+
+        
+    
+    
+            marker_724a533d3554f3d45ef69a3c91e679c8.bindTooltip(
+                `<div>
+                     Manhattan Bridge (Manhattan side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_724a533d3554f3d45ef69a3c91e679c8.setIcon(icon_39472631eee14806c8e3f22442224a6e);
+            
+    
+            var marker_72ab15139a7d6af82846c1502fb3c733 = L.marker(
+                [40.7043, -73.9876],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_c1c885b639aa7f8bf08d1211f465a886 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d319d3c43b42890ff26acd1b88c91052 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_c08ece1020180a18fdd665e8f4092d0b = $(`<div id="html_c08ece1020180a18fdd665e8f4092d0b" style="width: 100.0%; height: 100.0%;"><b>Manhattan Bridge (Brooklyn side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_d319d3c43b42890ff26acd1b88c91052.setContent(html_c08ece1020180a18fdd665e8f4092d0b);
+            
+        
+
+        marker_72ab15139a7d6af82846c1502fb3c733.bindPopup(popup_d319d3c43b42890ff26acd1b88c91052)
+        ;
+
+        
+    
+    
+            marker_72ab15139a7d6af82846c1502fb3c733.bindTooltip(
+                `<div>
+                     Manhattan Bridge (Brooklyn side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_72ab15139a7d6af82846c1502fb3c733.setIcon(icon_c1c885b639aa7f8bf08d1211f465a886);
+            
+    
+            var marker_c32b6226872300eba95acd13ddfa8794 = L.marker(
+                [40.7136, -73.972],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_415587d9bc506d4e054a5abf63807e4e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_43f411f6aa3a3511ef770058b5c68e08 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_839be6c74becf1d71fe40338cfee4aed = $(`<div id="html_839be6c74becf1d71fe40338cfee4aed" style="width: 100.0%; height: 100.0%;"><b>Williamsburg Bridge (Manhattan side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_43f411f6aa3a3511ef770058b5c68e08.setContent(html_839be6c74becf1d71fe40338cfee4aed);
+            
+        
+
+        marker_c32b6226872300eba95acd13ddfa8794.bindPopup(popup_43f411f6aa3a3511ef770058b5c68e08)
+        ;
+
+        
+    
+    
+            marker_c32b6226872300eba95acd13ddfa8794.bindTooltip(
+                `<div>
+                     Williamsburg Bridge (Manhattan side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_c32b6226872300eba95acd13ddfa8794.setIcon(icon_415587d9bc506d4e054a5abf63807e4e);
+            
+    
+            var marker_ac16cef47581752b0205314b1f4ce453 = L.marker(
+                [40.7094, -73.9627],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_0fbbece5d7b325f476ec01077abf83a1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_e13aa899d8bef5a2da8aa0ce74a8f867 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_18e6a252cf776a94ee7eb60c436ec2fa = $(`<div id="html_18e6a252cf776a94ee7eb60c436ec2fa" style="width: 100.0%; height: 100.0%;"><b>Williamsburg Bridge (Brooklyn side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_e13aa899d8bef5a2da8aa0ce74a8f867.setContent(html_18e6a252cf776a94ee7eb60c436ec2fa);
+            
+        
+
+        marker_ac16cef47581752b0205314b1f4ce453.bindPopup(popup_e13aa899d8bef5a2da8aa0ce74a8f867)
+        ;
+
+        
+    
+    
+            marker_ac16cef47581752b0205314b1f4ce453.bindTooltip(
+                `<div>
+                     Williamsburg Bridge (Brooklyn side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_ac16cef47581752b0205314b1f4ce453.setIcon(icon_0fbbece5d7b325f476ec01077abf83a1);
+            
+    
+            var marker_aa7bde9549441fc20f3a5dc572a71b3c = L.marker(
+                [40.7577, -73.9585],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_8b46d7a5868f43d80abd6fce2a98e552 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1417c62df083a0deab9a3cd16b8afbab = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_1ebe8afb6f879bf6bcdb5bb59ab76d87 = $(`<div id="html_1ebe8afb6f879bf6bcdb5bb59ab76d87" style="width: 100.0%; height: 100.0%;"><b>Queensboro Bridge (Manhattan side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_1417c62df083a0deab9a3cd16b8afbab.setContent(html_1ebe8afb6f879bf6bcdb5bb59ab76d87);
+            
+        
+
+        marker_aa7bde9549441fc20f3a5dc572a71b3c.bindPopup(popup_1417c62df083a0deab9a3cd16b8afbab)
+        ;
+
+        
+    
+    
+            marker_aa7bde9549441fc20f3a5dc572a71b3c.bindTooltip(
+                `<div>
+                     Queensboro Bridge (Manhattan side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_aa7bde9549441fc20f3a5dc572a71b3c.setIcon(icon_8b46d7a5868f43d80abd6fce2a98e552);
+            
+    
+            var marker_fc8e192161b6e389f9577f8293c4a207 = L.marker(
+                [40.7544, -73.9471],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_072ec74ed097050731f9c0deb04dde57 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_cb0a60d46a6e57e3a7567cfc99176918 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_32fcfab8459787bf4f965499be15acc5 = $(`<div id="html_32fcfab8459787bf4f965499be15acc5" style="width: 100.0%; height: 100.0%;"><b>Queensboro Bridge (Queens side)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_cb0a60d46a6e57e3a7567cfc99176918.setContent(html_32fcfab8459787bf4f965499be15acc5);
+            
+        
+
+        marker_fc8e192161b6e389f9577f8293c4a207.bindPopup(popup_cb0a60d46a6e57e3a7567cfc99176918)
+        ;
+
+        
+    
+    
+            marker_fc8e192161b6e389f9577f8293c4a207.bindTooltip(
+                `<div>
+                     Queensboro Bridge (Queens side)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_fc8e192161b6e389f9577f8293c4a207.setIcon(icon_072ec74ed097050731f9c0deb04dde57);
+            
+    
+            var marker_4e52887c28227dd3d006721e4d5ef45f = L.marker(
+                [40.8064, -73.9322],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_76ba69b358de5f37386e61794ca12177 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_cb5a16ea91116718bf3ad89a9a9f4775 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_4547183ffc5d7077140afd7e26ee7389 = $(`<div id="html_4547183ffc5d7077140afd7e26ee7389" style="width: 100.0%; height: 100.0%;"><b>Willis Ave Bridge</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_cb5a16ea91116718bf3ad89a9a9f4775.setContent(html_4547183ffc5d7077140afd7e26ee7389);
+            
+        
+
+        marker_4e52887c28227dd3d006721e4d5ef45f.bindPopup(popup_cb5a16ea91116718bf3ad89a9a9f4775)
+        ;
+
+        
+    
+    
+            marker_4e52887c28227dd3d006721e4d5ef45f.bindTooltip(
+                `<div>
+                     Willis Ave Bridge
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_4e52887c28227dd3d006721e4d5ef45f.setIcon(icon_76ba69b358de5f37386e61794ca12177);
+            
+    
+            var marker_e2307cc7a6ec3eefb8e9a57d1c69ad8c = L.marker(
+                [40.8082, -73.9318],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_8bd35945dfdd09c18e891ac39f840738 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_bec373ef02f0112df537e29daf61e973 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_25276e7cb5c7a9cbeafa7840e82600fb = $(`<div id="html_25276e7cb5c7a9cbeafa7840e82600fb" style="width: 100.0%; height: 100.0%;"><b>3rd Ave Bridge</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_bec373ef02f0112df537e29daf61e973.setContent(html_25276e7cb5c7a9cbeafa7840e82600fb);
+            
+        
+
+        marker_e2307cc7a6ec3eefb8e9a57d1c69ad8c.bindPopup(popup_bec373ef02f0112df537e29daf61e973)
+        ;
+
+        
+    
+    
+            marker_e2307cc7a6ec3eefb8e9a57d1c69ad8c.bindTooltip(
+                `<div>
+                     3rd Ave Bridge
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_e2307cc7a6ec3eefb8e9a57d1c69ad8c.setIcon(icon_8bd35945dfdd09c18e891ac39f840738);
+            
+    
+            var marker_b6120217af1cb67a476c8adacfbdb8c0 = L.marker(
+                [40.8134, -73.9339],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_93aa6b1ecb26bb02c52fcae35d8adfc8 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_125fde1b3230acdcd8496481e3faed4c = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_457f030d2cfe149c0ba572aaf7cc0509 = $(`<div id="html_457f030d2cfe149c0ba572aaf7cc0509" style="width: 100.0%; height: 100.0%;"><b>Madison Ave Bridge</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_125fde1b3230acdcd8496481e3faed4c.setContent(html_457f030d2cfe149c0ba572aaf7cc0509);
+            
+        
+
+        marker_b6120217af1cb67a476c8adacfbdb8c0.bindPopup(popup_125fde1b3230acdcd8496481e3faed4c)
+        ;
+
+        
+    
+    
+            marker_b6120217af1cb67a476c8adacfbdb8c0.bindTooltip(
+                `<div>
+                     Madison Ave Bridge
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b6120217af1cb67a476c8adacfbdb8c0.setIcon(icon_93aa6b1ecb26bb02c52fcae35d8adfc8);
+            
+    
+            var marker_21e74a643e9daab04c2ef112a7014496 = L.marker(
+                [40.8213, -73.9379],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_68c94f5ee89bebe7df0c7f6c61eb29e7 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7cc112b1443a3369cac183f63c5047fa = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_d125fb11a8f833c126dbe725de6067c0 = $(`<div id="html_d125fb11a8f833c126dbe725de6067c0" style="width: 100.0%; height: 100.0%;"><b>145th St Bridge</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_7cc112b1443a3369cac183f63c5047fa.setContent(html_d125fb11a8f833c126dbe725de6067c0);
+            
+        
+
+        marker_21e74a643e9daab04c2ef112a7014496.bindPopup(popup_7cc112b1443a3369cac183f63c5047fa)
+        ;
+
+        
+    
+    
+            marker_21e74a643e9daab04c2ef112a7014496.bindTooltip(
+                `<div>
+                     145th St Bridge
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_21e74a643e9daab04c2ef112a7014496.setIcon(icon_68c94f5ee89bebe7df0c7f6c61eb29e7);
+            
+    
+            var marker_1c980d035b21b6692e48fead8c8717cc = L.marker(
+                [40.741, -74.0091],
+                {
+}
+            ).addTo(feature_group_519f76c02e3945180413f2832074e4a1);
+        
+    
+            var icon_1bf03dc6c0e7614434f61c3478c15a76 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "darkpurple",
+  "iconColor": "white",
+  "icon": "road",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2e03c96f608e567c181ab3e3a10ce6b3 = L.popup({
+  "maxWidth": 260,
+});
+
+        
+            
+                var html_303e859b137f823e7f25a119997678bc = $(`<div id="html_303e859b137f823e7f25a119997678bc" style="width: 100.0%; height: 100.0%;"><b>Hudson River Greenway (midpoint)</b><br><i>Bridge / Greenway Count Point</i></div>`)[0];
+                popup_2e03c96f608e567c181ab3e3a10ce6b3.setContent(html_303e859b137f823e7f25a119997678bc);
+            
+        
+
+        marker_1c980d035b21b6692e48fead8c8717cc.bindPopup(popup_2e03c96f608e567c181ab3e3a10ce6b3)
+        ;
+
+        
+    
+    
+            marker_1c980d035b21b6692e48fead8c8717cc.bindTooltip(
+                `<div>
+                     Hudson River Greenway (midpoint)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_1c980d035b21b6692e48fead8c8717cc.setIcon(icon_1bf03dc6c0e7614434f61c3478c15a76);
+            
+    
+            feature_group_519f76c02e3945180413f2832074e4a1.addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+        
+    
+            var layer_control_c0a15fb0cc685b7f366a1a65c4b50aa2_layers = {
+                base_layers : {
+                    "cartodbpositron" : tile_layer_10f3027771e64d58bbfb98f1bc71a199,
+                },
+                overlays :  {
+                    "Manhattan" : marker_cluster_3227d13f6a8ed7ca9721e9d13ba1183f,
+                    "Brooklyn" : marker_cluster_ca81c4112fff82083da3cb60745d9554,
+                    "Queens" : marker_cluster_6b045c03d4c880426f55beb430a1c4b5,
+                    "Bronx" : marker_cluster_8491be45d560d4f6d7becf93fd2ba1e5,
+                    "Staten Island" : marker_cluster_7c917c308a899c3b92b4404fa952e3f7,
+                    "Bridges \u0026 Greenway" : feature_group_519f76c02e3945180413f2832074e4a1,
+                },
+            };
+            let layer_control_c0a15fb0cc685b7f366a1a65c4b50aa2 = L.control.layers(
+                layer_control_c0a15fb0cc685b7f366a1a65c4b50aa2_layers.base_layers,
+                layer_control_c0a15fb0cc685b7f366a1a65c4b50aa2_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_fa0364643ec87d154fe6e5bc6be54bd7);
+
+        
+</script>
+</html>
