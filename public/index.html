@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_2a0b713fb2e5989439fa180b01acfc77 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <style>
+            /* De-noise the basemap - mute it so data stands out */
+            .leaflet-tile-pane {
+                filter: grayscale(90%) brightness(1.1) contrast(0.9);
+            }
+            /* Make study area boundaries more subtle */
+            .leaflet-interactive[stroke="#e41a1c"],
+            .leaflet-interactive[stroke="#377eb8"],
+            .leaflet-interactive[stroke="#4daf4a"] {
+                stroke-opacity: 0.4 !important;
+                fill-opacity: 0.05 !important;
+            }
+            /* Tooltip styling */
+            .demand-tooltip {
+                background: rgba(255,255,255,0.95);
+                border: none;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                padding: 6px 10px;
+                font-family: sans-serif;
+                font-size: 12px;
+            }
+            /* Title and caption */
+            #map-title {
+                position: absolute;
+                top: 10px;
+                left: 60px;
+                z-index: 1000;
+                background: rgba(255,255,255,0.95);
+                padding: 10px 15px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+                font-family: sans-serif;
+                max-width: 280px;
+            }
+            #map-title h2 {
+                margin: 0 0 5px 0;
+                font-size: 14px;
+                font-weight: 600;
+                color: #333;
+            }
+            #map-title p {
+                margin: 0;
+                font-size: 10px;
+                color: #666;
+                line-height: 1.4;
+            }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+</head>
+<body>
+    <!-- Title and caption -->
+    <div id="map-title">
+        <h2>NYC DOT Pedestrian Demand</h2>
+        <p>Figure 1. Pedestrian demand index in Lower Manhattan, showing areas with highest walking activity. Data: NYC Open Data Pedestrian Mobility Plan.</p>
+    </div>
+
+            <div class="folium-map" id="map_2a0b713fb2e5989439fa180b01acfc77" ></div>
+        
+</body>
+<script>
+    
+    
+            // NYC bounds to restrict map view
+            var nycBounds = L.latLngBounds(
+                [40.68, -74.04],   // Southwest (Lower Manhattan/Battery)
+                [40.75, -73.95]    // Northeast (Midtown)
+            );
+
+            var map_2a0b713fb2e5989439fa180b01acfc77 = L.map(
+                "map_2a0b713fb2e5989439fa180b01acfc77",
+                {
+                    center: [40.7128, -74.006],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 14,
+                    zoomControl: true,
+                    preferCanvas: false,
+                    minZoom: 13,           // Prevent zooming out too far
+                    maxZoom: 18,           // Max zoom in
+                    maxBounds: nycBounds,  // Restrict panning to NYC
+                    maxBoundsViscosity: 1.0  // Hard boundary (no dragging outside)
+                }
+            );
+
+            // Fit to Lower Manhattan bounds (tighter view on study area)
+            var lowerManhattanBounds = L.latLngBounds(
+                [40.695, -74.025],  // Southwest corner
+                [40.74, -73.97]     // Northeast corner
+            );
+            map_2a0b713fb2e5989439fa180b01acfc77.fitBounds(lowerManhattanBounds, {padding: [20, 20]});
+
+            
+
+        
+    
+            var tile_layer_8996068b89ae823d9dfbeee2eb84ccd6 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 13,
+  "maxZoom": 18,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_8996068b89ae823d9dfbeee2eb84ccd6.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+        
+    
+            // Dark and OSM tile layers removed - using only light basemap
+        
+    
+            var feature_group_168429254faa7b1de0bfbdc73e32caaf = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var rectangle_7ac81fd2318519025d17c1d067546f0a = L.rectangle(
+                [[40.713, -74.005], [40.728, -73.99]],
+                {"bubblingMouseEvents": true, "color": "#e41a1c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e41a1c", "fillOpacity": 0.1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_168429254faa7b1de0bfbdc73e32caaf);
+        
+    
+        var popup_059f5f994758de921aa926ec4ad1a457 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_3d66d2a59dbc3e4f0b14a3e049664479 = $(`<div id="html_3d66d2a59dbc3e4f0b14a3e049664479" style="width: 100.0%; height: 100.0%;"><b>Chinatown/SoHo</b><br>Equity-critical case with high pedestrian volumes</div>`)[0];
+                popup_059f5f994758de921aa926ec4ad1a457.setContent(html_3d66d2a59dbc3e4f0b14a3e049664479);
+            
+        
+
+        rectangle_7ac81fd2318519025d17c1d067546f0a.bindPopup(popup_059f5f994758de921aa926ec4ad1a457)
+        ;
+
+        
+    
+    
+            rectangle_7ac81fd2318519025d17c1d067546f0a.bindTooltip(
+                `<div>
+                     Chinatown/SoHo
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3346a44bdca4aff36f9fd1aed3e60c4f = L.marker(
+                [40.7205, -73.9975],
+                {
+}
+            ).addTo(feature_group_168429254faa7b1de0bfbdc73e32caaf);
+        
+    
+            var div_icon_53cdd31d0ce24f2dd552a4c267d20a2a = L.divIcon({
+  "html": "\u003cdiv style=\"font-size: 10pt; color: #e41a1c; font-weight: bold; text-shadow: 1px 1px white;\"\u003eChinatown/SoHo\u003c/div\u003e",
+  "iconSize": [150, 36],
+  "iconAnchor": [75, 18],
+  "className": "empty",
+});
+        
+    
+                marker_3346a44bdca4aff36f9fd1aed3e60c4f.setIcon(div_icon_53cdd31d0ce24f2dd552a4c267d20a2a);
+            
+    
+            var rectangle_be9d084c5b61096b95e617b8c76d8b14 = L.rectangle(
+                [[40.7, -74.02], [40.713, -74.0]],
+                {"bubblingMouseEvents": true, "color": "#377eb8", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#377eb8", "fillOpacity": 0.1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_168429254faa7b1de0bfbdc73e32caaf);
+        
+    
+        var popup_42f950d4c43e559a379ef3286dfad81e = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_5de27aece850788fc7231b2dbdf1ee30 = $(`<div id="html_5de27aece850788fc7231b2dbdf1ee30" style="width: 100.0%; height: 100.0%;"><b>Financial District</b><br>Extreme case - highest pedestrian volumes</div>`)[0];
+                popup_42f950d4c43e559a379ef3286dfad81e.setContent(html_5de27aece850788fc7231b2dbdf1ee30);
+            
+        
+
+        rectangle_be9d084c5b61096b95e617b8c76d8b14.bindPopup(popup_42f950d4c43e559a379ef3286dfad81e)
+        ;
+
+        
+    
+    
+            rectangle_be9d084c5b61096b95e617b8c76d8b14.bindTooltip(
+                `<div>
+                     Financial District
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_051aaf6a5fd62c75cedbb5407e5b0592 = L.marker(
+                [40.7065, -74.01],
+                {
+}
+            ).addTo(feature_group_168429254faa7b1de0bfbdc73e32caaf);
+        
+    
+            var div_icon_44aca83251525a887b918d59d84d97ea = L.divIcon({
+  "html": "\u003cdiv style=\"font-size: 10pt; color: #377eb8; font-weight: bold; text-shadow: 1px 1px white;\"\u003eFinancial District\u003c/div\u003e",
+  "iconSize": [150, 36],
+  "iconAnchor": [75, 18],
+  "className": "empty",
+});
+        
+    
+                marker_051aaf6a5fd62c75cedbb5407e5b0592.setIcon(div_icon_44aca83251525a887b918d59d84d97ea);
+            
+    
+            var rectangle_7276f1c0b7e623d198926958831953ce = L.rectangle(
+                [[40.695, -74.025], [40.74, -73.97]],
+                {"bubblingMouseEvents": true, "color": "#4daf4a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#4daf4a", "fillOpacity": 0.1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(feature_group_168429254faa7b1de0bfbdc73e32caaf);
+        
+    
+        var popup_c4cc067c27da0393b2d80293cf37b8e7 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_c97c9dda3c0349ddf3936b971f3868c0 = $(`<div id="html_c97c9dda3c0349ddf3936b971f3868c0" style="width: 100.0%; height: 100.0%;"><b>Lower Manhattan (Context)</b><br>Broader context for boundary effects analysis</div>`)[0];
+                popup_c4cc067c27da0393b2d80293cf37b8e7.setContent(html_c97c9dda3c0349ddf3936b971f3868c0);
+            
+        
+
+        rectangle_7276f1c0b7e623d198926958831953ce.bindPopup(popup_c4cc067c27da0393b2d80293cf37b8e7)
+        ;
+
+        
+    
+    
+            rectangle_7276f1c0b7e623d198926958831953ce.bindTooltip(
+                `<div>
+                     Lower Manhattan (Context)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_9207ef47c8ca37bb5d257cae6862263d = L.marker(
+                [40.7175, -73.9975],
+                {
+}
+            ).addTo(feature_group_168429254faa7b1de0bfbdc73e32caaf);
+        
+    
+            var div_icon_8600d6d98f86ceb977c83a98a07abeae = L.divIcon({
+  "html": "\u003cdiv style=\"font-size: 10pt; color: #4daf4a; font-weight: bold; text-shadow: 1px 1px white;\"\u003eLower Manhattan (Context)\u003c/div\u003e",
+  "iconSize": [150, 36],
+  "iconAnchor": [75, 18],
+  "className": "empty",
+});
+        
+    
+                marker_9207ef47c8ca37bb5d257cae6862263d.setIcon(div_icon_8600d6d98f86ceb977c83a98a07abeae);
+            
+    
+            feature_group_168429254faa7b1de0bfbdc73e32caaf.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+        
+    
+            L.control.fullscreen(
+                {
+  "position": "topleft",
+  "title": "Full Screen",
+  "titleCancel": "Exit Full Screen",
+  "forceSeparateButton": false,
+}
+            ).addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+        
+    
+            var layer_control_abb36583e30463beba0760ac9b72152e_layers = {
+                base_layers : {},
+                overlays :  {
+                    "Study Areas" : feature_group_168429254faa7b1de0bfbdc73e32caaf,
+                },
+            };
+            let layer_control_abb36583e30463beba0760ac9b72152e = L.control.layers(
+                layer_control_abb36583e30463beba0760ac9b72152e_layers.base_layers,
+                layer_control_abb36583e30463beba0760ac9b72152e_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+
+            // Fetch and display Pedestrian Demand data from NYC Open Data (Lower Manhattan only)
+            (function() {
+                // Bounding box for Lower Manhattan study area (faster load)
+                const lowerManhattanFilter = encodeURIComponent("within_box(the_geom, 40.74, -74.025, 40.695, -73.97)");
+                const pedDemandUrl = `https://data.cityofnewyork.us/resource/fwpa-qxaf.geojson?$limit=10000&$where=${lowerManhattanFilter}`;
+                const pedDemandLayer = L.layerGroup();
+                layer_control_abb36583e30463beba0760ac9b72152e.addOverlay(pedDemandLayer, "Pedestrian Demand");
+
+                // Style function with color + weight encoding (low = thin/grey, high = thick/red)
+                function getDemandStyle(value, min, max) {
+                    if (value === null || value === undefined || isNaN(value)) {
+                        return { color: '#d9d9d9', weight: 1, opacity: 0.3 };
+                    }
+                    const ratio = Math.min(1, Math.max(0, (value - min) / (max - min)));
+
+                    if (ratio < 0.25) return { color: '#d9d9d9', weight: 1, opacity: 0.4 };      // Low - light grey, thin
+                    else if (ratio < 0.5) return { color: '#fdb863', weight: 2, opacity: 0.8 };  // Medium - orange-yellow
+                    else if (ratio < 0.75) return { color: '#e08214', weight: 3, opacity: 0.9 }; // High - dark orange
+                    else return { color: '#b2182b', weight: 5, opacity: 1.0 };                   // Very High - dark red, thick
+                }
+
+                // Focus streets in study area get extra emphasis
+                const focusStreets = new Set(['BROADWAY', 'LAFAYETTE ST', 'CANAL ST', 'MOTT ST', 'MULBERRY ST', 'BOWERY', 'CENTRE ST', 'BAXTER ST', 'ELIZABETH ST', 'CHRYSTIE ST', 'FORSYTH ST', 'ELDRIDGE ST', 'ALLEN ST', 'ORCHARD ST', 'LUDLOW ST', 'ESSEX ST', 'HOUSTON ST', 'GRAND ST', 'BROOME ST', 'SPRING ST', 'PRINCE ST', 'WORTH ST', 'WALKER ST', 'WHITE ST', 'LEONARD ST', 'FRANKLIN ST', 'CHAMBERS ST', 'WALL ST', 'NASSAU ST', 'FULTON ST', 'LIBERTY ST', 'VESEY ST', 'CHURCH ST', 'WEST ST']);
+
+                // Add legend
+                const legend = L.control({position: 'bottomright'});
+                legend.onAdd = function(map) {
+                    const div = L.DomUtil.create('div', 'info legend');
+                    div.style.cssText = 'background:white;padding:12px 15px;border-radius:5px;box-shadow:0 0 15px rgba(0,0,0,0.2);font-family:sans-serif;';
+                    div.innerHTML = `
+                        <h4 style="margin:0 0 10px 0;font-size:13px;font-weight:600;">NYC DOT Pedestrian<br>Demand Index</h4>
+                        <div style="display:flex;align-items:center;margin:4px 0;"><span style="background:#d9d9d9;width:20px;height:2px;display:inline-block;margin-right:8px;"></span> Low</div>
+                        <div style="display:flex;align-items:center;margin:4px 0;"><span style="background:#fdb863;width:20px;height:4px;display:inline-block;margin-right:8px;"></span> Medium</div>
+                        <div style="display:flex;align-items:center;margin:4px 0;"><span style="background:#e08214;width:20px;height:6px;display:inline-block;margin-right:8px;"></span> High</div>
+                        <div style="display:flex;align-items:center;margin:4px 0;"><span style="background:#b2182b;width:20px;height:8px;display:inline-block;margin-right:8px;"></span> Very High</div>
+                    `;
+                    return div;
+                };
+                legend.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+
+                // Loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:5px;z-index:9999;';
+                loadingDiv.textContent = 'Loading pedestrian demand data...';
+                document.body.appendChild(loadingDiv);
+
+                fetch(pedDemandUrl)
+                    .then(r => r.json())
+                    .then(data => {
+                        console.log('Data loaded:', data.features?.length, 'features');
+                        console.log('Sample properties:', data.features?.[0]?.properties);
+
+                        // Find the demand value field and calculate min/max
+                        const demandFields = ['ped_demand', 'demand', 'pedestrian_demand', 'total_ped', 'ped_vol'];
+                        let demandField = null;
+                        let minVal = Infinity, maxVal = -Infinity;
+
+                        // Auto-detect the demand field
+                        if (data.features && data.features.length > 0) {
+                            const props = data.features[0].properties;
+                            for (let key in props) {
+                                if (typeof props[key] === 'number' || !isNaN(parseFloat(props[key]))) {
+                                    const keyLower = key.toLowerCase();
+                                    if (keyLower.includes('ped') || keyLower.includes('demand') || keyLower.includes('volume')) {
+                                        demandField = key;
+                                        break;
+                                    }
+                                }
+                            }
+                            // Fallback: use first numeric field
+                            if (!demandField) {
+                                for (let key in props) {
+                                    if (typeof props[key] === 'number' || !isNaN(parseFloat(props[key]))) {
+                                        demandField = key;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Calculate min/max
+                            if (demandField) {
+                                data.features.forEach(f => {
+                                    const val = parseFloat(f.properties[demandField]);
+                                    if (!isNaN(val)) {
+                                        minVal = Math.min(minVal, val);
+                                        maxVal = Math.max(maxVal, val);
+                                    }
+                                });
+                            }
+                        }
+                        console.log('Demand field:', demandField, 'Range:', minVal, '-', maxVal);
+
+                        const geojsonLayer = L.geoJSON(data, {
+                            style: function(feature) {
+                                const val = demandField ? parseFloat(feature.properties[demandField]) : 0;
+                                const baseStyle = getDemandStyle(val, minVal, maxVal);
+
+                                // Boost focus streets in study area
+                                const streetName = (feature.properties.street || feature.properties.streetname || feature.properties.name || '').toUpperCase();
+                                if (focusStreets.has(streetName)) {
+                                    baseStyle.weight += 1;
+                                    baseStyle.opacity = Math.min(1, baseStyle.opacity + 0.1);
+                                }
+
+                                return {
+                                    color: baseStyle.color,
+                                    weight: baseStyle.weight,
+                                    opacity: baseStyle.opacity,
+                                    fillColor: baseStyle.color,
+                                    fillOpacity: baseStyle.opacity * 0.5
+                                };
+                            },
+                            pointToLayer: function(feature, latlng) {
+                                const val = demandField ? parseFloat(feature.properties[demandField]) : 0;
+                                const style = getDemandStyle(val, minVal, maxVal);
+                                return L.circleMarker(latlng, {
+                                    radius: Math.max(3, style.weight * 2),
+                                    fillColor: style.color,
+                                    color: '#333',
+                                    weight: 1,
+                                    opacity: style.opacity,
+                                    fillOpacity: style.opacity * 0.8
+                                });
+                            },
+                            onEachFeature: function(feature, layer) {
+                                const p = feature.properties;
+                                const val = demandField ? parseFloat(p[demandField]) : 0;
+                                const ratio = (val - minVal) / (maxVal - minVal);
+                                const category = ratio < 0.25 ? 'Low' : ratio < 0.5 ? 'Medium' : ratio < 0.75 ? 'High' : 'Very High';
+                                const streetName = p.street || p.streetname || p.name || p.st_name || 'Unknown';
+
+                                // Store category for filtering
+                                layer.demandCategory = category;
+
+                                // Hover tooltip
+                                const tooltipHtml = `<b>${streetName}</b><br>Demand: ${category}`;
+                                layer.bindTooltip(tooltipHtml, { sticky: true, className: 'demand-tooltip' });
+
+                                // Click popup with details
+                                let popupHtml = `<div style="font-family:sans-serif;">
+                                    <b style="font-size:14px;">${streetName}</b>
+                                    <hr style="margin:5px 0;">
+                                    <b>Demand Category:</b> <span style="color:${getDemandStyle(val, minVal, maxVal).color};font-weight:bold;">${category}</span><br>`;
+                                if (demandField && p[demandField]) {
+                                    popupHtml += `<b>Demand Index:</b> ${p[demandField]}<br>`;
+                                }
+                                popupHtml += '</div>';
+                                layer.bindPopup(popupHtml, {maxWidth: 300});
+
+                                // Click to highlight corridor
+                                layer.on('click', function() {
+                                    if (window.activeHighlight) {
+                                        geojsonLayer.resetStyle(window.activeHighlight);
+                                    }
+                                    window.activeHighlight = layer;
+                                    layer.setStyle({ weight: layer.options.weight + 3, opacity: 1 });
+                                    layer.bringToFront();
+                                });
+                            }
+                        });
+
+                        // Store reference for filtering
+                        window.demandGeoJson = geojsonLayer;
+
+                        geojsonLayer.addTo(pedDemandLayer);
+                        pedDemandLayer.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+
+                        // Add filter control
+                        const filterControl = L.control({position: 'topright'});
+                        filterControl.onAdd = function() {
+                            const div = L.DomUtil.create('div', 'filter-control');
+                            div.style.cssText = 'background:white;padding:10px 12px;border-radius:5px;box-shadow:0 0 15px rgba(0,0,0,0.2);font-family:sans-serif;font-size:12px;margin-top:10px;';
+                            div.innerHTML = `
+                                <b style="font-size:11px;">Filter by Demand:</b><br>
+                                <label style="display:block;margin:3px 0;cursor:pointer;"><input type="checkbox" class="demand-filter" value="Very High" checked> Very High</label>
+                                <label style="display:block;margin:3px 0;cursor:pointer;"><input type="checkbox" class="demand-filter" value="High" checked> High</label>
+                                <label style="display:block;margin:3px 0;cursor:pointer;"><input type="checkbox" class="demand-filter" value="Medium" checked> Medium</label>
+                                <label style="display:block;margin:3px 0;cursor:pointer;"><input type="checkbox" class="demand-filter" value="Low" checked> Low</label>
+                            `;
+                            L.DomEvent.disableClickPropagation(div);
+
+                            // Filter handler
+                            div.addEventListener('change', function(e) {
+                                if (e.target.classList.contains('demand-filter')) {
+                                    const checked = {};
+                                    div.querySelectorAll('.demand-filter').forEach(cb => {
+                                        checked[cb.value] = cb.checked;
+                                    });
+                                    geojsonLayer.eachLayer(function(layer) {
+                                        if (checked[layer.demandCategory]) {
+                                            layer.setStyle({ opacity: layer.options.opacity || 0.8 });
+                                        } else {
+                                            layer.setStyle({ opacity: 0, fillOpacity: 0 });
+                                        }
+                                    });
+                                }
+                            });
+                            return div;
+                        };
+                        filterControl.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+
+                        loadingDiv.textContent = `Loaded ${data.features?.length || 0} features!`;
+                        loadingDiv.style.background = '#27ae60';
+                        setTimeout(() => loadingDiv.remove(), 2000);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        loadingDiv.textContent = 'Error: ' + error.message;
+                        loadingDiv.style.background = '#c00';
+                        setTimeout(() => loadingDiv.remove(), 5000);
+                    });
+            })();
+
+        
+    
+            // Only add light tile layer (removed dark and OSM options for simplicity)
+            tile_layer_8996068b89ae823d9dfbeee2eb84ccd6.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+        
+    
+                marker_3346a44bdca4aff36f9fd1aed3e60c4f.setIcon(div_icon_53cdd31d0ce24f2dd552a4c267d20a2a);
+            
+    
+                marker_051aaf6a5fd62c75cedbb5407e5b0592.setIcon(div_icon_44aca83251525a887b918d59d84d97ea);
+            
+    
+                marker_9207ef47c8ca37bb5d257cae6862263d.setIcon(div_icon_8600d6d98f86ceb977c83a98a07abeae);
+            
+    
+            feature_group_168429254faa7b1de0bfbdc73e32caaf.addTo(map_2a0b713fb2e5989439fa180b01acfc77);
+        
+</script>
+</html>

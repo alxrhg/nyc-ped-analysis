@@ -1,0 +1,767 @@
+"""
+Data Download Module for NYC Pedestrian Spatial Analysis
+
+Downloads and caches data from NYC Open Data, Census API, and other sources.
+
+Author: Alexander Huang
+"""
+
+import logging
+from io import StringIO
+from pathlib import Path
+from typing import Optional
+from datetime import datetime
+
+import pandas as pd
+import geopandas as gpd
+import requests
+import yaml
+
+from src import RAW_DATA_DIR, DEFAULT_CRS, GEOGRAPHIC_CRS, PROJECT_ROOT
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+
+class NYCOpenDataDownloader:
+    """Download data from NYC Open Data Portal."""
+
+    # Socrata API endpoints for NYC Open Data
+    DATASETS = {
+        "crash_data": {
+            "endpoint": "h9gi-nx95",
+            "name": "Motor Vehicle Collisions - Crashes",
+        },
+        "subway_stations": {
+            "endpoint": "arq3-7z49",
+            "name": "Subway Stations",
+        },
+        "bus_stops": {
+            "endpoint": "qafz-7myz",
+            "name": "Bus Stop Shelters",
+        },
+        "bike_lanes": {
+            "endpoint": "7vsa-caz7",
+            "name": "NYC Bike Routes",
+        },
+        "nycha": {
+            "endpoint": "evjd-dqpz",
+            "name": "NYCHA Developments",
+        },
+        "community_districts": {
+            "endpoint": "yfnk-k7r4",
+            "name": "Community Districts",
+        },
+        "street_centerlines": {
+            "endpoint": "exjm-f27b",
+            "name": "NYC Street Centerline (CSCL)",
+        },
+        "pedestrian_counts": {
+            "endpoint": "fwpa-qxaf",
+            "name": "Pedestrian Mobility Plan - Pedestrian Demand",
+        },
+        "pedestrian_demand_map": {
+            "endpoint": "c4kr-96ik",
+            "name": "Pedestrian Mobility Plan Pedestrian Demand Map",
+        },
+        "bi_annual_ped_counts": {
+            "endpoint": "2de2-6x2h",
+            "name": "Bi-Annual Pedestrian Counts",
+        },
+    }
+
+    # Alternative endpoints to try for pedestrian data (fwpa-qxaf uses v3 API)
+    PEDESTRIAN_ENDPOINTS = [
+        ("fwpa-qxaf", "Pedestrian Mobility Plan - Pedestrian Demand"),
+        ("c4kr-96ik", "Pedestrian Mobility Plan Pedestrian Demand Map"),
+        ("2de2-6x2h", "Bi-Annual Pedestrian Counts"),
+    ]
+
+    BASE_URL = "https://data.cityofnewyork.us/resource"
+    VIEWS_URL = "https://data.cityofnewyork.us/api/views"
+
+    def __init__(self, output_dir: Optional[Path] = None, app_token: Optional[str] = None):
+        """
+        Initialize the downloader.
+
+        Args:
+            output_dir: Directory to save downloaded data. Defaults to RAW_DATA_DIR.
+            app_token: Socrata app token for higher rate limits (optional).
+        """
+        self.output_dir = output_dir or RAW_DATA_DIR
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.app_token = app_token
+
+    def _get_headers(self) -> dict:
+        """Get request headers with optional app token."""
+        headers = {"Accept": "application/json"}
+        if self.app_token:
+            headers["X-App-Token"] = self.app_token
+        return headers
+
+    def download_crash_data(
+        self,
+        start_date: str = "2019-01-01",
+        end_date: str = "2024-12-31",
+        pedestrian_only: bool = True,
+        limit: int = 500000,
+    ) -> gpd.GeoDataFrame:
+        """
+        Download motor vehicle collision data.
+
+        Args:
+            start_date: Start date in YYYY-MM-DD format.
+            end_date: End date in YYYY-MM-DD format.
+            pedestrian_only: If True, filter for pedestrian-involved crashes.
+            limit: Maximum number of records to retrieve.
+
+        Returns:
+            GeoDataFrame with crash data.
+        """
+        logger.info(f"Downloading crash data from {start_date} to {end_date}...")
+
+        endpoint = self.DATASETS["crash_data"]["endpoint"]
+        url = f"{self.BASE_URL}/{endpoint}.json"
+
+        # Build query
+        where_clauses = [
+            f"crash_date >= '{start_date}'",
+            f"crash_date <= '{end_date}'",
+            "latitude IS NOT NULL",
+            "longitude IS NOT NULL",
+        ]
+
+        if pedestrian_only:
+            where_clauses.append(
+                "(number_of_pedestrians_injured > 0 OR number_of_pedestrians_killed > 0)"
+            )
+
+        params = {
+            "$where": " AND ".join(where_clauses),
+            "$limit": limit,
+            "$order": "crash_date DESC",
+        }
+
+        response = requests.get(url, params=params, headers=self._get_headers())
+        response.raise_for_status()
+
+        data = response.json()
+        logger.info(f"Retrieved {len(data)} crash records")
+
+        if not data:
+            logger.warning("No crash data retrieved")
+            return gpd.GeoDataFrame()
+
+        df = pd.DataFrame(data)
+
+        # Convert to GeoDataFrame
+        gdf = gpd.GeoDataFrame(
+            df,
+            geometry=gpd.points_from_xy(
+                df["longitude"].astype(float),
+                df["latitude"].astype(float)
+            ),
+            crs=GEOGRAPHIC_CRS,
+        )
+
+        # Save to file
+        output_path = self.output_dir / "crash_data.geojson"
+        gdf.to_file(output_path, driver="GeoJSON")
+        logger.info(f"Saved crash data to {output_path}")
+
+        return gdf
+
+    def download_pedestrian_demand(
+        self,
+        limit: int = 100000,
+    ) -> gpd.GeoDataFrame:
+        """
+        Download pedestrian demand/count data from NYC Open Data.
+
+        Tries multiple endpoints in order of preference:
+        1. Pedestrian Mobility Plan Pedestrian Demand Map (c4kr-96ik)
+        2. Bi-Annual Pedestrian Counts (2de2-6x2h)
+        3. Pedestrian Mobility Plan - Pedestrian Demand (fwpa-qxaf) [legacy]
+
+        Args:
+            limit: Maximum number of records to retrieve.
+
+        Returns:
+            GeoDataFrame with pedestrian demand data.
+        """
+        logger.info("Downloading pedestrian demand data...")
+
+        gdf = None
+        df = None
+
+        # Try each endpoint in order
+        for endpoint, name in self.PEDESTRIAN_ENDPOINTS:
+            logger.info(f"Trying endpoint: {name} ({endpoint})...")
+
+            # Try rows.geojson format first (direct download, most reliable)
+            rows_geojson_url = f"{self.VIEWS_URL}/{endpoint}/rows.geojson?accessType=DOWNLOAD"
+            try:
+                logger.info(f"Trying rows.geojson: {rows_geojson_url}")
+                response = requests.get(
+                    rows_geojson_url,
+                    headers=self._get_headers(),
+                    timeout=120,
+                )
+                response.raise_for_status()
+                gdf = gpd.read_file(StringIO(response.text))
+
+                if len(gdf) > 0:
+                    logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (rows.geojson)")
+                    break
+                else:
+                    logger.info(f"Empty response from {name} rows.geojson, trying legacy...")
+                    gdf = None
+
+            except Exception as e:
+                logger.info(f"rows.geojson failed for {endpoint}: {e}")
+
+            # Fallback to legacy GeoJSON format
+            geojson_url = f"{self.BASE_URL}/{endpoint}.geojson"
+            try:
+                response = requests.get(
+                    geojson_url,
+                    headers=self._get_headers(),
+                    params={"$limit": limit},
+                    timeout=120,
+                )
+                response.raise_for_status()
+                gdf = gpd.read_file(StringIO(response.text))
+
+                if len(gdf) > 0:
+                    logger.info(f"SUCCESS: Retrieved {len(gdf)} records from {name} (GeoJSON)")
+                    break
+                else:
+                    logger.info(f"Empty response from {name} GeoJSON, trying next...")
+                    gdf = None
+
+            except Exception as e:
+                logger.info(f"GeoJSON failed for {endpoint}: {e}")
+
+                # Try JSON format
+                json_url = f"{self.BASE_URL}/{endpoint}.json"
+                try:
+                    response = requests.get(
+                        json_url,
+                        headers=self._get_headers(),
+                        params={"$limit": limit},
+                        timeout=120,
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+
+                    if data:
+                        df = pd.DataFrame(data)
+                        logger.info(f"SUCCESS: Retrieved {len(df)} records from {name} (JSON)")
+                        break
+                    else:
+                        logger.info(f"Empty response from {name} JSON, trying next...")
+
+                except Exception as e2:
+                    logger.info(f"JSON also failed for {endpoint}: {e2}")
+                    continue
+
+        # If we got a GeoDataFrame directly, save and return
+        if gdf is not None and len(gdf) > 0:
+            output_path = self.output_dir / "pedestrian_demand.geojson"
+            gdf.to_file(output_path, driver="GeoJSON")
+            logger.info(f"Saved pedestrian demand data to {output_path}")
+            logger.info(f"Columns: {list(gdf.columns)}")
+            return gdf
+
+        # If we got a DataFrame, need to create geometry
+        if df is None or df.empty:
+            logger.warning("No pedestrian demand data retrieved")
+            return gpd.GeoDataFrame()
+
+        logger.info(f"Pedestrian demand columns: {list(df.columns)}")
+
+        # Check for coordinate columns and create geometry
+        lat_cols = [c for c in df.columns if "lat" in c.lower()]
+        lon_cols = [c for c in df.columns if "lon" in c.lower() or "lng" in c.lower()]
+
+        # Also check for 'the_geom' or geometry columns
+        geom_cols = [c for c in df.columns if "geom" in c.lower() or c == "geometry"]
+
+        if geom_cols:
+            geom_col = geom_cols[0]
+            logger.info(f"Found geometry column: {geom_col}")
+
+            # Parse geometry from WKT or GeoJSON
+            from shapely import wkt
+            from shapely.geometry import shape
+            import json
+
+            def parse_geometry(val):
+                if val is None or (isinstance(val, float) and pd.isna(val)):
+                    return None
+                if isinstance(val, str):
+                    try:
+                        return wkt.loads(val)
+                    except Exception:
+                        try:
+                            return shape(json.loads(val))
+                        except Exception:
+                            return None
+                elif isinstance(val, dict):
+                    try:
+                        return shape(val)
+                    except Exception:
+                        return None
+                return None
+
+            df["geometry"] = df[geom_col].apply(parse_geometry)
+            gdf = gpd.GeoDataFrame(df, geometry="geometry", crs=GEOGRAPHIC_CRS)
+
+        elif lat_cols and lon_cols:
+            lat_col = lat_cols[0]
+            lon_col = lon_cols[0]
+            logger.info(f"Using coordinates: {lat_col}, {lon_col}")
+
+            df[lat_col] = pd.to_numeric(df[lat_col], errors="coerce")
+            df[lon_col] = pd.to_numeric(df[lon_col], errors="coerce")
+
+            # Filter out rows without valid coordinates
+            valid_coords = df[lat_col].notna() & df[lon_col].notna()
+            df = df[valid_coords].copy()
+
+            gdf = gpd.GeoDataFrame(
+                df,
+                geometry=gpd.points_from_xy(df[lon_col], df[lat_col]),
+                crs=GEOGRAPHIC_CRS,
+            )
+        else:
+            # No geometry available, save as regular DataFrame
+            logger.warning(
+                "No coordinate columns found in pedestrian demand data. "
+                "Saving as CSV for manual geocoding."
+            )
+            output_path = self.output_dir / "pedestrian_demand.csv"
+            df.to_csv(output_path, index=False)
+            logger.info(f"Saved pedestrian demand data to {output_path}")
+
+            # Return GeoDataFrame with data but no geometry
+            gdf = gpd.GeoDataFrame(df)
+            gdf["geometry"] = None
+            return gdf
+
+        # Identify pedestrian volume columns
+        volume_cols = [
+            c for c in gdf.columns
+            if any(term in c.lower() for term in ["ped", "volume", "count", "demand", "flow"])
+            and c.lower() not in ["geometry", "the_geom"]
+        ]
+        if volume_cols:
+            logger.info(f"Identified pedestrian volume columns: {volume_cols}")
+
+        # Save to file
+        output_path = self.output_dir / "pedestrian_demand.geojson"
+        gdf.to_file(output_path, driver="GeoJSON")
+        logger.info(f"Saved pedestrian demand data to {output_path}")
+
+        return gdf
+
+    def download_geojson_dataset(self, dataset_key: str) -> gpd.GeoDataFrame:
+        """
+        Download a GeoJSON dataset from NYC Open Data.
+
+        Args:
+            dataset_key: Key from DATASETS dictionary.
+
+        Returns:
+            GeoDataFrame with the dataset.
+        """
+        if dataset_key not in self.DATASETS:
+            raise ValueError(f"Unknown dataset: {dataset_key}")
+
+        dataset = self.DATASETS[dataset_key]
+        logger.info(f"Downloading {dataset['name']}...")
+
+        endpoint = dataset["endpoint"]
+        url = f"{self.BASE_URL}/{endpoint}.geojson"
+
+        response = requests.get(url, headers=self._get_headers(), timeout=120)
+        response.raise_for_status()
+
+        gdf = gpd.read_file(StringIO(response.text))
+        logger.info(f"Retrieved {len(gdf)} records for {dataset['name']}")
+
+        # Save to file
+        output_path = self.output_dir / f"{dataset_key}.geojson"
+        gdf.to_file(output_path, driver="GeoJSON")
+        logger.info(f"Saved to {output_path}")
+
+        return gdf
+
+    def download_all_datasets(self) -> dict[str, gpd.GeoDataFrame]:
+        """
+        Download all configured datasets.
+
+        Returns:
+            Dictionary mapping dataset keys to GeoDataFrames.
+        """
+        results = {}
+
+        # Download crash data with filtering
+        try:
+            results["crash_data"] = self.download_crash_data()
+        except Exception as e:
+            logger.error(f"Failed to download crash data: {e}")
+
+        # Download pedestrian demand data (critical for LTN suitability)
+        try:
+            results["pedestrian_demand"] = self.download_pedestrian_demand()
+        except Exception as e:
+            logger.error(f"Failed to download pedestrian demand data: {e}")
+
+        # Download GeoJSON datasets
+        geojson_datasets = [
+            "subway_stations",
+            "bus_stops",
+            "bike_lanes",
+            "nycha",
+            "community_districts",
+        ]
+
+        for key in geojson_datasets:
+            try:
+                results[key] = self.download_geojson_dataset(key)
+            except Exception as e:
+                logger.error(f"Failed to download {key}: {e}")
+
+        return results
+
+
+class CensusDataDownloader:
+    """Download data from the US Census API."""
+
+    BASE_URL = "https://api.census.gov/data"
+
+    # NYC county FIPS codes
+    NYC_COUNTIES = {
+        "061": "Manhattan",
+        "047": "Brooklyn",
+        "081": "Queens",
+        "005": "Bronx",
+        "085": "Staten Island",
+    }
+
+    # ACS variables to download
+    VARIABLES = {
+        # Population
+        "B01003_001E": "total_population",
+        # Income
+        "B19013_001E": "median_household_income",
+        # Vehicle ownership
+        "B08201_001E": "total_households",
+        "B08201_002E": "no_vehicle_households",
+        "B08201_003E": "one_vehicle_households",
+        # Race/ethnicity
+        "B03002_001E": "total_pop_race",
+        "B03002_003E": "white_alone",
+        "B03002_004E": "black_alone",
+        "B03002_006E": "asian_alone",
+        "B03002_012E": "hispanic_latino",
+        # Commute mode
+        "B08301_001E": "total_workers",
+        "B08301_010E": "public_transit_commuters",
+        "B08301_019E": "walked_to_work",
+    }
+
+    def __init__(
+        self,
+        output_dir: Optional[Path] = None,
+        api_key: Optional[str] = None,
+        year: int = 2022,
+    ):
+        """
+        Initialize the Census downloader.
+
+        Args:
+            output_dir: Directory to save downloaded data.
+            api_key: Census API key (optional but recommended).
+            year: ACS 5-year survey year.
+        """
+        self.output_dir = output_dir or RAW_DATA_DIR
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.api_key = api_key
+        self.year = year
+
+    def download_acs_data(self) -> pd.DataFrame:
+        """
+        Download ACS 5-year estimates for NYC census tracts.
+
+        Returns:
+            DataFrame with census variables by tract.
+        """
+        logger.info(f"Downloading ACS {self.year} 5-year estimates...")
+
+        variables = list(self.VARIABLES.keys())
+        variable_str = ",".join(variables)
+
+        all_data = []
+
+        for county_fips, county_name in self.NYC_COUNTIES.items():
+            logger.info(f"Downloading data for {county_name}...")
+
+            url = f"{self.BASE_URL}/{self.year}/acs/acs5"
+            params = {
+                "get": f"NAME,{variable_str}",
+                "for": "tract:*",
+                "in": f"state:36 county:{county_fips}",
+            }
+
+            if self.api_key:
+                params["key"] = self.api_key
+
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+
+            data = response.json()
+            headers = data[0]
+            rows = data[1:]
+
+            df = pd.DataFrame(rows, columns=headers)
+            df["county_name"] = county_name
+            all_data.append(df)
+
+        combined_df = pd.concat(all_data, ignore_index=True)
+
+        # Create GEOID for joining with tract geometries
+        combined_df["GEOID"] = (
+            combined_df["state"] + combined_df["county"] + combined_df["tract"]
+        )
+
+        # Rename columns
+        rename_map = {old: new for old, new in self.VARIABLES.items()}
+        combined_df = combined_df.rename(columns=rename_map)
+
+        # Convert numeric columns
+        for col in self.VARIABLES.values():
+            if col in combined_df.columns:
+                combined_df[col] = pd.to_numeric(combined_df[col], errors="coerce")
+
+        # Calculate derived variables
+        combined_df["pct_no_vehicle"] = (
+            combined_df["no_vehicle_households"] / combined_df["total_households"] * 100
+        ).fillna(0)
+
+        combined_df["pct_nonwhite"] = (
+            (combined_df["total_pop_race"] - combined_df["white_alone"])
+            / combined_df["total_pop_race"]
+            * 100
+        ).fillna(0)
+
+        combined_df["pct_transit_commute"] = (
+            combined_df["public_transit_commuters"] / combined_df["total_workers"] * 100
+        ).fillna(0)
+
+        # Save to file
+        output_path = self.output_dir / "census_acs_data.csv"
+        combined_df.to_csv(output_path, index=False)
+        logger.info(f"Saved census data to {output_path}")
+
+        return combined_df
+
+    def download_tract_geometries(self) -> gpd.GeoDataFrame:
+        """
+        Download census tract geometries from Census TIGER/Line.
+
+        Returns:
+            GeoDataFrame with tract geometries.
+        """
+        logger.info("Downloading census tract geometries...")
+
+        # Use Census TIGER/Line API for tract boundaries
+        url = f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Tracts_Blocks/MapServer/8/query"
+
+        all_tracts = []
+
+        for county_fips in self.NYC_COUNTIES.keys():
+            params = {
+                "where": f"STATE='36' AND COUNTY='{county_fips}'",
+                "outFields": "*",
+                "f": "geojson",
+                "outSR": "4326",
+            }
+
+            response = requests.get(url, params=params, timeout=120)
+            response.raise_for_status()
+
+            gdf = gpd.read_file(StringIO(response.text))
+            all_tracts.append(gdf)
+
+        combined_gdf = pd.concat(all_tracts, ignore_index=True)
+        combined_gdf = gpd.GeoDataFrame(combined_gdf, crs=GEOGRAPHIC_CRS)
+
+        # Save to file
+        output_path = self.output_dir / "census_tracts.geojson"
+        combined_gdf.to_file(output_path, driver="GeoJSON")
+        logger.info(f"Saved tract geometries to {output_path}")
+
+        return combined_gdf
+
+
+def load_config() -> dict:
+    """Load the spatial analysis configuration file."""
+    config_path = PROJECT_ROOT / "spatial-analysis-config.yaml"
+    if not config_path.exists():
+        logger.warning(f"Config file not found at {config_path}, using defaults")
+        return {}
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def extract_endpoint_from_url(url: str) -> Optional[str]:
+    """
+    Extract the dataset endpoint ID from a NYC Open Data URL.
+
+    Example:
+        "https://data.cityofnewyork.us/Transportation/Subway-Stations/arq3-7z49"
+        -> "arq3-7z49"
+    """
+    if not url:
+        return None
+    # The endpoint ID is the last path segment (format: xxxx-xxxx)
+    parts = url.rstrip("/").split("/")
+    if parts:
+        last_part = parts[-1]
+        # Validate it looks like an endpoint ID (4 chars, hyphen, 4 chars)
+        if len(last_part) == 9 and last_part[4] == "-":
+            return last_part
+    return None
+
+
+def get_datasets_from_config(config: dict) -> dict:
+    """
+    Build dataset definitions from config file.
+
+    Extracts endpoint IDs from URLs in the config and builds
+    the DATASETS dictionary format.
+    """
+    datasets = {}
+    nyc_data = config.get("data_sources", {}).get("nyc_open_data", {})
+
+    # Map config keys to our internal keys
+    key_mapping = {
+        "crash_data": "crash_data",
+        "subway_stations": "subway_stations",
+        "bus_stops": "bus_stops",
+        "bike_lanes": "bike_lanes",
+        "nycha": "nycha",
+        "community_districts": "community_districts",
+        "street_network": "street_centerlines",
+        "pedestrian_counts": "pedestrian_counts",
+        "zoning": "zoning",
+    }
+
+    for config_key, internal_key in key_mapping.items():
+        if config_key in nyc_data:
+            source = nyc_data[config_key]
+            endpoint = extract_endpoint_from_url(source.get("url", ""))
+            if endpoint:
+                datasets[internal_key] = {
+                    "endpoint": endpoint,
+                    "name": source.get("name", config_key),
+                    "format": source.get("format", "geojson"),
+                }
+
+    return datasets
+
+
+def get_census_config(config: dict) -> dict:
+    """Extract census configuration from config file."""
+    census_config = config.get("data_sources", {}).get("census", {})
+
+    # Build variables dict from nested structure
+    variables = {}
+    for category, vars_dict in census_config.get("variables", {}).items():
+        if isinstance(vars_dict, dict):
+            variables.update(vars_dict)
+
+    return {
+        "year": census_config.get("year", 2023),
+        "counties": census_config.get("counties", ["061", "047", "081", "005", "085"]),
+        "variables": variables,
+    }
+
+
+def download_all_data(
+    nyc_app_token: Optional[str] = None,
+    census_api_key: Optional[str] = None,
+    config: Optional[dict] = None,
+) -> dict:
+    """
+    Download all data sources using configuration from spatial-analysis-config.yaml.
+
+    Args:
+        nyc_app_token: NYC Open Data app token.
+        census_api_key: Census API key.
+        config: Optional pre-loaded config dict. If None, loads from file.
+
+    Returns:
+        Dictionary with download results.
+    """
+    # Load config if not provided
+    if config is None:
+        config = load_config()
+
+    # Get census year from config (default to 2023 as per config)
+    census_config = get_census_config(config)
+    census_year = census_config.get("year", 2023)
+
+    # Get dataset definitions from config
+    datasets_from_config = get_datasets_from_config(config)
+
+    logger.info("=" * 50)
+    logger.info("DATA DOWNLOAD - Using config from spatial-analysis-config.yaml")
+    logger.info("=" * 50)
+    logger.info(f"Census year: {census_year}")
+    logger.info(f"Datasets from config: {list(datasets_from_config.keys())}")
+
+    results = {}
+
+    # Download NYC Open Data
+    nyc_downloader = NYCOpenDataDownloader(app_token=nyc_app_token)
+
+    # Update downloader's DATASETS with config values
+    if datasets_from_config:
+        nyc_downloader.DATASETS.update(datasets_from_config)
+
+    results["nyc_open_data"] = nyc_downloader.download_all_datasets()
+
+    # Download Census data with year from config
+    census_downloader = CensusDataDownloader(
+        api_key=census_api_key,
+        year=census_year,
+    )
+
+    # Update census variables from config if available
+    if census_config.get("variables"):
+        census_downloader.VARIABLES.update(census_config["variables"])
+
+    results["census_data"] = census_downloader.download_acs_data()
+    results["census_tracts"] = census_downloader.download_tract_geometries()
+
+    # Log summary
+    logger.info("=" * 50)
+    logger.info("Download Summary")
+    logger.info("=" * 50)
+    logger.info(f"NYC datasets downloaded: {len(results['nyc_open_data'])}")
+    logger.info(f"Census year: {census_year}")
+    logger.info(f"Census tracts: {len(results['census_tracts'])}")
+
+    return results
+
+
+if __name__ == "__main__":
+    # Run data download
+    download_all_data()
