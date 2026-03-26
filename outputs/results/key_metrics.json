@@ -1,0 +1,16 @@
+{
+  "study_boundary": "CSCL quadrilateral: 6th Ave (Ave of Americas), Houston (W+E), Bowery, Canal",
+  "crash_window_start": "2019-01-01",
+  "fast_mode": false,
+  "crashes_in_envelope_downloaded": 5764,
+  "crashes_inside_study_polygon": 2528,
+  "pedestrians_injured_total": 224,
+  "pedestrians_killed_total": 3,
+  "crashes_with_any_pedestrian_injured_or_killed": 219,
+  "study_bbox_wgs84": {
+    "min_lon": -74.005914199962,
+    "min_lat": 40.716652900019,
+    "max_lon": -73.992509122467,
+    "max_lat": 40.727929071516
+  }
+}

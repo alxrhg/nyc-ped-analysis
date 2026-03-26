@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "name": "study_area_bowery_houston_6th_canal",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "description": "NYC CSCL inkn-q76z; boundaries: 6th Ave, Houston, Bowery, Canal"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -74.005914199962,
+              40.72226119075
+            ],
+            [
+              -73.995810421115,
+              40.716652900019
+            ],
+            [
+              -73.992509122467,
+              40.724184842915
+            ],
+            [
+              -74.003042324136,
+              40.727929071516
+            ],
+            [
+              -74.005914199962,
+              40.72226119075
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+MIT NYCWalks → Manhattan census tracts
+network_file: NYC_pednetwork_estimates_counts_2018-2019.geojson
+ped_spatial_aggregation: overlay
+ped_metric_source: composite
+peak_columns_found: predwkdyAM, predwkdyMD, predwkdyPM, predwkndAM, predwkndMD, predwkndPM
+hme_columns_found: HME_AMN, HME_JOB, HME_MTA, HME_PRK, HME_SCH
+
+overlay: sum over line∩tract fragments of (volume × fragment length) in EPSG:2263.
+centroid: full segment vol×total length assigned to tract containing segment centroid.
+composite ped_metric: mean of nw_exp_predwkdy* / predwknd* tract totals present.

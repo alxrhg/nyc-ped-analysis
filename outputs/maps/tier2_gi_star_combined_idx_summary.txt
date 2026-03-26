@@ -1,0 +1,11 @@
+Weights: KNN k=4 (centroids, EPSG:2263)
+Variable: combined_idx
+Tracts (valid n): 307
+Neighbors: min=4 max=4 mean=4.00
+
+Global Moran's I: 0.5321  E(I): -0.0033  p_sim: 0.0010
+Getis-Ord Gi* (local): hot spots (z>0, p<0.05): 59
+                         cold spots (z<0, p<0.05): 35
+                         not significant: 213
+
+Descriptive pattern summary only — not causal inference.
